@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "env": {
+    "D3A_HARNESS": "claude",
+    "CLAUDE_CODE_STOP_HOOK_BLOCK_CAP": "40"
+  },
+  "permissions": {
+    "deny": [
+      "Read(../dataset/**)",
+      "Read(../slides/**)",
+      "Read(../plan/**)",
+      "Read(./checks/split.py)",
+      "Read(./checks/final_test.py)",
+      "Read(~/.d3a-demo-private/**)",
+      "Edit(./checks/**)",
+      "Edit(./hooks/**)",
+      "Edit(./data/**)",
+      "Edit(./skills/**)",
+      "Edit(./TASK.md)",
+      "Edit(./program.md)",
+      "Edit(./AGENTS.md)",
+      "Edit(./.claude/**)",
+      "Edit(./config/**)",
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(git reset --hard *)",
+      "Bash(rm -rf *)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {"hooks": [{"type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.venv/bin/python \"$CLAUDE_PROJECT_DIR\"/hooks/session_start.py --harness claude"}]}
+    ],
+    "PreToolUse": [
+      {"matcher": "Read|Edit|Write|MultiEdit|NotebookEdit|Bash|Grep|Glob",
+       "hooks": [{"type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.venv/bin/python \"$CLAUDE_PROJECT_DIR\"/hooks/pre_tool_use.py --harness claude"}]}
+    ],
+    "PostToolUse": [
+      {"matcher": "Edit|Write|MultiEdit",
+       "hooks": [{"type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.venv/bin/python \"$CLAUDE_PROJECT_DIR\"/hooks/post_tool_use.py --harness claude", "timeout": 240}]}
+    ],
+    "Stop": [
+      {"hooks": [{"type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.venv/bin/python \"$CLAUDE_PROJECT_DIR\"/hooks/stop.py --harness claude"}]}
+    ]
+  }
+}

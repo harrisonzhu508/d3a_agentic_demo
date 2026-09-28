@@ -1,0 +1,44 @@
+# Autoresearch settings. Copy to config/autoresearch.toml (gitignored; scripts/setup.sh does this) and edit.
+# Agents cannot change this file. Changes apply from the next agent session.
+
+[experiment]
+# Name of this research campaign. Everything it produces is grouped under it:
+#   results/<name>/               results.tsv, champion.json, session.json, hooks.log, one folder per hypothesis
+#   <branch_prefix>/<name>/main   the experiment branch: kept hypotheses open pull requests into it
+#   <branch_prefix>/<name>/*      the agent's hypothesis branches
+# A new name starts a fresh campaign from the base branch; the same name continues where it left off.
+name = "cip-demo"
+
+# Experiments per agent session: the stop hook keeps the agent working until this many are scored.
+max_experiments = 3
+
+[git]
+# Agents may commit to and push only branches that start with "<branch_prefix>/". All their branches share it.
+branch_prefix = "autoresearch"
+
+# Where each experiment branch starts. Agents never commit to or push it.
+base_branch = "main"
+
+remote = "origin"
+
+# false keeps everything local: kept experiments are not pushed and no pull requests are opened.
+push = true
+
+# true lets the agent merge its own kept hypotheses: right after opening the pull request, publish.py
+# fast-forwards the experiment branch to it (GitHub then shows the PR as merged), and the next hypothesis
+# builds on it. Only harness "keep" verdicts are merged (ΔELPD > 2 SE, all gates pass); the base branch is
+# never touched. false (default): you review and merge each PR yourself.
+auto_merge = false
+
+[evaluation]
+# Time limit for one evaluation (5 cross-validation fits + 1 full fit, run in parallel), in seconds. A branch that
+# runs longer is recorded as fail-budget. 0 = no limit; leave it out for the harness default (600 s). Override
+# for one run with run_pi.sh / parallel.sh --budget-seconds N. The agent cannot change it.
+budget_seconds = 600
+
+[tracking]
+# Weights & Biases (scripts/wandb_sync.py, run by run_pi.sh while the agent works): every scored hypothesis as a
+# W&B run (metrics, plots, report) and every agent session as a Weave trace (each model turn and tool call), so
+# the whole trajectory can be audited. Needs WANDB_API_KEY in config/secrets.env.
+enabled = true
+wandb_project = "harrisonzhu/d3a_demo"

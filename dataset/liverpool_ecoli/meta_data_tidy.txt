@@ -1,0 +1,737 @@
+genome_id	genome_name	disk_AMC	disk_TZP	disk_LEX	disk_CPD	disk_FOX	disk_CZA	disk_CIP	disk_GEN	disk_AMK	disk_TGC	disk_MEM	disk_ETP	disk_AMP	mic_AMC	mic_AMK	mic_AMX	mic_CAZ	mic_CHL	mic_CIP	mic_FEP	mic_GEN	mic_MEM	mic_TGC
+B1	Escherichia coli	R	I	R	R	S	NA	S	R	NA	S	S	S	R	>64	4	>64	8	2	0.03	16	64	0.03	NA
+B2	Escherichia coli	R	S	S	S	S	NA	R	R	NA	S	S	S	R	>64	2	>64	0.25	2	>4	0.125	64	0.03	NA
+B3	Escherichia coli	R	S	R	R	S	NA	S	S	NA	S	S	S	R	>64	2	>64	0.25	2	0.008	<0.03	1	0.03	NA
+B4	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	8	2	4	0.125	2	0.008	<0.03	2	0.03	NA
+B6	Escherichia coli	S	S	S	S	S	NA	S	S	S	NA	S	S	S	8	2	4	0.125	4	0.008	<0.03	2	0.03	NA
+B7	Escherichia coli	R	R	S	S	S	NA	S	S	S	NA	S	S	R	>64	2	>64	0.0625	4	1	0.5	2	0.03	NA
+B8	Escherichia coli	R	S	S	S	S	NA	S	S	S	NA	S	S	R	>64	2	>64	0.25	NA	4	0.0625	2	0.03	NA
+B9	Escherichia coli (ESBL+)	S	S	R	R	S	NA	S	S	S	S	S	S	R	>64	2	>64	16	8	0.03	32	1	0.015	NA
+B10	Escherichia coli	S	S	R	R	S	NA	S	S	S	NA	S	S	R	>64	2	>64	16	4	0.015	32	16	<0.004	NA
+B11	Escherichia coli	R	S	R	R	R	NA	S	S	S	NA	S	S	R	>64	2	>64	0.5	4	>4	<0.03	64	<0.004	NA
+B12	Escherichia coli	R	S	S	S	S	NA	S	S	S	NA	S	S	R	>64	1	>64	0.0625	4	0.008	<0.03	2	NA	NA
+B13	Escherichia coli	R	S	R	R	R	NA	S	S	S	NA	S	S	R	>64	2	>64	0.5	4	0.008	<0.03	2	0.008	NA
+B14	Escherichia coli	S	S	S	S	S	NA	S	S	S	NA	S	S	S	8	2	8	0.0625	2	0.008	<0.03	2	0.015	NA
+B15	Escherichia coli	R	S	S	S	S	NA	R	R	S	NA	S	S	R	>64	2	>64	0.25	2	1	0.125	>64	0.03	NA
+B16	Escherichia coli	R	S	S	S	R	NA	R	R	S	NA	S	S	R	>64	2	>64	0.5	4	>4	0.125	>64	<0.004	NA
+B17	Escherichia coli (ESBL+)	R	S	R	R	R	NA	R	R	S	S	S	I	R	>64	1	>64	>64	2	>4	>64	64	0.125	NA
+B18	Escherichia coli	S	S	S	S	S	NA	S	S	S	NA	S	S	S	8	2	8	0.0625	>64	NA	4	2	0.015	NA
+B19	Escherichia coli (ESBL+)	S	S	R	R	S	NA	S	S	S	NA	S	S	R	>64	1	>64	16	8	0.125	8	1	0.03	NA
+B20	Escherichia coli (ESBL+)	R	R	R	R	S	NA	S	S	S	NA	S	S	R	>64	2	>64	16	2	0.125	8	2	0.0625	NA
+B21	Escherichia coli (ESBL+)	R	S	R	R	S	NA	S	S	S	NA	S	S	R	>64	16	>64	64	2	NA	>64	>64	0.0625	NA
+B22	Escherichia coli	R	R	S	S	S	NA	R	R	S	S	S	S	R	>64	16	>64	32	2	>4	16	>64	0.03	NA
+B23	Escherichia coli	R	S	S	S	S	NA	S	S	S	NA	S	S	R	>64	4	>64	0.125	2	0.008	<0.03	2	0.0625	NA
+B24	Escherichia coli	R	S	S	S	S	NA	S	S	S	NA	S	S	R	>64	8	>64	0.0625	0.5	0.008	<0.03	2	0.03	NA
+B25	Escherichia coli	R	S	S	S	S	NA	S	S	S	NA	S	S	R	>64	2	>64	0.125	2	0.008	0.0625	1	0.0625	NA
+B27	Escherichia coli (ESBL+)	R	R	S	R	S	NA	S	S	S	NA	S	S	R	>64	4	>64	4	2	0.008	4	1	0.0625	NA
+B28	Escherichia coli (ESBL+)	S	R	R	R	S	NA	S	S	S	NA	S	S	R	>64	4	>64	4	2	0.008	8	2	0.0625	NA
+B29	Escherichia coli	R	S	S	S	S	NA	S	S	S	NA	S	S	R	16	4	16	0.125	2	0.008	>64	1	0.03	NA
+B31	Escherichia coli (ESBL+)	S	R	R	R	S	NA	R	R	S	NA	S	S	R	>64	8	>64	64	4	>4	8	>64	0.0625	NA
+B33	Escherichia coli	R	NA	S	S	S	S	R	R	NA	S	S	S	R	>64	8	>64	0.125	2	>4	0.5	>64	0.03	NA
+B34	Escherichia coli	R	NA	R	R	S	S	S	S	NA	S	S	S	R	>64	2	>64	>64	4	0.008	>64	0.5	0.03	NA
+B35	Escherichia coli (ESBL+)	R	NA	R	R	S	S	R	R	NA	S	S	S	R	>64	16	>64	64	2	>4	64	>64	0.125	NA
+B37	Escherichia coli	S	NA	S	S	S	S	S	S	NA	S	S	S	S	4	1	8	0.0625	2	0.008	<0.03	0.5	0.0625	NA
+B38	Escherichia coli	R	NA	R	R	R	S	S	S	NA	S	S	S	R	>64	2	>64	16	2	0.125	16	1	0.0625	NA
+B39	Escherichia coli (ESBL+)	R	NA	R	R	S	S	R	R	S	S	S	S	R	>64	8	>64	32	4	>4	32	>64	0.0625	NA
+B40	Escherichia coli (ESBL+)	S	NA	R	R	S	S	R	S	NA	S	S	S	R	>64	NA	>64	16	NA	NA	8	NA	NA	NA
+B42	Escherichia coli	R	NA	S	S	S	S	S	S	NA	S	S	S	R	>64	2	>64	0.125	1	0.0625	>64	1	0.03	NA
+B43	Escherichia coli	S	NA	R	R	S	S	R	S	NA	S	S	S	R	>64	4	>64	64	4	>4	64	2	0.0625	NA
+B44	Escherichia coli	R	NA	S	S	S	S	S	S	NA	S	S	S	R	>64	8	>64	0.0625	2	0.03	32	2	0.03	NA
+B45	Escherichia coli (ESBL+)	R	NA	R	R	S	S	R	R	S	S	S	S	R	>64	8	>64	64	4	>4	8	>64	0.0625	NA
+B46	Escherichia coli (CARB+)	R	NA	R	R	S	S	S	S	S	S	S	R	R	>64	1	>64	>64	NA	0.008	>64	0.5	0.5	NA
+B47	Escherichia coli (ESBL+)	R	S	R	R	S	S	R	R	S	S	S	S	R	>64	16	>64	64	4	>4	64	>64	0.0625	NA
+B48	Escherichia coli	S	S	S	S	S	NA	R	R	NA	S	S	S	R	>64	2	>64	0.0625	2	>4	>64	>64	0.0625	NA
+B49	Escherichia coli (ESBL+)	S	S	R	R	S	NA	R	S	NA	S	S	S	R	>64	2	>64	64	4	>4	64	1	0.0625	NA
+B50	Escherichia coli	S	S	S	S	S	NA	S	S	S	NA	S	S	R	>64	4	>64	0.125	2	0.008	32	1	0.03	NA
+B51	Escherichia coli (ESBL+)	S	R	R	R	S	NA	R	R	S	S	S	S	R	>64	8	>64	32	4	>4	8	>64	0.0625	NA
+B52	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	2	>64	0.125	4	0.008	0.0625	0.5	0.0625	NA
+B53	Escherichia coli	S	S	S	S	S	NA	S	R	NA	S	S	S	R	>64	2	>64	0.0625	2	0.008	32	>64	0.0625	NA
+B54	Escherichia coli (ESBL+)	R	S	R	R	S	S	R	S	S	S	S	S	R	>64	8	>64	16	2	>4	8	4	0.0625	NA
+B55	Escherichia coli (ESBL+)	R	S	R	R	S	S	S	S	S	S	S	S	R	>64	2	>64	4	4	0.008	8	0.5	0.0625	NA
+B57	Escherichia coli (ESBL+)	S	S	S	R	S	S	R	R	S	S	S	S	R	>64	2	>64	64	>64	0.25	1	64	0.0625	NA
+B58	Escherichia coli	S	S	S	S	S	NA	S	R	NA	S	S	S	R	>64	2	>64	0.0625	2	0.0625	<0.03	>64	0.03	NA
+B59	Escherichia coli	S	S	R	R	S	S	R	S	S	S	S	S	R	NA	4	NA	NA	4	>4	16	2	0.0625	NA
+B60	Escherichia coli (ESBL+)	S	S	R	R	S	NA	S	R	S	S	S	S	R	>64	4	>64	16	4	0.008	8	>64	0.0625	NA
+B61	Escherichia coli	NA	S	R	R	S	S	R	S	S	S	S	S	R	32	4	4	0.125	2	>4	<0.03	2	0.03	NA
+B63	Escherichia coli	R	S	S	S	S	NA	R	S	NA	S	S	S	R	>64	4	>64	0.25	4	0.5	0.125	1	0.0625	NA
+B64	Escherichia coli (ESBL+)	S	S	R	R	S	S	R	S	S	S	S	S	R	>64	4	>64	8	4	>4	4	2	0.0625	NA
+B65	Escherichia coli	I	S	S	S	S	NA	S	R	NA	S	S	S	R	>64	2	>64	0.125	8	0.008	0.0625	>64	0.03	NA
+B66	Escherichia coli	R	S	R	R	S	S	S	S	S	S	S	S	R	>64	2	>64	0.5	2	0.008	<0.03	1	0.03	NA
+B67	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	2	>64	0.25	4	0.008	0.0625	1	0.03	NA
+B69	Escherichia coli	R	R	R	R	R	NA	S	S	NA	S	S	S	R	>64	4	>64	8	4	0.008	0.125	2	0.03	NA
+B70	Escherichia coli	S	S	S	S	S	NA	R	S	NA	S	S	S	S	8	4	8	0.125	2	>4	<0.03	2	0.0625	NA
+B71	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	4	>64	1	2	0.008	0.125	2	0.0625	NA
+B72	Escherichia coli	S	S	S	S	S	NA	S	R	NA	S	S	S	R	>64	4	>64	0.125	2	0.0625	16	>64	0.0625	NA
+B73	Escherichia coli (ESBL+)	S	S	R	R	S	S	R	S	S	S	S	S	R	>64	2	>64	8	1	>4	8	0.5	0.03	NA
+B74	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	NA	2	NA	NA	2	0.008	NA	1	0.0625	NA
+B75	Escherichia coli	R	S	R	R	R	S	S	S	S	S	S	S	R	>64	4	>64	2	2	0.008	0.125	2	0.03	NA
+B77	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	8	4	8	0.125	2	0.125	0.0625	2	0.0625	NA
+B80	Escherichia coli (ESBL+)	R	R	R	R	S	S	R	R	I	S	S	S	R	>64	32	>64	64	64	>4	8	>64	0.0625	NA
+B81	Escherichia coli	S	S	S	S	S	NA	S	R	NA	S	S	S	R	>64	NA	>64	0.0625	NA	NA	<0.03	NA	0.015	NA
+C1	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	NA	>64	0.125	NA	NA	<0.03	NA	NA	NA
+C2	Escherichia coli (ESBL+)	S	S	R	R	S	S	S	S	S	S	S	S	R	>64	4	>64	0.5	16	>4	2	>64	0.03	NA
+C3	Escherichia coli	R	S	S	S	S	NA	R	R	NA	S	S	S	R	>64	2	>64	0.125	>64	>4	0.125	>64	0.0625	NA
+C9	Escherichia coli	S	S	S	S	S	NA	S	R	NA	S	S	S	R	>64	2	>64	0.25	2	0.0625	0.0625	>64	0.0625	NA
+C10	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	4	4	8	0.125	4	>4	<0.03	>64	0.0625	NA
+C11	Escherichia coli	S	S	S	S	S	NA	S	R	NA	S	S	S	R	>64	2	>64	0.125	2	>4	0.0625	>64	0.0625	NA
+C12	Escherichia coli	S	S	R	S	R	NA	S	S	NA	R	S	S	R	>64	2	>64	0.5	32	0.0625	0.5	1	0.0625	NA
+C13	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	4	4	8	0.125	4	0.008	<0.03	2	0.0625	NA
+C16	Escherichia coli	S	S	S	S	S	NA	S	R	NA	S	S	S	R	>64	4	>64	0.25	>64	>4	0.0625	>64	0.0625	NA
+C18	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	4	2	8	0.125	2	0.0625	<0.03	64	NA	NA
+C19	Escherichia coli	S	S	S	S	S	NA	R	R	NA	S	S	S	R	>64	4	>64	0.25	4	>4	32	>64	0.0625	NA
+C20	Escherichia coli (ESBL+)	R	S	R	R	S	NA	R	R	NA	S	S	S	R	>64	8	>64	32	2	>4	8	>64	0.0625	NA
+C22	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	4	4	8	NA	8	0.03	NA	2	0.0625	NA
+C23	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	NA	2	NA	NA	4	0.008	NA	2	0.03	NA
+C24	Escherichia coli	S	S	S	S	S	NA	R	R	NA	S	S	S	R	>64	4	>64	0.125	4	>4	0.0625	>64	0.03	NA
+C25	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	4	4	8	0.0625	4	0.008	<0.03	2	0.03	NA
+C28	Escherichia coli (ESBL+)	R	S	R	R	S	S	R	R	S	S	S	S	R	>64	8	>64	16	4	>4	8	>64	0.0625	NA
+C29	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	4	>64	0.125	4	0.008	0.0625	2	0.03	NA
+C30	Escherichia coli	R	S	S	S	S	NA	R	S	NA	S	S	S	R	>64	2	>64	1	4	>4	0.5	1	0.0625	NA
+C31	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	2	>64	0.125	2	0.008	0.0625	1	0.0625	NA
+C32	Escherichia coli (ESBL+)	R	S	R	R	S	S	R	R	S	S	S	S	R	>64	8	>64	16	2	>4	8	>64	0.0625	NA
+C33	Escherichia coli	R	S	S	S	S	NA	R	R	NA	S	S	S	R	>64	2	>64	0.5	4	>4	0.125	64	0.0625	NA
+C34	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	4	2	8	0.25	2	0.25	<0.03	1	0.0625	NA
+C36	Escherichia coli	R	S	S	S	S	S	R	R	S	S	S	S	R	>64	8	64	0.25	8	>4	0.25	>64	0.03	NA
+C37	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	4	>64	0.125	4	0.008	0.0625	2	0.03	NA
+C38	Escherichia coli (ESBL+)	S	S	R	R	S	S	R	S	S	S	S	S	R	>64	4	>64	4	2	>4	2	2	0.0625	NA
+C44	Escherichia coli	S	S	S	S	S	NA	S	R	NA	S	S	S	R	>64	4	>64	0.125	4	0.008	<0.03	>64	0.03	NA
+C45	Escherichia coli	S	S	S	S	S	NA	S	R	NA	S	S	S	R	>64	4	>64	0.0625	4	0.125	>64	>64	0.03	NA
+C46	Escherichia coli (ESBL+)	S	S	R	R	S	S	R	R	S	S	S	S	R	>64	16	>64	64	4	>4	64	>64	0.0625	NA
+C47	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	2	>64	0.125	2	0.008	<0.03	1	0.0625	NA
+C49	Escherichia coli	R	S	R	R	S	NA	R	S	NA	S	S	S	R	>64	16	>64	8	2	>4	1	4	0.0625	NA
+C50	Escherichia coli	R	S	S	S	S	NA	S	S	NA	R	S	S	R	>64	8	>64	1	4	0.008	0.125	2	0.03	NA
+C53	Escherichia coli	S	S	S	S	S	NA	R	R	NA	R	S	S	R	NA	2	NA	NA	4	>4	NA	>64	0.03	NA
+C54	Escherichia coli	S	S	S	S	S	NA	R	S	NA	S	S	S	S	4	4	8	0.25	2	0.125	<0.03	1	0.0625	NA
+C55	Escherichia coli	S	S	S	S	S	NA	R	R	NA	S	S	S	R	>64	4	>64	0.25	4	>4	<0.03	>64	0.0625	NA
+C57	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	4	>64	0.125	1	0.008	<0.03	1	0.03	NA
+C58	Escherichia coli (ESBL+)	R	I	R	R	S	S	R	R	I	S	S	S	R	>64	8	>64	>64	4	2	>64	>64	0.0625	NA
+C59	Escherichia coli (ESBL+)	R	R	R	R	S	S	R	S	S	S	S	S	R	>64	8	>64	32	1	>4	16	2	0.0625	NA
+C60	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	8	2	4	0.125	2	0.015	<0.03	1	0.0625	NA
+C61	Escherichia coli (ESBL+)	S	S	R	R	S	S	S	R	S	S	S	S	R	>64	4	>64	8	2	0.0625	8	>64	0.0625	NA
+C63	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	2	>64	0.125	2	0.008	<0.03	1	0.03	NA
+C65	Escherichia coli	S	S	S	S	S	NA	S	R	NA	S	S	S	R	>64	4	>64	0.25	2	0.125	0.0625	>64	0.0625	NA
+C66	Escherichia coli	S	S	S	S	S	NA	S	R	NA	S	S	S	R	>64	2	>64	0.125	2	0.008	<0.03	64	0.0625	NA
+C68	Escherichia coli (ESBL+)	S	S	R	R	S	S	S	S	S	S	S	S	R	>64	2	>64	32	2	0.25	32	1	0.0625	NA
+C69	Escherichia coli	R	S	R	R	S	S	S	S	S	S	S	S	R	>64	4	>64	1	4	0.008	0.0625	2	0.0625	NA
+C70	Escherichia coli (ESBL+)	S	S	R	R	S	S	S	S	S	S	S	S	R	>64	2	>64	16	1	0.015	8	1	0.0625	NA
+C72	Escherichia coli (ESBL+)	R	S	R	R	S	S	R	R	S	S	S	S	R	>64	8	>64	32	2	>4	16	64	0.0625	NA
+C73	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	2	>64	0.5	2	0.008	0.0625	0.5	0.0625	NA
+C75	Escherichia coli	S	S	S	S	S	NA	R	R	NA	S	S	S	R	>64	4	>64	0.25	2	>4	0.125	>64	0.0625	NA
+C76	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	4	4	4	0.125	2	0.008	<0.03	1	0.03	NA
+C79	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	4	>64	0.125	2	0.008	0.0625	1	0.0625	NA
+C81	Escherichia coli	S	S	S	S	S	NA	R	R	NA	S	S	S	R	>64	NA	>64	0.25	NA	NA	<0.03	NA	NA	NA
+D1	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	4	2	4	0.125	1	0.008	<0.03	NA	0.008	NA
+D4	Escherichia coli	R	R	R	R	R	S	S	S	S	S	S	S	R	>64	2	>64	0.5	4	0.008	<0.03	1	0.0625	NA
+D8	Escherichia coli	R	I	R	S	R	S	R	S	S	S	S	S	R	NA	4	NA	NA	4	0.5	NA	2	0.0625	NA
+D9	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	4	2	4	0.0625	1	0.0625	<0.03	1	0.03	NA
+D10	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	4	2	4	0.125	2	0.008	<0.03	1	0.0625	NA
+D11	Escherichia coli (ESBL+)	R	I	R	R	S	NA	R	R	S	S	S	S	R	>64	8	>64	16	4	>4	16	64	0.0625	NA
+D13	Escherichia coli	R	S	S	S	S	NA	R	R	NA	S	S	S	R	>64	8	>64	0.25	2	>4	0.25	64	0.0625	NA
+D14	Escherichia coli (ESBL+)	R	S	R	R	S	S	R	S	S	S	S	S	R	>64	16	>64	2	2	>4	2	4	0.0625	NA
+D15	Escherichia coli (ESBL+)	S	S	R	R	S	S	R	S	S	S	S	S	R	>64	4	>64	8	2	>4	2	2	0.0625	NA
+D16	Escherichia coli	R	S	R	R	R	S	S	S	S	S	S	S	R	>64	2	>64	8	2	0.008	0.0625	2	0.0625	NA
+D19	Escherichia coli	R	S	R	S	S	NA	S	S	NA	S	S	S	R	>64	4	>64	0.25	4	0.125	0.125	2	0.0625	NA
+D20	Escherichia coli	R	S	S	S	S	NA	R	R	NA	S	S	S	R	>64	2	>64	0.5	32	>4	0.25	32	0.0625	NA
+D21	Escherichia coli	R	S	R	R	S	NA	S	S	NA	S	S	S	R	>64	8	>64	0.5	1	0.008	<0.03	2	0.0625	NA
+D22	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	NA	64	0.5	NA	NA	0.0625	NA	NA	NA
+D23	Escherichia coli (ESBL+)	R	S	R	R	S	NA	R	S	NA	S	S	S	R	>64	16	>64	8	4	>4	4	4	0.0625	NA
+D24	Escherichia coli	R	S	S	S	S	NA	R	R	NA	S	S	S	R	>64	4	>64	0.25	4	0.25	0.125	>64	0.03	NA
+D26	Escherichia coli	R	R	R	R	S	NA	R	S	R	NA	S	S	R	>64	NA	>64	>64	NA	NA	>64	NA	NA	NA
+D28	Escherichia coli	R	S	S	S	S	NA	S	S	S	NA	S	S	R	>64	2	>64	0.125	2	0.008	<0.03	1	0.0625	NA
+D29	Escherichia coli	R	R	R	R	R	NA	S	S	S	NA	S	S	R	>64	NA	>64	4	NA	NA	0.125	NA	NA	NA
+D30	Escherichia coli	R	S	S	S	S	NA	S	S	S	NA	S	S	R	>64	4	>64	0.125	4	0.03	<0.03	2	0.03	NA
+D31	Escherichia coli	R	R	S	S	S	NA	S	S	S	NA	S	S	R	>64	4	>64	0.5	4	0.008	0.125	2	0.0625	NA
+D32	Escherichia coli	S	S	S	S	S	NA	S	R	S	NA	S	S	R	>64	2	>64	0.125	2	0.008	<0.03	64	0.015	NA
+D34	Escherichia coli (ESBL+)	R	I	R	R	S	NA	R	S	S	S	S	S	R	>64	8	>64	32	2	>4	>64	4	0.0625	NA
+D35	Escherichia coli	R	S	S	S	S	NA	S	R	S	NA	S	S	R	>64	4	>64	0.25	4	0.125	0.0625	>64	0.0625	NA
+D36	Escherichia coli	S	S	S	S	S	NA	S	S	S	NA	S	S	S	4	2	4	0.03	1	0.008	<0.03	1	0.03	NA
+D38	Escherichia coli	S	S	S	S	S	NA	S	R	S	NA	S	S	R	>64	2	>64	0.0625	2	0.0625	<0.03	>64	0.0625	NA
+D39	Escherichia coli	S	S	S	S	S	NA	S	S	S	NA	S	S	S	4	4	4	0.25	2	0.008	<0.03	1	0.0625	NA
+D41	Escherichia coli	R	S	S	S	S	NA	S	S	S	NA	S	S	R	>64	4	>64	0.125	2	0.008	<0.03	2	0.03	NA
+D42	Escherichia coli	S	S	S	S	S	NA	S	S	S	NA	S	S	S	4	4	4	0.0625	2	0.008	<0.03	1	0.0625	NA
+D43	Escherichia coli	R	S	S	S	S	NA	S	S	S	NA	S	S	R	>64	4	>64	0.0625	4	0.008	<0.03	2	0.03	NA
+D46	Escherichia coli	R	S	R	R	R	NA	S	S	S	NA	S	S	R	64	4	64	0.5	>64	0.008	0.0625	2	0.0625	NA
+D47	Escherichia coli	R	S	S	S	S	NA	S	S	S	NA	S	S	R	>64	2	>64	0.125	4	0.008	0.0625	1	0.0625	NA
+D48	Escherichia coli	S	S	S	S	S	NA	S	S	S	NA	S	S	R	>64	2	>64	0.0625	1	0.008	<0.03	1	0.03	NA
+D49	Escherichia coli	R	S	S	S	S	NA	S	S	S	NA	S	S	R	>64	2	>64	0.125	2	0.008	0.25	2	0.0625	NA
+D50	Escherichia coli	R	S	R	R	R	NA	S	S	S	S	S	S	R	>64	4	>64	0.5	2	0.008	<0.03	1	0.0625	NA
+D51	Escherichia coli	R	S	S	S	S	NA	S	S	S	NA	S	S	R	>64	4	>64	0.125	4	0.008	0.0625	2	0.0625	NA
+D55	Escherichia coli	R	S	S	S	S	NA	S	S	S	NA	S	S	R	>64	16	>64	0.125	2	0.008	0.0625	8	0.0625	NA
+D56	Escherichia coli	R	S	R	R	R	NA	S	S	S	NA	S	S	R	>64	2	>64	8	2	0.008	0.125	1	0.03	NA
+D57	Escherichia coli	S	S	S	S	S	NA	I	S	S	NA	S	S	R	>64	4	>64	0.125	4	0.25	<0.03	2	0.0625	NA
+D58	Escherichia coli	R	S	S	S	S	NA	S	S	S	NA	S	S	R	>64	2	>64	0.125	2	0.008	0.0625	1	0.03	NA
+D62	Escherichia coli	S	S	S	S	S	NA	S	S	S	S	S	S	S	8	4	8	0.0625	2	0.008	<0.03	1	0.03	NA
+D63	Escherichia coli	R	S	S	S	S	NA	R	R	S	NA	S	S	R	>64	16	>64	0.25	2	>4	1	64	0.0625	NA
+D64	Escherichia coli	S	S	S	S	S	NA	S	S	S	NA	S	S	S	4	2	4	0.125	2	0.008	<0.03	1	0.03	NA
+D65	Escherichia coli (ESBL+)	R	S	R	R	S	NA	R	S	S	NA	S	S	R	>64	8	>64	32	4	>4	32	4	0.0625	NA
+D66	Escherichia coli	R	S	S	S	S	NA	S	S	S	NA	S	S	R	>64	4	>64	0.25	2	0.008	0.125	2	0.0625	NA
+D67	Escherichia coli	R	S	S	S	S	NA	S	S	S	NA	S	S	R	>64	4	>64	0.25	4	0.008	0.125	1	0.0625	NA
+D69	Escherichia coli (ESBL+)	R	I	R	R	R	NA	R	R	S	S	S	S	R	>64	16	>64	64	2	>4	>64	>64	0.0625	NA
+D71	Escherichia coli (ESBL+)	S	S	R	R	S	NA	S	S	S	NA	S	S	R	>64	4	>64	32	2	0.125	32	2	0.0625	NA
+D73	Escherichia coli (ESBL+)	R	S	R	R	S	NA	R	S	S	NA	S	S	R	>64	8	>64	64	8	>4	>64	8	0.0625	NA
+D75	Escherichia coli (CARB+)	R	R	R	R	R	NA	S	S	S	S	I	R	R	>64	2	>64	64	4	0.0625	>64	0.5	4	NA
+D77	Escherichia coli (CARB+)	R	R	R	R	R	NA	S	S	S	S	R	R	R	>64	16	>64	>64	>64	0.125	4	32	0.5	NA
+D78	Escherichia coli	R	S	S	S	S	NA	R	R	S	NA	S	S	R	>64	4	>64	8	2	>4	0.0625	>64	0.03	NA
+D79	Escherichia coli	R	S	S	S	S	NA	S	S	S	S	S	S	R	>64	2	>64	0.25	2	0.008	<0.03	0.5	0.03	NA
+D80	Escherichia coli	S	S	R	R	S	NA	R	S	S	NA	S	S	R	>64	4	>64	4	4	>4	4	2	0.0625	NA
+D81	Escherichia coli (ESBL+)	R	S	R	R	S	NA	R	S	S	NA	S	S	R	>64	8	>64	16	2	>4	16	4	0.0625	NA
+E1	Escherichia coli	R	S	S	S	S	NA	S	R	S	NA	S	S	R	>64	2	>64	0.125	2	0.125	<0.03	>64	0.03	NA
+E3	Escherichia coli (CARB+)	R	R	S	S	S	NA	S	S	S	NA	R	NA	R	>64	4	>64	0.125	32	0.125	0.125	1	0.5	NA
+E4	Escherichia coli	R	S	R	S	R	NA	S	S	S	NA	S	S	R	>64	4	>64	0.25	2	0.008	0.0625	2	4	NA
+E5	Escherichia coli (ESBL+)	S	NA	R	R	S	S	R	S	NA	S	S	S	R	>64	2	>64	32	2	>4	64	1	0.0625	NA
+E6	Escherichia coli (ESBL+)	R	NA	R	R	S	S	R	R	NA	S	S	S	R	>64	16	>64	32	2	>4	>64	NA	0.0625	NA
+E7	Escherichia coli (ESBL+)	R	NA	R	R	S	S	R	R	S	S	S	S	R	>64	16	>64	64	4	>4	>64	>64	0.0625	NA
+E8	Escherichia coli (ESBL+)	R	NA	R	R	S	S	S	S	S	S	S	S	R	>64	4	>64	2	4	0.008	32	2	0.0625	NA
+E9	Escherichia coli	S	S	S	S	S	S	S	S	NA	S	S	S	S	8	8	8	0.25	2	0.008	<0.03	4	0.0625	NA
+E10	Escherichia coli (ESBL+)	R	NA	R	R	S	S	R	S	NA	S	S	S	R	>64	4	>64	0.5	1	0.25	4	2	0.0625	NA
+E11	Escherichia coli	R	NA	R	R	R	S	S	S	NA	S	S	S	R	>64	2	>64	0.5	2	0.008	<0.03	1	0.0625	NA
+E12	Escherichia coli (ESBL+)	R	NA	R	R	S	S	R	R	S	S	S	S	R	>64	8	>64	16	2	>4	16	64	0.0625	NA
+E13	Escherichia coli	S	NA	S	S	S	S	S	S	NA	S	S	S	S	4	NA	8	0.125	NA	NA	<0.03	NA	NA	NA
+E15	Escherichia coli	R	S	S	S	S	S	R	R	NA	S	S	S	R	>64	2	>64	0.125	4	0.5	0.0625	>64	0.03	NA
+E16	Escherichia coli	R	NA	R	R	S	S	R	S	NA	S	S	S	R	>64	8	>64	16	2	>4	16	4	0.0625	NA
+E17	Escherichia coli	S	NA	S	S	S	S	R	R	NA	S	S	S	R	NA	2	>64	0.125	1	>4	<0.03	>64	0.03	NA
+E18	Escherichia coli (ESBL+)	S	NA	R	R	S	S	R	S	NA	S	S	S	R	>64	2	>64	32	2	>4	>64	2	0.0625	NA
+E19	Escherichia coli (ESBL+)	S	NA	R	R	S	S	R	S	NA	S	S	S	R	16	4	8	0.25	4	>4	0.0625	2	0.03	NA
+E20	Escherichia coli	R	NA	S	S	S	S	S	S	NA	S	S	S	R	>64	2	>64	0.25	>64	0.008	0.25	1	0.0625	NA
+E21	Escherichia coli	S	NA	S	S	S	S	S	S	NA	S	S	S	R	>64	2	>64	0.0625	2	0.008	<0.03	1	0.03	NA
+E22	Escherichia coli	S	NA	R	S	S	S	R	S	NA	S	S	S	R	>64	4	>64	0.25	2	0.25	0.0625	2	0.03	NA
+E24	Escherichia coli	R	NA	S	S	S	S	S	S	NA	S	S	S	R	>64	2	>64	0.125	2	0.008	0.125	2	0.03	NA
+E25	Escherichia coli	R	NA	R	S	S	S	S	S	NA	S	S	S	R	64	2	64	0.5	2	0.008	<0.03	1	0.03	NA
+E29	Escherichia coli	R	NA	R	R	S	S	R	S	NA	S	S	S	R	>64	4	>64	32	4	>4	8	2	0.0625	NA
+E30	Escherichia coli	R	S	S	S	S	NA	R	R	NA	S	S	S	R	>64	2	>64	0.25	2	>4	0.0625	>64	0.0625	NA
+E31	Escherichia coli	R	S	R	R	R	NA	S	S	NA	S	S	S	R	64	4	64	0.5	2	0.008	<0.03	2	0.03	NA
+E33	Escherichia coli (ESBL+)	R	I	R	R	S	S	R	R	S	S	S	R	R	>64	4	>64	64	4	>4	>64	>64	0.0625	NA
+E34	Escherichia coli	R	S	S	S	S	NA	S	R	NA	S	S	S	R	>64	2	>64	0.25	2	0.125	0.0625	>64	0.0625	NA
+E39	Escherichia coli	S	S	S	S	S	S	R	R	S	S	S	S	R	>64	2	>64	0.125	2	>4	<0.03	>64	0.03	NA
+E40	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	4	2	8	0.125	2	0.008	<0.03	1	0.03	NA
+E41	Escherichia coli	S	S	S	S	S	NA	S	R	NA	S	S	S	R	>64	2	>64	0.125	2	0.008	0.0625	>64	0.03	NA
+E42	Escherichia coli	R	S	R	S	R	NA	R	S	NA	S	S	S	R	>64	2	>64	0.25	4	>4	0.0625	2	0.03	NA
+E43	Escherichia coli (ESBL+)	R	S	R	R	S	NA	S	S	NA	S	S	S	R	>64	NA	>64	64	NA	NA	>64	NA	NA	NA
+E44	Escherichia coli	R	NA	S	S	S	NA	R	S	NA	S	S	S	R	>64	4	>64	0.25	>64	>4	4	2	0.0625	NA
+E46	Escherichia coli (ESBL+)	S	S	R	R	S	NA	S	S	NA	S	S	S	R	>64	<0.03	>64	2	<0.03	0.008	2	<0.125	<0.004	NA
+E47	Escherichia coli	R	S	S	S	S	NA	R	S	NA	S	S	S	R	>64	4	>64	0.25	4	>4	0.0625	2	0.0625	NA
+E49	Escherichia coli (ESBL+)	R	I	R	R	S	S	R	R	S	S	S	S	R	>64	4	>64	64	4	>4	>64	>64	0.0625	NA
+E50	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	2	>64	0.25	2	0.008	<0.03	1	0.015	NA
+E51	Escherichia coli (CARB+)	R	R	R	R	S	S	S	S	S	S	S	R	R	>64	2	>64	0.5	>64	0.25	4	2	0.25	NA
+E52	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	4	>64	0.125	2	0.008	0.0625	4	0.03	NA
+E53	Escherichia coli	R	S	S	S	R	NA	S	S	NA	S	S	S	R	>64	2	>64	0.0625	2	0.015	<0.03	1	0.0625	NA
+E54	Escherichia coli	R	S	R	S	S	NA	R	S	NA	S	S	S	R	>64	4	>64	0.25	8	1	0.125	2	0.03	NA
+E55	Escherichia coli	S	S	S	S	S	NA	S	R	NA	S	S	S	R	>64	2	>64	0.0625	2	0.008	<0.03	>64	0.0625	NA
+E56	Escherichia coli (ESBL+)	R	R	R	R	S	S	R	R	S	S	S	S	R	>64	8	>64	64	4	>4	>64	>64	0.0625	NA
+E57	Escherichia coli (ESBL+)	S	R	R	R	S	S	S	S	S	S	S	S	R	>64	2	>64	32	4	0.25	32	1	0.0625	NA
+E59	Escherichia coli	S	S	S	S	S	NA	S	R	S	NA	S	S	R	>64	2	>64	0.125	2	0.008	<0.03	>64	0.03	NA
+E61	Escherichia coli (ESBL+)	R	S	R	R	S	S	R	R	S	S	S	S	R	>64	4	>64	16	4	>4	64	>64	0.0625	NA
+E62	Escherichia coli	S	NA	S	S	S	S	S	R	NA	S	S	S	R	>64	4	>64	0.0625	2	0.008	<0.03	>64	0.03	NA
+E63	Escherichia coli (ESBL+)	R	NA	S	R	S	S	R	S	NA	S	S	S	R	>64	8	>64	1	2	>4	2	2	0.0625	NA
+E64	Escherichia coli	R	S	S	S	S	S	R	R	NA	S	S	S	R	>64	4	>64	0.25	2	>4	0.125	>64	0.0625	NA
+E65	Escherichia coli	S	NA	S	S	S	S	R	R	NA	S	S	S	R	>64	4	>64	0.5	8	0.25	0.125	>64	0.0625	NA
+E66	Escherichia coli	R	NA	S	S	S	S	R	R	NA	S	S	S	R	>64	4	>64	0.125	2	>4	0.125	>64	0.0625	NA
+E67	Escherichia coli	R	NA	S	S	S	S	S	S	NA	S	S	S	R	>64	4	>64	2	2	0.008	0.5	2	0.03	NA
+E68	Escherichia coli (ESBL+)	R	NA	R	R	S	S	S	S	NA	S	S	S	R	>64	2	>64	64	4	0.25	32	2	0.0625	NA
+E69	Escherichia coli	R	NA	R	R	R	S	S	S	NA	S	S	S	R	>64	2	>64	2	>64	0.0625	<0.03	2	0.0625	NA
+E70	Escherichia coli	R	NA	S	S	S	S	R	S	NA	S	S	S	R	>64	8	>64	0.125	2	>4	0.5	2	0.03	NA
+E71	Escherichia coli (ESBL+)	S	NA	R	R	R	S	R	R	S	S	S	I	R	NA	NA	NA	NA	<0.03	NA	NA	NA	NA	NA
+E72	Escherichia coli (ESBL+)	S	NA	R	R	S	S	R	S	NA	S	S	S	R	>64	4	>64	2	2	>4	4	2	0.0625	NA
+E73	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	4	>64	0.25	16	0.008	0.25	2	0.03	NA
+E74	Escherichia coli	R	S	R	R	R	NA	S	S	NA	S	S	S	R	>64	4	>64	16	4	0.125	0.125	2	0.0625	NA
+E75	Escherichia coli	R	S	R	R	R	NA	S	S	NA	S	S	S	R	>64	4	>64	2	32	0.125	0.125	4	0.0625	NA
+E76	Escherichia coli (ESBL+)	R	S	R	R	S	NA	S	S	NA	S	S	S	R	>64	4	>64	32	4	0.008	32	2	NA	NA
+E77	Escherichia coli (ESBL+)	R	S	R	R	S	NA	R	S	NA	S	S	S	R	>64	16	>64	>64	2	>4	>64	4	0.0625	NA
+E78	Escherichia coli (ESBL+)	S	S	R	R	S	S	R	S	NA	S	S	S	R	>64	8	>64	2	2	>4	2	4	0.03	NA
+E79	Escherichia coli (ESBL+)	S	S	R	R	S	NA	R	S	NA	S	S	S	R	>64	4	>64	8	4	>4	2	2	0.03	NA
+E80	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	4	>64	0.125	2	0.125	0.125	2	0.03	NA
+E81	Escherichia coli (ESBL+)	I	S	R	R	S	NA	R	R	NA	S	S	S	R	>64	4	>64	32	2	>4	32	>64	0.0625	NA
+F1	Escherichia coli	R	I	R	R	S	NA	S	S	NA	S	S	S	R	64	1	>64	0.5	2	0.008	0.5	0.5	0.0625	NA
+F2	Escherichia coli (ESBL+)	R	I	R	R	S	NA	S	S	NA	S	S	S	R	>64	2	>64	4	2	0.008	32	2	0.03	NA
+F3	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	2	>64	0.25	2	0.008	0.125	2	0.0625	NA
+F4	Escherichia coli (ESBL+)	R	I	R	R	S	S	R	R	S	S	S	S	R	>64	16	>64	64	2	>4	>64	>64	0.0625	NA
+F5	Escherichia coli (ESBL+)	S	S	R	R	S	S	R	S	NA	S	S	S	R	>64	2	>64	64	2	>4	>64	2	0.0625	NA
+F6	Escherichia coli (ESBL+)	R	I	R	R	S	S	R	R	NA	S	S	S	R	>64	8	>64	32	2	>4	>64	>64	0.0625	NA
+F7	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	4	2	4	0.125	4	0.008	<0.03	2	0.03	NA
+F8	Escherichia coli	R	S	R	R	S	NA	S	S	NA	S	S	S	R	>64	2	>64	0.25	2	0.008	<0.03	2	0.0625	NA
+F9	Escherichia coli (ESBL+)	R	S	R	R	S	NA	R	S	NA	S	S	S	R	>64	16	>64	32	2	>4	32	4	0.0625	NA
+F10	Escherichia coli	R	I	S	S	S	NA	R	R	NA	S	S	S	R	>64	4	>64	0.5	>64	>4	2	64	0.0625	NA
+F11	Escherichia coli (ESBL+)	R	I	R	R	S	NA	R	S	NA	S	S	S	R	>64	2	>64	32	2	>4	>64	2	0.0625	NA
+F13	Escherichia coli	R	I	S	S	S	NA	S	S	NA	S	S	S	R	>64	8	>64	8	2	0.008	1	4	0.03	NA
+F14	Escherichia coli (ESBL+)	R	S	R	R	S	NA	R	R	NA	S	S	S	R	>64	8	>64	32	2	>4	>64	>64	0.0625	NA
+F15	Escherichia coli (ESBL+)	R	S	R	R	S	NA	R	S	NA	S	S	S	R	>64	8	>64	32	2	>4	32	4	0.0625	NA
+F18	Escherichia coli	R	R	R	R	R	NA	S	S	NA	S	S	S	R	>64	2	>64	4	2	0.008	0.125	1	0.03	NA
+F19	Escherichia coli	S	S	S	S	S	NA	S	S	S	NA	S	S	R	>64	4	>64	0.0625	8	0.008	<0.03	2	0.03	NA
+F20	Escherichia coli (ESBL+)	R	S	R	R	R	NA	R	R	NA	S	S	S	R	>64	8	>64	>64	8	>4	>64	>64	0.0625	NA
+F23	Escherichia coli	R	S	R	R	S	NA	S	S	NA	S	S	S	R	4	4	4	0.125	2	0.008	<0.03	2	0.03	NA
+F25	Escherichia coli	R	R	R	R	R	NA	S	S	NA	S	S	S	R	>64	2	>64	2	4	0.008	0.0625	2	0.0625	NA
+F27	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	4	2	4	0.125	2	0.5	<0.03	2	0.03	NA
+F28	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	4	4	4	0.0625	2	0.008	<0.03	2	0.03	NA
+F32	Escherichia coli (ESBL+)	S	S	R	R	S	NA	R	R	NA	S	S	S	R	>64	8	>64	32	2	>4	64	>64	0.0625	NA
+F34	Escherichia coli	R	S	S	S	S	NA	S	R	NA	S	S	S	R	>64	2	>64	0.125	8	0.125	0.5	16	0.03	NA
+F35	Escherichia coli	S	S	R	R	S	NA	S	S	NA	S	S	S	R	>64	2	>64	2	8	0.125	8	1	0.0625	NA
+F36	Escherichia coli (CARB+)	R	R	R	R	R	NA	S	S	S	S	R	R	R	4	4	4	0.25	2	0.008	<0.03	2	0.0625	NA
+F37	Escherichia coli (CARB+)	R	R	R	R	R	NA	S	S	S	S	R	R	R	NA	2	>64	0.5	2	0.008	4	8	0.5	NA
+F38	Escherichia coli (CARB+)	R	R	S	S	R	NA	S	S	S	S	R	R	R	NA	1	>64	0.25	1	0.008	0.25	0.25	1	NA
+F39	Escherichia coli (CARB+)	R	R	S	S	S	NA	S	S	S	S	R	R	R	NA	4	>64	0.125	2	0.008	0.125	2	0.5	NA
+F40	Escherichia coli (CARB+)	R	R	S	S	S	NA	S	S	S	S	R	NA	R	NA	4	>64	0.125	2	0.008	0.25	2	0.5	NA
+F41	Escherichia coli	NA	S	NA	NA	S	NA	R	S	S	NA	S	S	NA	NA	4	8	0.25	2	>4	0.0625	2	0.03	NA
+F42	Escherichia coli (CARB+)	R	R	R	R	R	NA	S	S	S	S	R	R	R	NA	1	64	0.03	1	0.008	0.125	0.25	0.008	NA
+F44	Escherichia coli (CARB+)	R	R	S	S	S	NA	S	S	S	S	R	R	R	NA	1	>64	0.5	4	0.008	0.25	1	0.5	NA
+F45	Escherichia coli (CARB+)	R	R	R	R	R	NA	S	S	S	S	R	R	R	NA	0.5	>64	1	2	0.008	1	0.25	2	NA
+F46	Escherichia coli (CARB+)	R	R	S	S	S	NA	S	S	S	S	R	I	R	NA	2	>64	0.5	4	0.008	0.5	2	1	NA
+F47	Escherichia coli (CARB+)	R	R	S	S	S	NA	S	S	S	S	R	R	R	NA	2	>64	0.25	4	0.008	0.125	2	0.5	NA
+F48	Escherichia coli (CARB+)	R	I	S	S	S	NA	S	S	S	S	R	I	R	NA	2	>64	0.125	2	0.008	0.0625	2	0.25	NA
+F49	Escherichia coli (CARB+)	R	NA	R	R	S	NA	S	S	S	S	R	R	R	NA	1	64	0.5	2	0.25	1	4	0.25	NA
+F50	Escherichia coli (CARB+)	R	R	R	S	S	NA	S	S	S	S	R	I	R	NA	NA	>64	0.125	NA	NA	0.125	NA	NA	NA
+F51	Escherichia coli (CARB+)	R	R	R	R	R	NA	S	S	S	S	R	I	R	NA	2	>64	0.25	4	0.008	0.25	2	0.5	NA
+F52	Escherichia coli (CARB+)	R	R	S	S	S	NA	S	S	S	S	R	I	R	NA	1	>64	0.0625	2	0.008	0.0625	1	0.25	NA
+F53	Escherichia coli (CARB+)	R	R	R	R	R	NA	R	R	S	S	R	R	R	NA	32	>64	>64	4	>4	>64	>64	1	NA
+F54	Escherichia coli	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	2	>64	0.25	2	>4	0.0625	>64	0.03	NA
+F55	Escherichia coli (CARB+)	R	R	S	S	S	NA	S	S	S	NA	R	I	R	NA	0.25	>64	0.25	2	0.25	0.125	1	0.5	NA
+F56	Escherichia coli (CARB+)	R	R	S	S	S	NA	S	S	S	S	R	I	R	NA	2	>64	0.25	8	0.015	0.25	2	0.5	NA
+F57	Escherichia coli (CARB+)	R	R	S	S	NA	NA	S	S	NA	NA	R	NA	R	NA	2	>64	0.125	2	0.008	0.125	1	0.5	NA
+F58	Escherichia coli (CARB+)	R	R	S	S	S	NA	S	S	S	S	R	I	R	NA	1	>64	0.125	2	0.008	0.125	1	0.5	NA
+F59	Escherichia coli (CARB+)	R	R	R	R	R	NA	NA	S	S	I	R	I	R	NA	4	>64	16	64	>4	8	2	0.5	NA
+F60	Escherichia coli (CARB+)	R	R	S	S	S	NA	S	S	S	S	R	I	R	NA	2	>64	0.125	2	0.008	0.125	2	0.5	NA
+F61	Escherichia coli (CARB+)	R	R	S	S	S	NA	S	S	S	S	R	I	R	NA	2	>64	0.25	2	0.008	0.125	1	1	NA
+F62	Escherichia coli (CARB+)	R	R	R	S	R	NA	R	S	S	S	R	I	R	NA	2	>64	0.25	4	0.25	0.125	2	0.5	NA
+F63	Escherichia coli (CARB+)	R	R	S	S	R	NA	S	S	S	I	R	I	R	NA	1	>64	0.125	1	0.008	0.125	0.5	0.25	NA
+F64	Escherichia coli (CARB+)	R	R	S	S	S	NA	S	S	S	I	R	R	R	NA	2	>64	0.125	2	0.008	0.125	2	0.5	NA
+F65	Escherichia coli (CARB+)	R	R	S	R	S	NA	I	S	S	I	R	R	R	NA	2	>64	16	2	0.25	0.5	8	0.125	NA
+F66	Escherichia coli (CARB+)	R	R	R	S	R	NA	R	S	S	S	R	I	R	NA	4	>64	1	8	2	0.5	2	0.5	NA
+F67	Escherichia coli (CARB+)	R	R	R	R	R	NA	R	S	S	S	R	R	R	NA	2	>64	NA	2	>4	0.25	2	2	NA
+F68	Escherichia coli (CARB+)	R	R	S	S	R	NA	R	S	S	S	R	I	R	NA	1	>64	0.25	>64	4	0.125	1	0.25	NA
+F69	Escherichia coli (CARB+)	R	R	R	R	R	NA	R	R	R	S	R	R	R	NA	32	>64	>64	2	>4	>64	>64	1	NA
+F70	Escherichia coli (CARB+)	R	R	R	R	R	NA	S	S	S	S	R	R	R	NA	2	>64	0.125	2	0.008	0.5	2	1	NA
+F71	Escherichia coli (CARB+)	R	R	R	S	R	NA	S	S	S	I	R	R	R	NA	2	>64	0.125	2	0.008	0.25	1	0.5	NA
+F72	Escherichia coli (CARB+)	R	NA	S	S	S	NA	S	S	S	S	R	R	R	NA	2	>64	0.25	4	0.008	0.25	2	0.5	NA
+F73	Escherichia coli (CARB+)	R	NA	S	S	S	NA	S	S	S	S	R	R	R	NA	2	>64	0.125	2	0.008	0.125	2	0.5	NA
+F74	Escherichia coli	R	S	S	S	S	NA	S	R	S	NA	S	S	R	NA	2	>64	0.25	2	0.008	0.0625	64	0.03	NA
+F76	Escherichia coli (CARB+)	R	NA	S	S	S	NA	R	S	S	S	NA	R	R	NA	2	>64	0.25	2	0.25	0.25	4	0.5	NA
+F78	Escherichia coli (CARB+)	R	NA	R	R	S	S	R	S	S	S	NA	R	R	NA	2	>64	16	2	>4	8	2	0.5	NA
+F79	Escherichia coli (CARB+)	R	NA	S	S	S	S	S	S	S	S	NA	R	R	NA	1	>64	0.125	2	0.008	0.25	1	1	NA
+F81	Escherichia coli (CARB+)	R	NA	R	R	R	S	R	S	S	R	NA	R	R	NA	2	>64	8	8	>4	0.25	1	0.5	NA
+G1	Escherichia coli (CARB+)	R	NA	S	S	S	S	S	S	S	S	NA	R	R	NA	2	>64	0.125	2	0.008	0.125	1	0.5	NA
+G2	Escherichia coli (CARB+)	R	NA	S	S	S	S	S	S	S	S	NA	R	R	NA	2	>64	0.5	2	0.008	0.25	1	0.5	NA
+G3	Escherichia coli (CARB+)	R	NA	S	S	S	S	S	S	S	S	NA	R	R	NA	1	>64	NA	4	NA	1	0.25	0.5	NA
+G4	Escherichia coli (CARB+)	R	NA	R	R	R	S	NA	S	S	S	NA	R	R	NA	2	>64	16	8	0.25	0.5	2	0.5	NA
+G5	Escherichia coli (CARB+)	R	NA	S	S	S	S	NA	S	S	S	NA	R	R	NA	2	>64	2	4	0.25	0.25	1	0.5	NA
+G6	Escherichia coli (CARB+)	R	NA	R	R	R	NA	R	R	S	S	NA	R	R	NA	2	>64	>64	8	NA	>64	>64	4	NA
+G7	Escherichia coli (CARB+)	R	NA	S	S	S	S	R	S	S	S	NA	R	R	NA	1	>64	0.125	8	0.25	0.125	0.25	1	NA
+G8	Escherichia coli (CARB+)	R	NA	R	S	R	S	S	S	S	S	NA	R	R	NA	8	>64	1	2	0.03	0.0625	4	0.125	NA
+G9	Escherichia coli (CARB+)	R	NA	S	S	S	S	S	S	S	S	NA	R	R	NA	2	>64	0.25	64	0.25	0.25	2	0.5	NA
+G10	Escherichia coli (CARB+)	R	R	R	R	S	NA	R	R	S	S	R	R	R	NA	0.5	>64	32	4	NA	16	>64	1	NA
+G12	Escherichia coli (CARB+)	R	I	S	S	S	S	S	S	NA	S	NA	R	R	NA	2	>64	0.125	2	0.008	0.25	2	0.5	NA
+G13	Escherichia coli (CARB+)	R	R	R	R	R	S	R	S	S	S	NA	R	R	NA	4	>64	1	16	>4	0.5	2	1	NA
+G14	Escherichia coli (CARB+)	R	R	R	R	S	S	S	S	S	S	NA	R	R	NA	2	>64	1	4	0.008	4	8	0.5	NA
+G18	Escherichia coli (CARB+)	R	R	R	R	R	NA	S	I	S	S	NA	R	R	NA	2	>64	0.5	4	0.008	2	8	0.5	NA
+G19	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	NA	R	R	NA	2	>64	0.5	4	0.008	0.25	2	0.5	NA
+G21	Escherichia coli (CARB+)	R	R	R	R	R	S	R	R	S	S	NA	R	R	NA	4	>64	64	16	>4	2	>64	2	NA
+G22	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	R	R	R	NA	1	>64	0.125	4	0.008	0.125	0.5	0.25	NA
+G24	Escherichia coli (CARB+)	R	R	R	R	R	S	R	R	S	S	R	R	R	NA	2	>64	0.5	>64	>4	8	32	8	NA
+G25	Escherichia coli (CARB+)	R	R	R	R	R	NA	S	S	S	S	NA	R	R	NA	2	>64	8	2	0.008	16	2	1	NA
+G26	Escherichia coli (CARB+)	R	R	R	R	S	NA	S	S	S	S	R	R	R	NA	1	>64	2	8	0.0625	4	0.5	0.25	NA
+G27	Escherichia coli (CARB+)	R	R	R	R	R	NA	S	S	S	S	NA	R	R	NA	1	>64	>64	8	0.008	64	0.5	16	NA
+G28	Escherichia coli (CARB+)	R	R	R	R	S	NA	S	S	S	S	R	R	R	NA	2	>64	0.25	4	0.008	0.5	0.5	0.5	NA
+G29	Escherichia coli (CARB+)	R	R	S	S	S	NA	S	S	S	S	NA	R	R	NA	2	>64	0.25	64	0.008	0.125	2	0.25	NA
+G30	Escherichia coli (CARB+)	R	R	R	R	NA	S	R	S	S	NA	NA	NA	R	NA	8	>64	64	4	>4	64	2	0.5	NA
+G31	Escherichia coli (CARB+)	R	R	S	S	S	NA	S	S	S	S	NA	R	R	NA	2	>64	0.125	2	0.008	0.25	2	0.5	NA
+G32	Escherichia coli (CARB+)	R	R	S	S	S	NA	S	S	S	S	NA	R	R	NA	2	>64	0.125	2	0.008	0.125	1	0.5	NA
+G33	Escherichia coli (CARB+)	R	R	S	S	S	NA	S	S	S	S	R	R	R	NA	0.25	>64	0.125	NA	NA	0.125	NA	NA	NA
+G34	Escherichia coli (CARB+)	R	R	R	R	R	NA	S	S	S	S	NA	R	R	NA	2	>64	0.5	1	0.008	1	2	2	NA
+G35	Escherichia coli (CARB+)	R	R	S	S	S	NA	S	S	S	S	NA	R	R	NA	NA	>64	0.125	NA	NA	0.25	NA	NA	NA
+G36	Escherichia coli (CARB+)	R	R	R	S	R	NA	I	S	S	S	NA	R	R	NA	1	>64	1	16	0.25	0.25	1	0.5	NA
+G37	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	NA	R	R	NA	2	>64	0.5	4	0.25	0.125	2	1	NA
+G38	Escherichia coli (CARB+)	R	S	R	R	S	NA	S	S	S	S	NA	I	R	NA	2	>64	4	2	0.008	0.5	2	1	NA
+G39	Escherichia coli (CARB+)	R	R	R	S	S	NA	S	S	S	S	R	R	R	NA	2	>64	0.25	1	0.008	0.25	0.25	1	NA
+G40	Escherichia coli (CARB+)	R	R	R	R	S	NA	S	S	S	S	NA	R	R	NA	2	>64	32	4	0.008	64	1	0.5	NA
+G41	Escherichia coli (CARB+)	R	R	R	S	R	NA	S	S	S	S	R	R	R	NA	4	>64	0.5	2	0.008	0.5	2	1	NA
+G42	Escherichia coli (CARB+)	R	R	R	R	R	NA	R	S	S	S	R	R	R	NA	4	>64	>64	8	>4	>64	2	>16	NA
+G44	Escherichia coli (CARB+)	R	R	R	R	R	NA	R	R	R	S	R	R	R	NA	>64	>64	>64	4	>4	>64	>64	>16	NA
+G45	Escherichia coli (CARB+)	R	R	NA	S	S	NA	NA	S	S	S	NA	I	R	NA	2	>64	0.0625	2	0.008	0.125	1	0.25	NA
+G47	Escherichia coli (CARB+)	R	R	R	R	R	NA	S	S	S	S	R	R	R	NA	2	>64	0.5	4	0.015	1	2	4	NA
+G48	Escherichia coli (CARB+)	R	R	R	R	R	NA	R	R	R	S	R	R	R	NA	>64	64	1	>64	>4	1	>64	>16	NA
+G49	Escherichia coli (CARB+)	R	S	S	S	R	NA	S	S	S	R	R	R	R	NA	NA	NA	NA	NA	NA	NA	NA	>16	NA
+G50	Escherichia coli (CARB+)	R	R	R	S	S	NA	S	S	S	S	R	R	R	NA	2	>64	0.25	4	0.25	0.25	1	0.5	NA
+G52	Escherichia coli (CARB+)	R	R	R	R	S	NA	R	S	S	S	NA	R	R	NA	1	NA	2	4	>4	8	NA	0.25	NA
+G53	Escherichia coli (CARB+)	R	R	R	R	R	NA	I	S	S	S	R	R	R	NA	0.5	NA	>64	1	0.125	>64	NA	16	NA
+G55	Escherichia coli	S	S	S	S	S	NA	S	R	S	S	S	S	R	NA	4	>64	>64	4	0.25	>64	>64	16	NA
+G56	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	NA	R	R	NA	2	>64	0.25	4	0.008	0.25	2	1	NA
+G57	Escherichia coli (CARB+)	R	S	S	S	S	S	S	S	S	S	NA	S	R	NA	0.5	>64	0.125	4	0.008	0.0625	0.25	0.125	NA
+G58	Escherichia coli (CARB+)	R	R	S	S	S	NA	S	S	S	S	NA	R	R	NA	4	>64	0.25	4	0.25	0.25	2	0.5	NA
+G59	Escherichia coli (CARB+)	R	I	S	S	S	S	S	S	S	S	R	R	R	NA	2	>64	0.25	4	0.25	0.125	2	0.5	NA
+G60	Escherichia coli (CARB+)	R	R	R	R	R	S	R	S	S	S	NA	NA	R	NA	2	NA	>64	2	>4	>64	NA	0.25	NA
+G61	Escherichia coli (CARB+)	R	R	R	R	R	S	R	S	S	S	NA	NA	R	NA	2	NA	>64	2	>4	>64	NA	0.125	NA
+G62	Escherichia coli (CARB+)	R	R	S	R	S	S	R	S	S	S	R	R	R	NA	2	NA	0.5	>64	>4	2	NA	0.25	NA
+G63	Escherichia coli (CARB+)	R	R	S	S	S	NA	S	S	S	S	R	R	R	NA	2	NA	0.25	1	0.5	0.125	NA	0.5	NA
+G64	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	R	R	R	NA	2	NA	2	2	0.008	0.25	NA	0.5	NA
+G65	Escherichia coli (CARB+)	R	R	R	R	S	NA	R	S	S	S	R	R	R	NA	4	NA	8	2	>4	16	NA	1	NA
+G66	Escherichia coli (CARB+)	R	R	S	S	S	NA	S	R	S	S	R	R	R	NA	2	NA	0.25	1	0.008	0.25	NA	0.5	NA
+G67	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	R	R	R	NA	1	NA	0.5	2	>4	<0.03	NA	0.03	NA
+G68	Escherichia coli (CARB+)	R	R	S	S	S	S	R	R	S	S	R	R	R	NA	1	NA	NA	1	>4	NA	NA	0.5	NA
+G69	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	R	R	R	NA	2	NA	0.25	1	0.008	0.5	NA	0.5	NA
+G70	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	R	R	R	NA	2	NA	0.25	2	0.008	0.25	NA	0.5	NA
+G71	Escherichia coli (CARB+)	R	R	S	S	S	NA	S	S	S	S	R	R	R	NA	1	NA	2	2	0.008	0.25	NA	0.5	NA
+G72	Escherichia coli (CARB+)	R	R	R	R	R	NA	R	S	S	S	R	R	R	NA	4	NA	>64	4	>4	>64	NA	>16	NA
+G73	Escherichia coli (CARB+)	S	S	R	R	S	S	R	S	S	S	NA	NA	R	NA	2	NA	0.25	1	>4	<0.03	NA	0.03	NA
+G74	Escherichia coli (CARB+)	R	R	R	R	S	S	S	S	S	NA	R	R	R	NA	1	NA	2	1	0.008	0.25	NA	0.5	NA
+G75	Escherichia coli (CARB+)	R	R	R	R	R	R	S	R	S	S	R	R	R	NA	2	NA	>64	>64	0.125	32	NA	8	NA
+G76	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	R	R	R	NA	2	NA	2	2	0.125	0.125	NA	0.5	NA
+G77	Escherichia coli (CARB+)	R	I	R	R	S	S	R	S	S	NA	R	R	R	NA	2	NA	>64	2	>4	>64	NA	0.25	NA
+G78	Escherichia coli (CARB+)	R	S	R	R	R	S	R	R	S	S	R	R	R	NA	4	NA	1	64	>4	16	NA	0.5	NA
+G79	Escherichia coli (CARB+)	R	R	S	S	S	S	R	S	S	S	R	R	R	NA	1	NA	0.25	>64	>4	0.25	NA	0.5	NA
+G80	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	R	R	R	NA	2	NA	0.125	2	>4	0.125	NA	0.5	NA
+G81	Escherichia coli (CARB+)	R	R	S	R	S	S	S	R	S	S	R	R	R	NA	4	NA	0.5	2	0.015	1	NA	1	NA
+H1	Escherichia coli (CARB+)	R	R	R	R	S	S	R	R	S	S	NA	R	R	NA	4	NA	32	1	0.5	16	NA	0.5	NA
+H2	Escherichia coli (CARB+)	R	R	S	S	S	S	R	S	S	S	NA	R	R	NA	>64	NA	>64	4	>4	>64	NA	>16	NA
+H4	Escherichia coli (CARB+)	R	R	S	S	S	NA	S	S	S	S	R	R	R	NA	2	NA	0.25	8	0.125	0.125	NA	0.5	NA
+H5	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	R	R	R	NA	1	NA	0.25	2	0.008	0.25	NA	1	NA
+H6	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	R	R	R	NA	2	NA	2	2	0.008	0.25	NA	0.25	NA
+H7	Escherichia coli (CARB+)	R	R	R	R	R	R	R	R	R	S	R	R	R	NA	>64	NA	>64	8	>4	>64	NA	>16	NA
+H8	Escherichia coli (CARB+)	R	R	R	R	R	R	R	S	I	S	R	R	R	NA	8	NA	>64	2	>4	64	NA	16	NA
+H10	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	R	R	R	NA	2	NA	0.25	2	0.008	0.25	NA	0.25	NA
+H11	Escherichia coli (CARB+)	R	R	R	S	R	S	S	S	S	S	R	R	R	NA	4	NA	2	1	0.008	0.5	NA	1	NA
+H12	Escherichia coli (CARB+)	R	R	R	R	R	S	R	R	S	S	R	R	R	NA	4	NA	8	>64	>4	64	NA	1	NA
+H13	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	R	R	R	NA	2	NA	0.25	2	0.008	0.25	NA	0.25	NA
+H14	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	S	R	R	NA	2	NA	0.125	2	0.008	0.125	NA	0.5	NA
+H15	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	R	R	R	NA	NA	NA	2	NA	NA	0.25	NA	NA	NA
+H16	Escherichia coli (CARB+)	R	S	R	R	R	S	R	R	S	S	NA	R	R	NA	2	NA	>64	64	>4	32	NA	2	NA
+H17	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	NA	R	R	NA	1	NA	2	2	>4	0.125	NA	0.5	NA
+H18	Escherichia coli (CARB+)	R	R	R	R	R	S	R	S	S	R	NA	R	R	NA	2	NA	4	8	>4	0.25	NA	1	NA
+H19	Escherichia coli (CARB+)	R	R	R	R	S	S	S	S	S	S	NA	R	R	NA	2	NA	4	2	0.008	4	NA	0.125	NA
+H20	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	R	R	R	NA	1	NA	0.5	4	0.0625	0.25	NA	0.5	NA
+H21	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	R	R	R	NA	2	NA	0.5	4	0.008	0.5	NA	1	NA
+H22	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	NA	R	R	NA	2	NA	2	2	0.125	0.5	NA	1	NA
+H23	Escherichia coli (CARB+)	R	R	R	R	S	S	S	S	S	S	R	R	R	NA	2	NA	0.5	4	0.008	0.5	NA	1	NA
+H24	Escherichia coli (CARB+)	R	R	R	R	NA	S	S	I	S	S	R	NA	R	NA	2	NA	32	4	0.008	2	NA	0.5	NA
+H25	Escherichia coli (CARB+)	R	R	R	R	S	S	R	S	S	S	R	R	R	NA	4	NA	>64	4	>4	>64	NA	0.25	NA
+H26	Escherichia coli (CARB+)	R	R	R	R	R	R	R	S	S	R	R	R	R	NA	4	NA	>64	4	>4	>64	NA	>16	NA
+H27	Escherichia coli	R	S	NA	S	S	NA	S	R	NA	S	S	S	R	NA	2	NA	0.25	4	0.0625	0.0625	NA	0.03	NA
+H28	Escherichia coli	R	S	NA	S	S	NA	S	R	NA	S	S	S	R	NA	2	NA	2	8	0.0625	0.0625	NA	0.03	NA
+H29	Escherichia coli (CARB+)	R	S	R	R	R	S	R	R	S	S	S	R	R	NA	4	NA	>64	>64	>4	64	NA	4	NA
+H30	Escherichia coli (CARB+)	R	R	R	S	R	S	S	S	S	S	NA	R	R	NA	2	NA	2	2	0.008	1	NA	1	NA
+H31	Escherichia coli (CARB+)	R	R	R	R	R	R	R	R	S	S	NA	R	R	NA	NA	NA	>64	NA	NA	>64	NA	NA	NA
+H32	Escherichia coli (CARB+)	R	R	R	R	R	S	R	S	S	S	NA	R	R	NA	2	NA	32	>64	>4	0.5	NA	0.5	NA
+H33	Escherichia coli (CARB+)	R	R	S	S	R	S	S	S	S	S	R	R	R	NA	2	NA	2	4	0.008	0.0625	NA	0.125	NA
+H37	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	R	R	R	NA	8	NA	8	4	0.125	8	NA	0.5	NA
+H38	Escherichia coli (CARB+)	R	R	R	R	S	S	I	S	S	S	NA	R	R	NA	2	NA	2	2	0.25	0.125	NA	0.125	NA
+H40	Escherichia coli	NA	S	NA	NA	S	NA	R	R	NA	S	S	S	NA	NA	8	NA	32	2	>4	16	NA	0.0625	NA
+H41	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	NA	R	R	NA	1	NA	0.25	2	0.008	0.0625	NA	0.25	NA
+H42	Escherichia coli (CARB+)	R	R	R	R	S	S	S	S	S	S	NA	R	R	NA	2	NA	1	4	0.0625	2	NA	0.25	NA
+H43	Escherichia coli (CARB+)	R	R	R	R	S	S	S	S	S	S	R	R	R	NA	2	NA	2	4	0.008	0.5	NA	1	NA
+H44	Escherichia coli	R	S	NA	R	S	NA	R	S	NA	S	S	S	R	NA	2	NA	16	4	1	8	NA	0.03	NA
+H45	Escherichia coli (CARB+)	R	R	R	S	S	S	S	S	S	S	NA	R	R	NA	0.5	NA	0.25	2	0.008	0.0625	NA	0.5	NA
+H46	Escherichia coli (CARB+)	R	R	R	S	R	S	S	S	S	S	R	R	R	NA	4	NA	1	8	0.015	0.5	NA	1	NA
+H47	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	NA	R	R	NA	2	NA	0.25	2	0.008	0.0625	NA	0.125	NA
+H48	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	R	R	R	NA	2	NA	0.25	2	0.008	0.125	NA	0.5	NA
+H49	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	R	R	R	NA	2	NA	0.25	2	0.008	0.125	NA	0.5	NA
+H52	Escherichia coli	S	S	R	R	NA	NA	R	S	NA	NA	S	NA	R	NA	4	NA	4	1	>4	4	NA	0.0625	NA
+H50	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	NA	R	R	NA	4	NA	2	4	0.125	0.125	NA	0.25	NA
+H51	Escherichia coli	NA	NA	NA	NA	NA	NA	R	R	S	NA	NA	NA	NA	NA	8	NA	64	4	>4	64	NA	0.0625	NA
+H53	Escherichia coli	S	S	S	S	NA	NA	R	R	NA	NA	S	NA	R	NA	1	NA	2	4	>4	<0.03	NA	0.03	NA
+H54	Escherichia coli	R	S	R	R	S	S	R	R	I	S	S	S	R	NA	8	NA	>64	2	>4	>64	NA	0.0625	NA
+H56	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	NA	4	NA	0.125	4	0.008	<0.03	NA	0.03	NA
+H57	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	NA	2	NA	2	2	0.008	<0.03	NA	0.03	NA
+H58	Escherichia coli (ESBL+)	S	S	R	R	S	NA	R	S	NA	S	S	S	R	NA	4	NA	16	2	>4	32	NA	0.0625	NA
+H59	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	NA	2	NA	2	2	0.008	<0.03	NA	0.03	NA
+H60	Escherichia coli (ESBL+)	R	S	R	R	S	NA	R	R	NA	S	S	S	R	NA	8	NA	32	4	>4	16	NA	0.0625	NA
+H61	Escherichia coli	R	S	R	R	R	NA	S	S	NA	S	S	S	R	NA	4	NA	2	2	0.008	0.125	NA	0.0625	NA
+H62	Escherichia coli (ESBL+)	S	S	R	R	S	NA	R	S	NA	S	S	S	R	NA	2	NA	8	4	>4	8	NA	0.0625	NA
+H63	Escherichia coli	R	S	S	S	S	NA	R	R	NA	S	S	S	R	NA	2	NA	2	2	>4	0.0625	NA	0.03	NA
+H64	Escherichia coli (ESBL+)	S	S	R	R	S	NA	S	S	NA	S	S	S	R	NA	2	NA	>64	>64	0.0625	64	NA	0.0625	NA
+H65	Escherichia coli (ESBL+)	I	S	R	R	S	NA	R	R	NA	S	S	S	R	NA	8	NA	32	4	>4	64	NA	0.03	NA
+H67	Escherichia coli	S	S	S	S	S	NA	R	R	S	S	S	S	R	NA	4	NA	0.125	2	>4	<0.03	NA	0.03	NA
+H68	Escherichia coli	R	S	R	R	S	NA	S	S	NA	S	S	S	R	NA	1	NA	1	2	0.008	<0.03	NA	0.0625	NA
+H69	Escherichia coli	R	S	S	S	S	NA	R	R	NA	NA	S	S	R	NA	8	NA	0.5	4	>4	0.5	NA	0.0625	NA
+H70	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	NA	4	NA	0.5	2	0.008	0.125	NA	0.0625	NA
+H71	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	R	NA	2	NA	2	>64	0.03	<0.03	NA	0.03	NA
+H72	Escherichia coli (ESBL+)	R	S	R	R	S	S	R	R	S	S	S	S	R	NA	8	NA	32	4	>4	32	NA	0.0625	NA
+H73	Escherichia coli (ESBL+)	S	S	R	R	S	NA	S	S	NA	S	S	S	R	NA	1	NA	4	2	0.0625	2	NA	0.03	NA
+H74	Escherichia coli	S	S	S	S	S	NA	R	R	S	S	S	S	S	NA	4	NA	0.5	4	>4	0.125	NA	0.0625	NA
+H75	Escherichia coli (ESBL+)	R	S	R	R	S	S	R	S	S	S	S	S	R	NA	8	NA	1	2	>4	2	NA	0.03	NA
+H76	Escherichia coli	R	S	S	S	S	NA	R	R	NA	S	S	S	R	NA	16	NA	0.25	2	>4	0.5	NA	0.0625	NA
+H77	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	4	1	4	0.125	2	0.0625	<0.03	1	0.015	<0.125
+H78	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	8	2	8	0.125	1	0.008	<0.03	2	<0.004	<0.125
+H79	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	2	>64	0.125	1	0.008	<0.03	1	0.008	<0.125
+H80	Escherichia coli (ESBL+)	S	S	R	R	S	S	R	S	S	S	S	S	R	>64	2	>64	4	1	>4	2	1	0.03	<0.125
+H81	Escherichia coli (ESBL+)	R	R	R	R	S	S	R	R	S	S	S	S	R	>64	4	>64	8	2	>4	8	>64	0.03	0.25
+I1	Escherichia coli	S	S	R	R	S	NA	R	S	NA	S	S	S	R	>64	2	>64	4	NA	4	8	NA	0.008	<0.125
+I2	Escherichia coli	R	S	R	R	NA	NA	R	S	S	NA	S	NA	R	NA	2	NA	NA	8	>4	NA	2	0.0625	NA
+I3	Escherichia coli	S	S	R	R	S	NA	R	S	NA	S	S	S	R	>64	2	>64	16	0.0625	>4	16	2	0.03	0.25
+I4	Escherichia coli	S	S	R	R	NA	NA	R	S	NA	NA	S	NA	R	>64	2	>64	64	4	>4	>64	1	0.03	0.25
+I5	Escherichia coli	R	S	R	R	NA	NA	R	S	NA	NA	S	NA	R	>64	2	>64	8	32	>4	0.25	1	0.03	0.25
+I6	Escherichia coli	S	S	S	S	NA	NA	R	S	NA	NA	S	NA	S	8	4	8	0.25	2	>4	<0.03	2	0.03	<0.125
+I7	Escherichia coli	NA	S	R	R	S	NA	R	NA	NA	S	S	S	R	>64	16	>64	2	1	>4	2	4	0.03	<0.125
+I8	Escherichia coli	S	S	R	S	NA	NA	R	S	S	NA	S	NA	R	>64	2	>64	0.125	1	>4	<0.03	2	0.015	<0.125
+I9	Escherichia coli	R	S	R	R	S	NA	S	NA	NA	S	S	S	R	>64	2	>64	1	0.0625	0.008	0.0625	1	0.008	0.25
+I10	Escherichia coli	R	S	R	R	NA	NA	R	S	S	NA	S	NA	R	>64	2	>64	>64	>64	>4	0.25	1	0.0625	0.25
+I12	Escherichia coli	S	S	S	S	NA	NA	R	R	NA	NA	NA	NA	R	>64	4	>64	0.125	2	>4	<0.03	>64	0.015	<0.125
+I14	Escherichia coli	R	R	R	R	S	S	R	R	R	S	S	S	R	>64	NA	>64	16	NA	NA	64	NA	NA	<0.125
+I15	Escherichia coli	S	S	R	R	S	NA	S	S	NA	S	S	S	R	>64	2	>64	16	1	0.0625	16	1	0.03	<0.125
+I16	Escherichia coli	R	S	R	R	S	NA	R	R	NA	S	S	S	R	>64	8	>64	>64	2	>4	>64	>64	0.0625	0.25
+I17	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	4	1	4	0.125	1	0.008	<0.03	0.5	0.015	<0.125
+I18	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	8	2	8	0.125	0.0625	NA	<0.03	1	0.015	<0.125
+I19	Escherichia coli	R	S	R	R	R	NA	S	S	NA	S	S	S	R	>64	2	>64	4	0.5	0.03	NA	2	0.015	<0.125
+I20	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	2	>64	0.125	<0.03	0.008	<0.03	1	0.008	<0.125
+I21	Escherichia coli	R	S	R	R	R	S	S	S	S	S	S	S	R	>64	2	>64	0.5	2	0.008	<0.03	1	0.03	<0.125
+I23	Escherichia coli (ESBL+)	R	R	R	R	S	S	S	S	S	S	S	S	R	>64	2	>64	2	1	>4	64	0.5	0.03	<0.125
+I24	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	R	4	2	4	0.125	2	0.008	<0.03	1	0.015	<0.125
+I26	Escherichia coli	S	S	S	S	S	S	S	S	S	S	S	S	R	>64	2	>64	0.125	2	0.008	<0.03	1	0.015	<0.125
+I27	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	2	>64	0.125	1	0.008	<0.03	1	0.015	<0.125
+I28	Escherichia coli	R	S	S	S	S	S	R	R	R	S	S	S	R	NA	8	2	NA	NA	4	NA	2	NA	NA
+I29	Escherichia coli (ESBL+)	R	S	R	R	S	S	I	S	S	S	S	S	R	4	1	4	0.125	4	0.008	<0.03	0.5	0.015	<0.125
+I34	Escherichia coli (ESBL+)	S	R	R	R	R	S	R	S	S	S	S	S	R	>64	4	>64	8	8	>4	4	2	0.03	0.25
+I35	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	2	>64	0.125	2	0.008	<0.03	1	0.03	<0.125
+I36	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	8	2	4	0.125	1	0.008	<0.03	2	0.015	<0.125
+I39	Escherichia coli (ESBL+)	R	R	R	R	R	S	R	S	S	S	S	S	R	>64	16	>64	8	4	>4	4	4	0.03	0.25
+I40	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	4	2	4	0.125	1	0.008	<0.03	2	0.015	<0.125
+I42	Escherichia coli	R	S	R	S	S	NA	S	R	NA	S	S	S	R	>64	16	>64	0.125	32	NA	0.5	4	<0.004	<0.125
+I43	Escherichia coli (ESBL+)	S	S	R	R	S	S	R	S	S	S	S	S	R	>64	4	>64	64	2	>4	>64	2	0.0625	0.25
+I44	Escherichia coli	R	I	R	R	R	NA	S	S	NA	S	S	S	R	>64	2	>64	1	2	0.008	<0.03	1	0.03	<0.125
+I45	Escherichia coli	S	S	S	S	S	NA	S	R	S	S	S	S	R	>64	2	>64	0.25	2	0.008	0.125	>64	0.03	<0.125
+I46	Escherichia coli	R	S	R	R	R	S	S	S	S	S	S	S	R	>64	2	>64	1	4	0.008	<0.03	2	0.015	0.25
+I47	Escherichia coli	R	S	R	R	R	S	S	S	S	S	S	S	R	>64	2	>64	4	2	0.008	0.0625	1	0.03	0.25
+I48	Escherichia coli	S	S	S	S	S	NA	R	R	NA	S	S	S	S	8	4	8	0.25	2	>4	<0.03	>64	0.03	<0.125
+I52	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	R	R	R	>64	2	>64	0.125	4	0.008	0.125	2	0.25	0.25
+I53	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	NA	R	R	>64	2	>64	0.125	4	0.008	0.125	1	0.25	0.25
+I54	Escherichia coli (CARB+)	R	R	R	R	R	S	R	R	S	S	NA	R	R	>64	2	>64	>64	4	>4	8	>64	0.25	0.25
+I55	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	NA	R	R	>64	2	>64	0.125	2	0.008	0.125	1	0.25	0.25
+I56	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	NA	R	R	>64	2	>64	0.125	2	0.008	0.125	2	0.25	<0.125
+I57	Escherichia coli	R	S	NA	R	S	S	S	R	S	S	S	S	R	>64	2	>64	64	>64	0.125	16	>64	0.0625	0.25
+I58	Escherichia coli (CARB+)	R	S	R	R	S	S	S	S	S	S	NA	S	R	>64	1	>64	0.25	4	0.008	<0.03	1	0.03	0.25
+I59	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	R	NA	R	R	>64	2	>64	0.125	4	0.008	0.125	1	0.25	0.25
+I60	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	NA	R	R	>64	2	>64	0.125	2	0.008	0.125	2	0.125	<0.125
+I63	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	R	R	R	>64	4	>64	0.125	2	0.008	0.125	1	0.25	0.25
+I64	Escherichia coli (CARB+)	R	R	R	S	S	S	R	S	S	R	R	R	R	>64	2	>64	0.5	4	>4	0.5	16	0.5	1
+I65	Escherichia coli (CARB+)	R	R	R	R	R	R	R	S	S	S	R	R	R	>64	2	>64	>64	2	>4	>64	1	>16	0.5
+I66	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	R	R	R	>64	0.25	>64	0.125	2	0.008	<0.03	0.25	0.5	<0.125
+I67	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	R	R	R	>64	2	>64	0.125	2	0.008	0.125	2	0.125	<0.125
+I68	Escherichia coli (CARB+)	R	R	R	R	S	S	S	S	S	S	R	R	R	>64	2	>64	0.125	2	0.008	0.0625	1	0.125	<0.125
+I69	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	R	R	R	>64	2	>64	0.25	2	0.008	0.25	2	0.5	<0.125
+I70	Escherichia coli (CARB+)	R	R	R	R	S	S	I	R	S	S	R	R	R	>64	8	>64	16	4	0.015	16	>64	4	0.25
+I71	Escherichia coli (CARB+)	R	R	R	R	R	R	R	S	S	R	R	R	R	>64	2	>64	>64	2	>4	>64	1	16	0.25
+I72	Escherichia coli (CARB+)	R	R	R	R	S	S	S	S	S	S	R	R	R	>64	2	>64	0.25	4	0.015	0.25	2	0.25	0.25
+I73	Escherichia coli (CARB+)	R	R	R	R	R	S	S	S	S	S	R	R	R	>64	2	>64	8	2	0.008	>64	1	0.25	<0.125
+I74	Escherichia coli (CARB+)	R	R	R	R	S	S	R	R	S	S	R	R	R	>64	2	>64	32	4	0.125	16	>64	0.125	0.25
+I75	Escherichia coli	NA	S	NA	NA	S	NA	R	R	S	S	S	S	NA	>64	8	>64	8	2	>4	8	>64	0.03	<0.125
+I76	Escherichia coli (CARB+)	R	R	R	R	R	S	S	S	S	S	R	R	R	>64	2	>64	2	2	0.008	0.5	2	0.5	<0.125
+I77	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	R	R	R	>64	2	>64	0.125	4	0.008	0.0625	1	0.5	0.25
+I78	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	R	R	R	>64	2	>64	0.125	4	0.008	0.125	2	0.125	0.25
+I79	Escherichia coli (CARB+)	R	R	R	R	S	S	S	S	S	S	R	R	R	>64	2	>64	4	2	0.125	2	1	0.125	0.25
+I80	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	R	R	R	>64	2	>64	0.25	4	0.008	0.25	1	0.25	<0.125
+I81	Escherichia coli (CARB+)	R	R	R	R	S	S	S	S	S	S	R	R	R	>64	8	>64	16	4	>4	16	>64	0.03	0.25
+J1	Escherichia coli (CARB+)	R	R	R	R	R	R	R	S	S	S	R	R	R	>64	8	>64	>64	4	>4	>64	2	8	0.25
+J2	Escherichia coli (CARB+)	R	R	R	R	R	R	R	S	S	S	R	R	R	>64	8	>64	64	4	0.5	4	4	0.25	<0.125
+J3	Escherichia coli (CARB+)	R	R	R	S	R	S	NA	S	S	S	R	R	R	>64	2	>64	0.25	1	0.25	0.5	1	1	<0.125
+J4	Escherichia coli (CARB+)	R	R	R	R	S	S	S	R	S	S	R	R	R	>64	2	>64	0.125	2	0.015	0.125	>64	0.5	<0.125
+J5	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	NA	R	R	R	>64	2	>64	0.125	2	>4	0.125	2	0.25	<0.125
+J6	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	R	R	R	>64	2	>64	0.125	2	0.008	0.25	2	0.5	<0.125
+J7	Escherichia coli (ESBL+)	R	S	R	R	S	S	R	S	S	R	S	S	R	>64	2	>64	>64	2	>4	64	1	0.0625	0.25
+J8	Escherichia coli	S	S	R	R	S	S	R	S	S	NA	S	S	R	>64	1	>64	2	2	>4	1	1	0.03	0.5
+J9	Escherichia coli (ESBL+)	R	S	R	R	S	S	R	S	S	S	S	S	R	>64	8	>64	64	1	>4	64	8	0.03	<0.125
+J11	Escherichia coli	S	S	S	S	S	NA	R	R	NA	S	S	S	R	>64	4	>64	0.25	2	>4	0.0625	>64	0.03	0.25
+J27	Escherichia coli	R	R	R	R	R	S	S	S	S	S	S	S	R	>64	2	>64	2	>64	0.125	16	1	0.03	<0.125
+J12	Escherichia coli	R	R	S	S	S	NA	R	R	NA	S	S	S	R	>64	4	>64	0.25	2	>4	0.125	>64	0.0625	0.25
+J13	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	2	>64	0.125	4	0.008	<0.03	1	0.03	0.25
+J14	Escherichia coli (ESBL+)	R	S	R	R	S	S	R	R	S	S	S	S	R	>64	8	>64	32	2	>4	16	>64	0.03	<0.125
+J17	Escherichia coli	S	S	S	S	S	NA	R	R	NA	S	S	S	R	>64	2	>64	0.25	2	>4	<0.03	>64	0.03	<0.125
+J19	Escherichia coli	R	S	S	S	S	NA	R	R	NA	R	S	S	R	>64	16	>64	0.125	2	>4	0.25	>64	0.03	0.25
+J20	Escherichia coli	R	I	S	S	S	NA	S	R	NA	S	S	S	R	>64	2	>64	>64	2	0.008	0.0625	>64	0.03	0.25
+J21	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	4	2	4	0.125	2	0.008	<0.03	2	0.03	<0.125
+J25	Escherichia coli	S	S	S	S	S	NA	S	R	NA	R	S	S	R	>64	2	>64	0.125	64	0.008	<0.03	>64	0.03	<0.125
+J29	Escherichia coli (ESBL+)	S	S	R	R	S	NA	S	S	NA	S	S	S	R	>64	4	>64	32	2	0.0625	>64	2	0.03	0.25
+J30	Escherichia coli	S	S	R	R	S	NA	R	S	NA	S	S	S	R	>64	4	NA	32	4	>4	>64	1	0.0625	0.125
+J31	Escherichia coli (ESBL+)	R	S	R	R	S	NA	R	S	NA	S	S	S	R	>64	4	NA	16	1	>4	32	2	0.0625	0.0625
+J33	Escherichia coli (ESBL+)	R	S	R	R	S	S	S	R	S	S	S	S	R	>64	2	NA	>64	1	0.008	4	>64	0.03	0.0625
+J34	Escherichia coli	S	S	S	S	S	NA	I	R	NA	S	S	S	R	>64	2	NA	1	2	0.25	0.0625	>64	0.0625	0.125
+J35	Escherichia coli	R	I	S	S	S	NA	S	S	NA	R	S	S	R	>64	2	NA	0.25	2	0.008	0.0625	1	0.03	0.125
+J36	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	8	2	NA	0.125	<0.03	0.008	<0.03	1	NA	0.0625
+J56	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	2	NA	0.125	0.25	0.008	<0.03	1	0.015	0.0625
+J57	Escherichia coli	R	S	R	R	S	S	S	S	S	S	S	S	R	>64	2	NA	1	4	0.008	0.0625	0.5	0.015	0.125
+J58	Escherichia coli (ESBL+)	S	S	R	R	S	S	S	S	S	S	S	S	R	>64	2	NA	0.25	1	0.03	1	4	0.03	0.03
+J59	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	8	2	NA	0.125	1	0.008	<0.03	0.5	0.008	0.0625
+J60	Escherichia coli	R	S	S	S	S	NA	S	R	NA	S	S	S	R	>64	2	NA	0.5	2	0.008	0.0625	>64	0.0625	0.0625
+J61	Escherichia coli (ESBL+)	R	S	R	R	R	S	S	S	S	S	S	S	R	>64	2	NA	4	1	0.008	>64	1	0.0625	0.03
+J62	Escherichia coli	R	S	S	S	S	NA	R	S	NA	S	S	S	R	>64	2	NA	0.25	2	>4	<0.03	1	0.03	0.125
+J63	Escherichia coli	R	S	R	S	S	NA	R	S	NA	R	NA	S	R	>64	2	NA	0.25	0.25	0.125	<0.03	1	0.015	0.0625
+J64	Escherichia coli (ESBL+)	R	S	R	R	S	S	S	S	S	S	S	S	R	NA	<0.03	NA	NA	<0.03	0.03	NA	0.5	<0.004	NA
+J65	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	2	NA	0.25	0.5	0.008	<0.03	2	0.015	0.0625
+J66	Escherichia coli	R	S	S	S	S	NA	R	R	NA	S	S	S	R	>64	8	NA	64	2	>4	>64	>64	0.0625	0.125
+J67	Escherichia coli (ESBL+)	R	S	R	R	S	S	R	R	S	S	S	S	R	>64	4	NA	0.25	1	>4	<0.03	>64	0.03	0.0625
+J68	Escherichia coli	R	S	S	S	S	NA	R	S	NA	S	S	S	R	8	4	NA	0.25	2	>4	<0.03	2	0.03	0.0625
+J70	Escherichia coli (ESBL+)	S	S	R	R	S	S	R	S	S	S	S	S	R	>64	8	NA	4	4	>4	8	2	0.0625	0.125
+J71	Escherichia coli (ESBL+)	R	S	R	R	S	S	R	S	S	S	S	S	R	>64	8	NA	32	2	>4	>64	2	0.0625	0.0625
+J72	Escherichia coli	S	S	R	R	S	NA	S	S	NA	S	S	S	R	>64	4	NA	16	1	0.008	64	2	0.03	0.0625
+J73	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	8	2	NA	0.5	NA	NA	<0.03	1	0.015	0.0625
+J74	Escherichia coli	S	S	R	R	S	S	R	S	S	S	S	S	R	>64	2	NA	16	0.5	>4	64	1	0.03	0.125
+J76	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	1	NA	0.125	0.5	0.008	<0.03	1	<0.004	0.0625
+J77	Escherichia coli	S	S	S	S	S	NA	R	R	NA	S	S	S	R	>64	4	NA	0.5	1	>4	0.0625	>64	0.03	0.0625
+J78	Escherichia coli	R	R	S	S	S	NA	S	S	NA	S	S	S	R	>64	2	NA	0.5	4	0.125	0.0625	2	0.0625	0.0625
+J79	Escherichia coli	S	S	R	R	S	NA	R	S	NA	S	S	S	R	64	4	NA	2	1	>4	1	2	0.03	0.0625
+J80	Escherichia coli	S	S	R	R	S	NA	R	R	NA	S	S	S	R	>64	8	NA	32	4	>4	>64	>64	0.0625	0.125
+J81	Escherichia coli	S	S	R	R	S	NA	R	S	NA	S	S	S	NA	>64	2	NA	2	0.25	>4	1	2	0.03	0.0625
+K1	Escherichia coli (ESBL+)	R	I	R	R	S	S	R	S	S	S	S	S	R	>64	16	NA	>64	NA	>4	>64	2	0.125	0.0625
+K2	Escherichia coli	NA	S	R	R	S	NA	R	R	NA	S	S	S	NA	>64	8	NA	>64	1	>4	>64	>64	0.0625	0.25
+K3	Escherichia coli	R	S	R	R	S	NA	S	S	NA	S	S	S	R	>64	2	NA	1	0.5	0.008	0.0625	1	0.015	0.0625
+K4	Escherichia coli	R	I	R	R	R	S	S	S	S	S	S	S	R	>64	2	NA	1	<0.03	NA	<0.03	0.5	<0.004	0.0625
+K5	Escherichia coli (ESBL+)	R	I	R	R	S	S	R	S	S	S	S	S	R	>64	16	NA	64	4	>4	>64	8	0.0625	0.0625
+K6	Escherichia coli	R	I	R	R	S	NA	R	S	NA	S	S	S	R	>64	4	NA	>64	2	>4	>64	2	0.0625	0.25
+K7	Escherichia coli (ESBL+)	S	S	R	R	S	S	R	S	S	S	S	S	NA	>64	4	NA	32	2	>4	>64	2	0.0625	0.0625
+K10	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	NA	>64	4	NA	0.5	0.5	NA	0.125	NA	0.015	0.0625
+K11	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	NA	>64	2	NA	0.25	NA	0.008	<0.03	1	0.015	0.0625
+K13	Escherichia coli	R	S	R	R	S	NA	R	R	S	S	S	S	R	>64	8	NA	16	1	>4	32	>64	0.0625	0.0625
+K14	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	4	NA	0.5	1	0.125	0.125	2	0.0625	0.0625
+K15	Escherichia coli	R	S	R	R	S	S	S	S	S	S	S	S	R	>64	4	NA	1	1	0.008	<0.03	2	0.125	0.0625
+K16	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	2	NA	0.25	1	0.008	<0.03	1	0.015	0.0625
+K17	Escherichia coli (ESBL+)	R	S	R	R	S	S	R	R	S	S	S	S	R	>64	8	NA	32	4	>4	>64	>64	0.0625	0.25
+K18	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	4	NA	0.25	NA	NA	0.0625	2	NA	0.0625
+K19	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	2	NA	0.25	1	0.008	<0.03	1	0.03	0.0625
+K20	Escherichia coli (ESBL+)	R	S	R	R	S	NA	R	R	NA	S	S	S	R	>64	8	NA	8	2	>4	64	64	0.0625	0.125
+K21	Escherichia coli	R	S	R	R	R	S	S	S	S	S	S	S	R	>64	1	NA	8	1	0.008	0.0625	0.5	0.0625	0.0625
+K22	Escherichia coli	R	S	R	R	S	NA	S	S	NA	S	S	S	R	16	2	NA	1	4	0.008	0.125	1	0.015	0.0625
+K23	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	NA	>64	2	NA	0.125	4	0.0625	<0.03	1	0.015	0.0625
+K24	Escherichia coli	R	S	S	S	S	NA	R	R	NA	S	S	S	R	>64	4	NA	0.25	>64	>4	0.0625	>64	0.03	0.0625
+K25	Escherichia coli (ESBL+)	S	S	R	R	S	S	R	S	S	S	S	S	NA	>64	4	NA	32	2	>4	32	2	0.0625	0.125
+K26	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	NA	8	2	NA	0.5	1	>4	0.0625	1	0.03	0.0625
+K27	Escherichia coli	R	S	S	S	S	NA	R	R	NA	S	S	S	R	>64	4	NA	0.25	2	>4	<0.03	>64	0.03	0.0625
+K29	Escherichia coli	R	R	S	S	S	NA	R	S	NA	S	S	S	R	>64	2	NA	0.5	1	0.0625	0.0625	1	0.03	0.0625
+K31	Escherichia coli	R	S	S	S	S	NA	S	R	NA	S	S	S	R	>64	2	NA	0.25	2	0.0625	0.0625	>64	0.03	0.0625
+K32	Escherichia coli	R	R	S	S	S	NA	S	S	NA	S	S	S	R	>64	4	NA	0.25	>64	0.008	0.5	2	0.03	0.25
+K33	Escherichia coli	R	R	S	S	S	NA	S	S	NA	S	S	S	R	>64	4	NA	1	4	0.0625	0.125	2	0.0625	0.125
+K34	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	2	NA	0.25	1	0.008	<0.03	1	0.0625	0.0625
+K35	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	NA	>64	2	NA	0.125	2	0.008	<0.03	1	0.0625	0.0625
+K36	Escherichia coli	R	S	R	R	NA	S	R	S	S	NA	S	S	R	64	2	NA	1	8	>4	0.125	8	0.0625	0.125
+K58	Escherichia coli	R	S	R	S	R	NA	S	S	NA	R	S	S	R	>64	2	NA	4	4	0.008	<0.03	1	0.0625	0.25
+K59	Escherichia coli	S	S	R	R	S	NA	R	S	NA	S	S	S	R	>64	4	NA	16	2	>4	16	2	0.0625	0.0625
+K60	Escherichia coli	S	S	R	R	S	NA	R	S	NA	S	S	S	R	>64	4	NA	16	2	>4	8	2	0.0625	0.0625
+K61	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	8	8	NA	0.5	2	0.008	<0.03	1	0.03	0.25
+K62	Escherichia coli	S	S	S	S	S	NA	R	R	NA	S	S	S	R	>64	2	NA	0.25	2	>4	<0.03	>64	0.03	0.03
+K63	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	>64	2	NA	0.5	4	0.03	0.0625	2	0.03	0.125
+K64	Escherichia coli	S	S	R	S	R	NA	R	S	NA	S	S	S	NA	>64	4	NA	0.5	4	>4	0.0625	2	0.03	0.0625
+K65	Escherichia coli	R	S	R	R	S	NA	R	R	NA	S	S	S	R	>64	4	NA	64	4	>4	>64	>64	0.0625	0.25
+K66	Escherichia coli	S	S	S	S	S	NA	R	R	NA	S	S	S	NA	>64	4	NA	0.25	2	>4	<0.03	>64	0.03	0.0625
+K67	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	NA	>64	2	NA	0.25	2	0.008	<0.03	1	0.03	0.0625
+K68	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	8	2	NA	0.25	4	0.008	<0.03	2	0.03	0.0625
+K69	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	2	NA	0.5	8	0.015	0.125	2	0.015	0.125
+K70	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	8	4	NA	0.5	2	0.008	<0.03	2	0.0625	0.0625
+K71	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	4	NA	0.25	1	0.008	<0.03	1	0.03	0.0625
+K72	Escherichia coli	R	S	S	S	S	NA	S	R	NA	S	S	S	R	>64	4	NA	0.25	4	0.008	<0.03	>64	0.03	0.125
+K73	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	8	2	NA	0.25	2	0.008	<0.03	1	0.0625	0.0625
+K74	Escherichia coli (ESBL+)	R	S	R	R	S	S	S	S	S	S	S	S	R	2	2	NA	0.125	4	0.008	<0.03	1	0.03	0.125
+K75	Escherichia coli	R	S	R	R	R	S	S	S	S	S	S	S	R	>64	2	NA	1	2	0.008	<0.03	1	0.03	0.0625
+K76	Escherichia coli	R	I	R	R	S	S	R	S	S	S	S	S	R	>64	2	NA	16	8	>4	32	2	0.0625	0.0625
+K77	Escherichia coli	R	S	R	R	R	NA	S	R	NA	S	S	S	R	>64	2	NA	8	2	0.008	0.0625	16	0.0625	0.0625
+K78	Escherichia coli	S	S	S	S	NA	NA	R	S	NA	NA	S	S	R	>64	4	NA	0.5	2	>4	<0.03	2	0.03	0.125
+K79	Escherichia coli	R	S	R	R	R	S	S	S	S	S	NA	S	R	>64	2	NA	2	2	0.008	0.0625	1	0.03	0.0625
+K80	Escherichia coli	S	S	S	S	S	NA	S	R	NA	S	S	S	R	>64	2	NA	0.5	4	0.125	0.0625	>64	0.0625	0.0625
+K81	Escherichia coli (ESBL+)	R	I	R	R	S	NA	R	S	NA	S	S	S	R	>64	4	NA	32	2	>4	>64	2	0.0625	0.0625
+L1	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	2	2	NA	0.125	2	0.008	<0.03	1	0.03	0.0625
+L2	Escherichia coli	R	S	S	S	S	NA	S	R	NA	S	S	S	R	>64	0.5	NA	0.0625	<0.03	NA	NA	8	NA	0.0625
+L4	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	2	4	NA	0.125	2	0.008	<0.03	2	0.015	0.0625
+L5	Escherichia coli	R	S	R	R	S	S	S	S	S	S	S	S	R	>64	2	NA	1	1	0.008	2	4	0.008	0.0625
+L6	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	2	NA	0.25	4	0.008	0.0625	1	0.0625	0.0625
+L7	Escherichia coli (CARB+)	R	R	R	R	R	S	R	R	S	S	R	R	R	>64	4	NA	8	>64	>4	>64	>64	4	0.125
+L8	Escherichia coli (ESBL+)	R	S	R	R	S	S	S	S	S	S	S	S	R	NA	0.5	64	0.5	2	0.015	<0.03	NA	0.03	0.125
+L9	Escherichia coli (ESBL+)	R	I	R	R	S	S	R	S	S	S	S	S	R	NA	2	>64	64	1	>4	>64	NA	0.125	0.25
+L10	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	R	NA	4	>64	0.125	1	0.008	0.0625	NA	0.0625	0.0625
+L11	Escherichia coli (ESBL+)	R	S	R	R	S	S	R	R	S	S	S	S	R	NA	8	>64	32	2	>4	64	NA	0.0625	0.125
+L14	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	NA	4	4	0.0625	2	0.008	<0.03	NA	0.0625	0.125
+L15	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	NA	2	4	0.125	2	0.008	<0.03	NA	0.0625	0.125
+L17	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	NA	4	4	0.125	4	0.008	<0.03	NA	0.0625	0.125
+L18	Escherichia coli	R	S	R	R	S	NA	S	S	NA	S	S	S	R	NA	1	>64	2	4	0.008	<0.03	NA	0.0625	0.125
+L19	Escherichia coli	R	S	R	R	R	S	S	S	S	S	S	S	R	NA	4	>64	1	2	0.008	<0.03	NA	0.03	0.0625
+L22	Escherichia coli	S	S	S	S	S	NA	R	R	NA	S	S	S	R	NA	4	>64	0.25	2	>4	<0.03	NA	0.0625	0.125
+L23	Escherichia coli	R	S	R	R	S	S	S	S	S	S	S	S	R	NA	2	4	0.0625	2	0.008	<0.03	NA	0.03	0.125
+L24	Escherichia coli (ESBL+)	R	S	R	R	S	S	R	R	S	S	S	S	R	NA	8	>64	>64	4	>4	>64	NA	0.125	0.25
+L25	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	R	NA	2	>64	0.0625	2	0.008	<0.03	NA	0.0625	0.125
+L32	Escherichia coli	S	S	S	S	S	NA	S	S	S	NA	S	S	S	NA	2	4	0.0625	1	0.008	<0.03	NA	0.0625	0.125
+L33	Escherichia coli	R	S	S	S	S	NA	S	S	S	NA	S	S	R	NA	2	>64	0.125	2	0.008	0.0625	NA	0.03	0.125
+L35	Escherichia coli	S	S	S	S	S	NA	S	S	S	NA	S	S	R	NA	NA	>64	0.125	NA	NA	<0.03	NA	NA	0.125
+L36	Escherichia coli	R	S	R	R	R	NA	S	S	S	NA	S	S	R	NA	4	>64	0.5	2	0.008	<0.03	NA	0.0625	0.0625
+L37	Escherichia coli (ESBL+)	S	S	R	R	S	NA	S	S	S	NA	S	S	R	NA	4	>64	16	2	0.125	16	NA	0.125	0.125
+L38	Escherichia coli	R	S	S	S	S	NA	R	S	S	NA	S	S	R	NA	16	>64	0.25	1	>4	0.0625	NA	0.0625	0.0625
+L39	Escherichia coli	R	S	S	S	S	NA	S	S	S	NA	S	S	R	NA	4	>64	0.25	4	0.125	0.0625	NA	0.0625	0.25
+L40	Escherichia coli	R	S	R	R	R	NA	S	S	S	NA	S	S	R	NA	2	64	1	2	0.008	<0.03	NA	0.03	0.125
+L41	Escherichia coli	R	NA	S	S	S	S	S	S	NA	S	S	S	R	NA	2	>64	0.125	64	0.008	0.0625	NA	0.0625	0.125
+L42	Escherichia coli (ESBL+)	R	NA	R	R	S	S	R	S	NA	S	S	S	R	NA	4	>64	64	4	>4	32	NA	0.0625	0.25
+L43	Escherichia coli (ESBL+)	S	NA	R	R	S	S	R	S	NA	S	S	S	R	NA	4	>64	64	2	>4	>64	NA	0.125	0.125
+L44	Escherichia coli (ESBL+)	R	NA	R	R	S	S	R	R	S	S	S	S	R	NA	8	>64	32	2	>4	64	NA	0.0625	0.125
+L45	Escherichia coli	R	NA	R	R	S	S	R	S	NA	S	S	S	R	NA	16	>64	1	4	>4	1	NA	0.0625	0.25
+L46	Escherichia coli	S	S	R	R	S	NA	R	S	NA	S	S	S	R	NA	8	64	1	1	>4	2	NA	0.0625	0.125
+L48	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	NA	<0.03	>64	0.0625	NA	NA	<0.03	NA	NA	0.0625
+L49	Escherichia coli (ESBL+)	R	R	R	R	S	NA	R	R	NA	S	S	S	R	NA	16	>64	>64	4	>4	>64	NA	0.0625	0.125
+L50	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	R	NA	2	>64	0.5	4	0.008	<0.03	NA	0.0625	0.125
+L51	Escherichia coli (ESBL+)	S	S	R	R	S	NA	R	S	NA	S	S	S	R	NA	4	>64	32	2	>4	64	NA	0.0625	0.125
+L52	Escherichia coli	S	S	R	S	S	NA	R	S	NA	S	S	S	R	NA	2	>64	0.5	8	>4	0.125	NA	0.0625	0.125
+L53	Escherichia coli (ESBL+)	R	S	R	R	S	NA	R	R	NA	S	S	S	R	NA	8	>64	>64	2	>4	>64	NA	0.125	0.125
+L54	Escherichia coli (ESBL+)	S	S	R	R	S	NA	R	S	NA	S	S	S	R	NA	4	>64	32	1	>4	>64	NA	0.0625	0.25
+L55	Escherichia coli (ESBL+)	R	S	R	R	S	NA	R	R	NA	S	S	S	R	NA	8	>64	32	1	>4	>64	NA	0.0625	0.125
+L56	Escherichia coli	R	NA	R	R	R	NA	R	R	NA	R	S	R	R	NA	32	>64	>64	1	>4	>64	NA	1	0.03
+L57	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	R	NA	4	>64	0.0625	2	0.008	<0.03	NA	0.0625	0.125
+L58	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	NA	4	>64	0.25	2	0.008	0.125	NA	0.0625	0.0625
+L59	Escherichia coli	S	S	R	R	S	NA	R	S	NA	S	S	S	R	NA	4	>64	4	2	>4	4	NA	0.0625	0.125
+L60	Escherichia coli (ESBL+)	R	S	R	R	S	NA	R	R	NA	S	S	S	R	NA	8	>64	16	4	>4	>64	NA	0.0625	0.25
+L62	Escherichia coli (ESBL+)	R	S	R	R	S	NA	R	R	NA	S	S	S	R	NA	16	>64	64	32	>4	>64	NA	0.125	0.25
+L63	Escherichia coli	S	S	R	R	S	NA	S	S	NA	S	S	S	R	NA	2	>64	16	2	0.008	16	NA	0.0625	0.0625
+L64	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	NA	2	>64	0.25	4	0.008	0.0625	NA	0.03	0.125
+L65	Escherichia coli (ESBL+)	S	S	R	R	S	NA	R	S	NA	S	S	S	R	NA	4	>64	4	4	>4	8	NA	0.0625	0.125
+L66	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	NA	4	>64	0.0625	4	0.008	<0.03	NA	0.0625	0.125
+L67	Escherichia coli	S	S	R	R	S	NA	R	R	NA	S	S	S	R	NA	4	>64	16	4	>4	16	NA	0.0625	0.125
+L68	Escherichia coli (ESBL+)	R	S	R	R	S	S	R	R	S	S	S	S	R	NA	4	>64	16	4	>4	64	NA	0.0625	0.125
+L72	Escherichia coli	R	I	R	S	I	S	R	R	S	S	S	S	R	NA	4	>64	0.5	64	>4	0.25	NA	0.0625	0.25
+L73	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	R	NA	4	>64	0.0625	4	0.008	<0.03	NA	0.0625	0.125
+L81	Escherichia coli (ESBL+)	S	S	R	R	S	S	R	S	S	S	S	S	R	NA	4	>64	8	2	>4	4	NA	0.0625	0.125
+M1	Escherichia coli	R	S	R	S	S	NA	R	S	NA	S	S	S	R	NA	4	>64	0.0625	4	>4	<0.03	NA	0.03	0.25
+M14	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	NA	2	4	0.0625	2	0.008	<0.03	NA	0.0625	0.125
+M15	Escherichia coli (ESBL+)	R	S	R	R	R	S	R	R	S	S	S	S	R	NA	4	>64	32	>64	>4	64	NA	0.125	0.25
+M18	Escherichia coli	R	S	R	R	S	S	I	S	S	S	S	S	R	NA	2	>64	0.25	4	0.0625	<0.03	NA	0.0625	0.125
+M21	Escherichia coli	S	S	R	R	S	NA	R	R	S	NA	S	S	R	NA	4	>64	64	4	>4	>64	NA	0.125	0.125
+M22	Escherichia coli	S	S	S	S	S	NA	S	S	S	NA	S	S	S	NA	4	4	0.0625	2	0.008	<0.03	NA	0.0625	0.125
+M24	Escherichia coli	R	S	S	S	S	NA	S	S	S	NA	S	S	R	NA	2	>64	0.125	8	0.008	0.0625	NA	0.0625	0.125
+M25	Escherichia coli	S	S	S	S	S	NA	S	S	S	NA	S	S	R	NA	4	>64	0.125	4	0.008	0.0625	NA	0.03	0.125
+M28	Escherichia coli	R	NA	S	S	S	S	S	S	NA	S	S	S	R	NA	4	>64	0.25	2	0.008	0.125	NA	0.0625	0.125
+M29	Escherichia coli	R	NA	R	R	R	S	S	R	S	S	S	S	R	NA	NA	>64	8	8	0.125	0.125	NA	0.0625	0.125
+M30	Escherichia coli	R	NA	R	R	I	S	S	S	NA	S	S	S	R	NA	4	>64	1	4	0.008	0.0625	NA	0.03	0.125
+M33	Escherichia coli	S	S	R	R	S	NA	S	S	NA	S	S	S	R	NA	4	>64	8	4	0.125	8	NA	0.0625	0.125
+M34	Escherichia coli (ESBL+)	I	S	R	R	S	S	R	S	S	S	S	S	R	NA	2	>64	4	8	>4	4	NA	0.0625	0.25
+M35	Escherichia coli	R	I	R	R	S	S	S	S	S	S	S	S	R	NA	2	64	0.5	2	0.008	<0.03	NA	0.0625	0.125
+M36	Escherichia coli	R	S	R	R	S	S	R	S	I	S	S	S	R	NA	16	>64	8	2	>4	8	NA	0.0625	0.25
+M37	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	R	NA	2	>64	0.0625	2	0.008	<0.03	NA	0.0625	0.0625
+M38	Escherichia coli (ESBL+)	S	S	R	R	S	S	S	S	S	S	S	S	R	NA	4	>64	2	4	0.008	64	NA	0.0625	0.25
+M39	Escherichia coli	R	S	R	R	R	NA	R	S	NA	S	S	S	R	NA	16	>64	64	8	>4	1	NA	0.125	0.125
+M40	Escherichia coli (ESBL+)	R	S	R	R	S	S	R	R	S	S	S	S	R	NA	8	>64	64	4	>4	>64	NA	0.0625	0.25
+M41	Escherichia coli	R	R	S	S	S	NA	S	S	NA	S	S	S	R	NA	2	>64	0.25	>64	0.008	0.125	NA	0.0625	0.0625
+M42	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	NA	4	>64	0.25	4	0.015	0.0625	NA	0.0625	0.125
+M44	Escherichia coli (ESBL+)	S	S	R	R	S	S	R	S	S	S	S	S	R	NA	2	>64	16	1	>4	32	NA	0.0625	0.25
+B56	Escherichia coli	R	S	S	S	S	NA	R	S	NA	S	S	S	R	>64	2	>64	0.125	2	>4	<0.03	0.5	0.03	NA
+B62	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	2	>64	0.125	4	NA	0.0625	0.5	0.0625	NA
+C15	Escherichia coli	S	S	S	S	S	NA	R	R	NA	S	S	S	R	>64	4	>64	0.125	8	>4	0.0625	8	0.03	NA
+C17	Escherichia coli	S	S	S	S	S	NA	R	S	NA	S	S	S	S	8	4	8	0.0625	8	>4	0.0625	2	0.03	NA
+C51	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	4	8	0.25	4	0.008	0.0625	2	0.03	NA
+C64	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	NA	8	NA	NA	2	0.008	NA	4	0.0625	NA
+E38	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	2	2	4	0.0625	4	0.008	<0.03	1	0.03	NA
+F16	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	R	>64	4	>64	0.25	>64	0.008	0.0625	2	0.0625	NA
+F17	Escherichia coli (ESBL+)	S	R	R	R	S	NA	S	S	NA	S	S	S	R	>64	2	>64	64	2	0.008	>64	2	0.0625	NA
+F26	Escherichia coli (ESBL+)	S	S	R	R	S	NA	R	S	NA	S	S	S	R	>64	2	>64	16	2	>4	16	2	0.03	NA
+F29	Escherichia coli (ESBL+)	R	S	R	R	S	NA	R	R	NA	S	S	S	R	>64	4	>64	64	4	>4	>64	>64	0.0625	NA
+F30	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	8	2	8	0.125	2	0.008	<0.03	1	0.03	NA
+F31	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	4	2	4	0.125	2	0.008	<0.03	2	0.03	NA
+G11	Escherichia coli	R	NA	NA	R	R	NA	S	S	NA	NA	S	NA	R	NA	2	>64	>64	4	0.008	4	2	0.125	NA
+G15	Escherichia coli (CARB+)	R	R	S	S	S	S	S	S	S	S	NA	R	R	NA	2	>64	0.25	4	0.25	0.125	0.25	0.5	NA
+N1	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	R	NA	NA	>64	0.0625	NA	NA	<0.03	NA	NA	0.25
+N2	Escherichia coli	S	S	S	S	S	NA	S	S	S	NA	S	S	R	NA	2	>64	0.0625	2	0.008	<0.03	NA	0.0625	0.125
+N3	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	NA	2	4	0.0625	2	0.0625	<0.03	NA	0.0625	0.0625
+N4	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	R	NA	2	>64	0.0625	2	0.008	<0.03	NA	0.0625	0.0625
+N5	Escherichia coli	S	S	S	S	S	NA	S	S	S	NA	S	S	S	NA	4	4	0.125	4	0.125	<0.03	NA	0.0625	0.125
+N6	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	NA	4	2	0.015	1	0.008	<0.03	NA	0.0625	0.125
+N7	Escherichia coli	R	S	S	S	S	NA	S	S	S	NA	S	S	R	NA	2	>64	0.125	4	0.008	0.0625	NA	0.0625	0.125
+N8	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	R	NA	2	>64	0.015	1	0.008	<0.03	NA	0.0625	0.0625
+N9	Escherichia coli	S	S	S	S	S	NA	S	S	S	NA	S	S	S	NA	1	4	0.125	4	0.008	<0.03	NA	0.0625	0.125
+N10	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	NA	4	4	0.0625	4	0.008	<0.03	NA	0.0625	0.125
+N11	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	NA	4	4	0.0625	2	0.008	<0.03	NA	0.0625	0.0625
+N12	Escherichia coli	R	S	S	S	S	NA	S	R	S	NA	S	S	R	NA	2	>64	0.0625	4	0.015	<0.03	NA	0.0625	0.0625
+N14	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	NA	4	>64	0.25	4	0.0625	0.5	NA	0.0625	0.125
+N15	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	R	NA	4	>64	0.25	64	0.008	0.0625	NA	0.03	0.25
+N16	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	R	NA	4	>64	0.125	4	0.008	0.0625	NA	0.0625	0.125
+N17	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	R	NA	2	>64	0.125	2	0.008	<0.03	NA	0.0625	0.125
+N18	Escherichia coli	S	S	S	S	S	NA	S	S	S	S	S	S	S	NA	4	>64	0.0625	4	0.125	<0.03	NA	0.0625	0.125
+N19	Escherichia coli	R	S	S	S	S	NA	S	S	NA	S	S	S	R	NA	2	>64	0.125	2	0.008	0.0625	NA	0.0625	0.0625
+N20	Escherichia coli	S	S	S	S	S	NA	S	S	NA	S	S	S	S	NA	2	4	0.0625	2	0.008	<0.03	NA	0.0625	0.125
+N22	Escherichia coli	S	NA	S	S	S	S	S	S	NA	S	S	S	R	NA	4	>64	0.0625	2	0.008	<0.03	NA	0.0625	0.0625
+N23	Escherichia coli	R	NA	S	S	S	S	S	S	NA	S	S	S	R	NA	2	>64	0.125	4	0.008	0.0625	NA	0.0625	0.125

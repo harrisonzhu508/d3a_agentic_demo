@@ -1,0 +1,29 @@
+# Which model the pi agent uses. Copy to config/endpoint.toml (gitignored; setup.sh does this), edit, then run:
+#   bash scripts/setup.sh --configs
+# which renders .pi-agent/models.json and .pi-agent/settings.json from this file and config/vllm.toml.
+
+[agent]
+# "<provider>/<model id>":
+#   local/qwen3.8-27b          vLLM on this machine: bash scripts/vllm.sh start (settings in config/vllm.toml)
+#   dide2/qwen3.8-27b          the shared Qwen endpoint on dide2, [endpoints.dide2] below (Imperial network)
+#   openai/<model>             built into pi; needs OPENAI_API_KEY in config/secrets.env, e.g. openai/gpt-6-sol
+#   deepseek/<model>           built into pi; needs DEEPSEEK_API_KEY in config/secrets.env, e.g. deepseek/deepseek-v4-pro
+# List the models pi can use:  bash scripts/run_pi.sh --list-models
+# Another model for one run:   bash scripts/run_pi.sh --model dide2/qwen3.8-27b
+model = "local/qwen3.8-27b"
+
+# Thinking: "off" (fastest), "low", "medium" or "high" (for Qwen this turns on enable_thinking).
+thinking = "off"
+
+# Other OpenAI-compatible servers, one [endpoints.<name>] each; pi calls them "<name>/<model>".
+# The local vLLM server ("local") is added from config/vllm.toml, so it is not listed here.
+[endpoints.dide2]
+# vLLM behind Ray Serve on dide2, route /qwen3.8-27b. Direct from didelx01 or anywhere on the Imperial network:
+base_url = "http://wpia-didelx02.dide.ic.ac.uk:8001/qwen3.8-27b/v1"
+# Through an SSH tunnel (ssh -N -L 8001:localhost:8001 <you>@wpia-didelx02.dide.ic.ac.uk) off the network:
+# base_url = "http://localhost:8001/qwen3.8-27b/v1"
+model = "qwen3.8-27b"
+# vLLM on dide2 does not check keys, but pi needs one.
+api_key = "EMPTY"
+context_window = 131072
+max_tokens = 16384

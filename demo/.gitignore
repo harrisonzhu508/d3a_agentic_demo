@@ -1,0 +1,13 @@
+# experiment results (results/<experiment>/: log, runs, posterior draws, plots, session state) are not versioned
+results
+.worktrees
+# local environments and tools
+.venv
+.tools
+.pi-agent
+__pycache__/
+# local configuration and secrets
+config/endpoint.toml
+config/autoresearch.toml
+config/vllm.toml
+config/secrets.env
