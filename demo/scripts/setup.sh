@@ -12,7 +12,7 @@ for f in autoresearch endpoint vllm; do [ -f "config/$f.toml" ] || cp "config/$f
 if [ "${1:-}" != --configs ]; then
   uv sync
   [ -f "${D3A_PRIVATE_DIR:-$HOME/.d3a-demo-private}/test.csv" ] || uv run python checks/split.py
-  [ -x .tools/node_modules/.bin/pi ] || npm install --prefix .tools --no-fund --no-audit @earendil-works/pi-coding-agent
+  [ -x .tools/node_modules/.bin/pi ] || npm install --prefix .tools --ignore-scripts --no-fund --no-audit @earendil-works/pi-coding-agent
 fi
 uv run python scripts/render_configs.py
 if [ "${1:-}" = --vllm ]; then bash scripts/vllm.sh install && bash scripts/vllm.sh download; fi
