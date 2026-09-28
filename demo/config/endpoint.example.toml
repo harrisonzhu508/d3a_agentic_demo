@@ -1,0 +1,27 @@
+# Which model the pi agent uses. Copy to config/endpoint.toml (gitignored; setup.sh does this), edit, then run:
+#   bash scripts/setup.sh --configs
+# which renders .pi-agent/models.json and .pi-agent/settings.json from this file and config/vllm.toml.
+
+[agent]
+# "<provider>/<model id>":
+#   local/qwen3.8-27b          vLLM on this machine: bash scripts/vllm.sh start (settings in config/vllm.toml)
+#   myserver/qwen3.8-27b          the shared Qwen endpoint on myserver, [endpoints.myserver] below (your network)
+#   openai/<model>             built into pi; needs OPENAI_API_KEY in config/secrets.env, e.g. openai/gpt-6-sol
+#   deepseek/<model>           built into pi; needs DEEPSEEK_API_KEY in config/secrets.env, e.g. deepseek/deepseek-v4-pro
+# List the models pi can use:  bash scripts/run_pi.sh --list-models
+# Another model for one run:   bash scripts/run_pi.sh --model myserver/qwen3.8-27b
+model = "local/qwen3.8-27b"
+
+# Thinking: "off" (fastest), "low", "medium" or "high" (for Qwen this turns on enable_thinking).
+thinking = "off"
+
+# Other OpenAI-compatible servers, one [endpoints.<name>] each; pi calls them "<name>/<model>".
+# The local vLLM server ("local") is added from config/vllm.toml, so it is not listed here.
+[endpoints.myserver]
+# vLLM behind Ray Serve on myserver, route /qwen3.8-27b. Direct from this machine or anywhere on your network:
+base_url = "http://your-server.example.org:8001/qwen3.8-27b/v1"
+model = "qwen3.8-27b"
+# vLLM on myserver does not check keys, but pi needs one.
+api_key = "EMPTY"
+context_window = 131072
+max_tokens = 16384

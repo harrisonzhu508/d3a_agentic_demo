@@ -1,0 +1,11 @@
+{
+  "seed": 2026,
+  "test_fraction": 0.2,
+  "n_folds": 5,
+  "cv_sampler": {"num_warmup": 500, "num_samples": 500, "num_chains": 4},
+  "budget_seconds": 600,
+  "gates": {"max_divergences": 0, "max_rhat": 1.01, "min_ess": 400},
+  "keep_rule": {"se_multiplier": 2.0},
+  "parsimony": {"threshold_doublings": 0.5, "probability": 0.9},
+  "private_dir_default": "~/.d3a-demo-private"
+}

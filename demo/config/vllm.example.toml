@@ -1,0 +1,39 @@
+# Local vLLM server for the pi agent (scripts/vllm.sh). Copy to config/vllm.toml (gitignored; setup.sh does this)
+# and edit. pi's "local" provider is derived from this file, so the port and model name live only here.
+#
+#   bash scripts/vllm.sh install     # once: vLLM into .tools/vllm (CUDA build chosen from your NVIDIA driver)
+#   bash scripts/vllm.sh download    # once: the model into the Hugging Face cache
+#   bash scripts/vllm.sh start       # start in the background and wait until it answers
+#   bash scripts/vllm.sh status | logs | stop
+
+[server]
+# Hugging Face model (Qwen3.8-27B, 4-bit AWQ, 21 GB, Apache-2.0; about 22 GB of GPU memory for the weights).
+model = "cyankiwi/Qwen3.8-27B-AWQ-INT4"
+# The model id pi asks for (pi model "local/<served_name>").
+served_name = "qwen3.8-27b"
+vllm_version = "0.27.1"
+
+# Which GPU(s), as numbered by nvidia-smi. For two GPUs use gpu = "0,1" and tensor_parallel = 2.
+gpu = "1"
+tensor_parallel = 1
+# Share of each GPU's memory vLLM claims (weights + KV cache). It must be free: start refuses otherwise and
+# shows who is using the GPU, so it never squeezes another user's job.
+gpu_memory_utilization = 0.90
+
+# 127.0.0.1 = this machine only. Use 0.0.0.0 to serve other machines, and then set api_key.
+host = "127.0.0.1"
+port = 8000
+api_key = ""
+
+# Context length in tokens (the model supports 262144; 131072 fits one 48 GB GPU next to the weights).
+max_model_len = 131072
+# Longest reply pi asks for.
+max_tokens = 16384
+# Concurrent requests; one agent needs one or two.
+max_num_seqs = 8
+
+# Extra vllm serve flags. --language-model-only skips the vision encoder (text only, more room for the KV cache).
+extra_args = ["--language-model-only"]
+
+# Where models are cached; empty = the Hugging Face default (~/.cache/huggingface).
+hf_home = ""

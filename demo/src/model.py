@@ -1,0 +1,53 @@
+"""EVOLVABLE: the NumPyro model.
+
+Contract (checks/contract.md):
+- model(X, lo=None, hi=None): when lo/hi are given, add the likelihood of each isolate's log2-MIC interval and
+  record it pointwise as numpyro.deterministic("log_lik", ...) with shape (n,).
+- simulate(samples, X, key) -> array (draws, n): latent log2 MICs for the rows of X, from posterior samples.
+- FEATURE_EFFECTS: name of the per-feature effect site (for the parsimony count), or None.
+
+Baseline: log2 MIC ~ Normal(alpha + X beta, sigma), interval-censored, independent Normal(0, 2) priors on the
+effects (skill: censored-mic-regression).
+"""
+
+import jax
+import jax.numpy as jnp
+import numpyro
+import numpyro.distributions as dist
+from jax.scipy.special import log_ndtr
+
+FEATURE_EFFECTS = "beta"
+
+
+def log_interval_prob(lo, hi, mu, sigma):
+    """log P(lo < y <= hi) for y ~ Normal(mu, sigma); lo may be -inf and hi may be +inf.
+
+    Every branch is computed on finite placeholder bounds so that jnp.where never multiplies an
+    infinite gradient by zero (which gives NaN gradients and a stuck sampler).
+    """
+    lo_inf, hi_inf = jnp.isinf(lo), jnp.isinf(hi)
+    lo_f = jnp.where(lo_inf, hi - 1.0, lo)
+    hi_f = jnp.where(hi_inf, lo + 1.0, hi)
+    a, b = (lo_f - mu) / sigma, (hi_f - mu) / sigma
+    log_upper, log_lower = log_ndtr(b), log_ndtr(a)
+    interval = log_upper + jnp.log1p(-jnp.exp(log_lower - log_upper))
+    return jnp.where(hi_inf, log_ndtr(-a), jnp.where(lo_inf, log_upper, interval))
+
+
+def model(X, lo=None, hi=None):
+    p = X.shape[1]
+    alpha = numpyro.sample("alpha", dist.Normal(-4.0, 3.0))
+    sigma = numpyro.sample("sigma", dist.HalfNormal(2.0))
+    beta = numpyro.sample("beta", dist.Normal(jnp.zeros(p), 2.0))
+    mu = numpyro.deterministic("mu", alpha + X @ beta)
+    if lo is not None:
+        ll = log_interval_prob(lo, hi, mu, sigma)
+        numpyro.factor("censored_lik", ll.sum())
+        numpyro.deterministic("log_lik", ll)
+
+
+def simulate(samples, X, key):
+    """Latent log2 MIC draws (draws, n) for the rows of X."""
+    beta = samples["beta"]                                    # (draws, p)
+    mu = samples["alpha"][:, None] + beta @ jnp.asarray(X).T   # (draws, n)
+    return mu + samples["sigma"][:, None] * jax.random.normal(key, mu.shape)
