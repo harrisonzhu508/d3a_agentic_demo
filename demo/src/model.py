@@ -35,10 +35,18 @@ def log_interval_prob(lo, hi, mu, sigma):
 
 
 def model(X, lo=None, hi=None):
-    p = X.shape[1]
+    n, p = X.shape
     alpha = numpyro.sample("alpha", dist.Normal(-4.0, 3.0))
     sigma = numpyro.sample("sigma", dist.HalfNormal(2.0))
-    beta = numpyro.sample("beta", dist.Normal(jnp.zeros(p), 2.0))
+    # Regularised horseshoe (Piironen & Vehtari 2017), non-centred form.
+    # tau0 from p0=8 relevant predictors out of p=77, sigma, n (per sparse-priors.md).
+    tau0 = 8.0 / (p - 8.0) * sigma / jnp.sqrt(n)
+    tau = numpyro.sample("tau", dist.HalfCauchy(tau0))
+    lam = numpyro.sample("lambda", dist.HalfCauchy(jnp.ones(p)))
+    c2 = numpyro.sample("c2", dist.InverseGamma(2.0, 2.0 * 3.0**2))  # slab: effects up to ~3 doublings
+    lam_tilde = jnp.sqrt(c2 * lam**2 / (c2 + tau**2 * lam**2))
+    z = numpyro.sample("z", dist.Normal(jnp.zeros(p), 1.0))
+    beta = numpyro.deterministic("beta", z * tau * lam_tilde)
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = log_interval_prob(lo, hi, mu, sigma)
