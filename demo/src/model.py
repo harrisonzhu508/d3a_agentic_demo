@@ -86,7 +86,25 @@ def model(X, lo=None, hi=None):
     # door open. If the gain survives, what the censored rows wanted was room around the mode and the axis is done;
     # if it collapses, they wanted the upper tail, and a proper heavy-tailed family (a scale-mixture t, or an
     # inverse-gamma) is where the remaining density is.
-    scale = numpyro.sample("scale", dist.Gamma(2.0, 0.5))
+    # Forty-fifth experiment: the best-scoring change since the champion, run again with the sampler settings the
+    # geometry asks for. InvGamma(2, 128) on the error scale - an inverse-gamma with mode 5.7 doublings, median 7.7
+    # and a s^-5 upper tail, written as Gamma(2, 128) on the reciprocal because numpyro has no inverse-gamma - scored
+    # +6.55 +/- 3.63 ELPD (ELPD -144.93 against the champion's -151.48) with 0 divergences, R-hat 1.0059, min ESS 922
+    # in 14.3 s: the largest gain of the session and 54% of the harness's two-SE bar, short of it only because the
+    # paired SE is 3.63 rather than the ~1.2 this model shows for small changes. The prior evidence that it is real is
+    # the six-point monotone behind it (half-normal 0; gamma modes 0/2/2.7 at +0.9/+4.0/-0.2; half-Cauchys at
+    # +4.1/+4.6; this at +6.6), monotone in how cheap the prior makes a large residual scale, which is what the 204
+    # right-censored rows argue for and the only rows that do. What the run does not settle is the SE, and a
+    # reciprocal parameterisation is exactly where the harness's CV budget is thinnest: s enters every censored row's
+    # likelihood, its posterior is wide (mean 9.2, 97.5% point 13.1), and the held-out quantity is
+    # log mean_s exp(log_lik_s) over 4 chains x 500 draws of a long-tailed logistic interval probability. So draw
+    # four times as many samples at a higher accept rate - 4000/4000 at target_accept 0.98 - which cuts the
+    # Monte-Carlo component of a mean by half, raises the ESS that the harness's own gates measure on the development
+    # fit, and costs 60 s of the 600 s budget (the previous run's gate margin was clean at 14 s). Nothing about the
+    # model changes: if +6.5 was the fit and 3.6 was noise, the gain survives at a smaller SE and is kept; if the
+    # point estimate itself collapses, the reciprocal parameterisation was reading a corner of the posterior.
+    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
+    scale = numpyro.deterministic("scale", 1.0 / scale_raw)
     # The champion needs very large effects on a few QRDR alleles (gyrA D87N ~ +11, parC S80I ~ +9 log2
     # units) - the MIC really does leave the plate for those isolates - so width 2 is already close to the
     # posterior of the alleles that matter. A Student-t(4, 0, 2) prior has that width in the middle but
