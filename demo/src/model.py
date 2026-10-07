@@ -114,7 +114,33 @@ def model(X, lo=None, hi=None):
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
-    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
+    # One hundred and sixth experiment: the residual prior moved by a quarter in the only direction on this axis
+    # that has ever been measured as free. The scale has been fitted under ten priors and the loop has drawn two
+    # conclusions from them, one of which is now contradicted by the other. The first conclusion, held for most of the
+    # session, was that the response in this prior's location is flat: a rate of 120 costs 0.23 +/- 0.39, a rate of
+    # 160 costs 0.10 +/- 0.62, both clean, both tiny, against a champion whose own keep was +9.19. The second is that
+    # the response in its tail is enormous and runs the wrong way: raise the shape of the inverse-gamma from 2 to 2.5
+    # at constant mean and the posterior scale moves from 15.6 doublings to 33.0 while the score falls 1.21 and the
+    # chains stop agreeing; raise it to 4 and the posterior reaches 82.1 - a residual ten times the width of the
+    # dilution series, for a prior that forbids large scales harder than anything else tried - and the score falls
+    # 6.37. The ordering is the giveaway: the harder a power law pushes the scale down, the further up it lands, which
+    # is what a one-sided censored likelihood does when a parameter is being used rather than estimated, since
+    # 1 - Phi((hi - mu)/s) climbs without limit for the 204 rows whose MIC was never measured. What the two flat
+    # quarter-steps measured, read against that, is not flatness but the one direction of travel available to a prior
+    # whose far end is doing the work: a Gamma on the reciprocal with its shape held at 2 and its rate moved from 128
+    # to 160 keeps the s^-5 tail exactly and shifts only the region where the prior is smooth, and that is what the
+    # loop has been calling a plateau. Move the same quantity through the median instead of the mode and the same
+    # quarter-step costs the fit a fifth of its prior mass above 40 doublings - the region the champion's posterior
+    # occupies at 5%, the region no dilution series can have observed, and the region the three unconstrained fits in
+    # this session's log have each run into at 16.6, 33.0 and 82.1 doublings. The median of a Gamma(a, b) on the
+    # reciprocal is roughly (a - 1/3)/b, so the kept 128 puts the scale's prior median at 7.8 doublings; a rate of
+    # 163.7 puts it at 9.9, the same quarter-step outward taken through the statistic the posterior reports rather
+    # than through the mode that reports nothing. Nothing else in the model moves: same shape, same tail exponent, the
+    # same knee, the same rare block, the same intercept, the same features. This is the smallest possible statement
+    # of the hypothesis the last ten runs have been circling, which is that the residual scale of an interval-censored
+    # MIC regression is bought at the far end of its prior and that its price per unit is measurable if the unit is
+    # small enough - here, twenty per cent of the mass in a tail the experiment cannot see.
+    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 163.7))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
