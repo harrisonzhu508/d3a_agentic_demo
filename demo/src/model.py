@@ -18,6 +18,10 @@ from jax.scipy.special import log_ndtr
 
 FEATURE_EFFECTS = "beta"
 
+# Set by src/features.py (only it sees the column names): boolean array, True for the determinants too rare to
+# have their own unrestricted effect. None = treat every column as the champion does.
+RARE_COLUMNS = None
+
 
 def log_interval_prob(lo, hi, mu, sigma):
     """log P(lo < y <= hi) for y ~ Normal(mu, sigma); lo may be -inf and hi may be +inf.
@@ -59,13 +63,23 @@ def model(X, lo=None, hi=None):
     alpha = numpyro.sample("alpha", dist.Normal(-4.0, 3.0))
     # Logistic errors with the same variance as the baseline HalfNormal(2) errors: s = sigma sqrt(3/pi)
     scale = numpyro.sample("scale", dist.HalfNormal(2.0 * jnp.sqrt(3.0 / jnp.pi)))
-    # The champion needs very large effects on a few QRDR alleles (gyrA D87N ~ +11, parC S80I ~ +9 log2
-    # units) - the MIC really does leave the plate for those isolates - so width 2 is already close to the
-    # posterior of the alleles that matter. A Student-t(4, 0, 2) prior has that width in the middle but
-    # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
-    # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
-    # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Champion: independent StudentT(4, 0, 2) on every effect, which beat Normal(0,2) by 28.9 +/- 7.3 ELPD and
+    # is the only regularisation tried so far that both gains and samples. One change: the *rare* determinants.
+    # 34 of the 77 columns are carried by at most 15 isolates; for those the data carry almost no information
+    # about the effect, and a t's polynomial tail means the posterior is barely tighter than the prior (their
+    # posterior sd is 2.7-2.8 against a prior sd of 2, and the prior tail then lets a coefficient reach tens of
+    # doublings - gyrA_D87Y, five isolates, sits at +2.9 +/- 4.5, and the extreme mu values come from such
+    # columns combining). A half-Cauchy scale mixture is the standard weakly informative version of a sparsity
+    # prior where the sparsity level itself is unknown (Polson & Scott 2012; Gelman et al. BDA3 ch. 21 on
+    # hierarchical scales being the robust choice over fixed ones), and writing it non-centred (beta = u * |w|,
+    # w ~ t(4,0,2), u ~ HalfCauchy(1)) adds no discrete inclusion site - the thing that made the earlier
+    # horseshoe attempts unsamplable here was a funnel in tau, and a half-Cauchy scale on a t-distributed effect
+    # has no funnel at 0 because both factors stay put. The 43 common columns keep the champion's prior unchanged.
+    rare = jnp.asarray(RARE_COLUMNS, dtype=bool) if RARE_COLUMNS is not None else jnp.zeros(p, dtype=bool)
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    beta_rare_raw = numpyro.sample("beta_rare_raw", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    rare_scale = numpyro.sample("rare_scale", dist.HalfCauchy(jnp.ones(p)))
+    beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare_raw * rare_scale, beta_common))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
