@@ -68,7 +68,24 @@ def model(X, lo=None, hi=None):
     # the censored rows cannot speak to. The champion's own error *distribution* change (logistic errors) was
     # worth +340 ELPD, so getting the residual right is where the loss still lives: coverage is 82.6% against a
     # nominal 90%.
-    scale = numpyro.sample("scale", dist.HalfNormal(2.0))
+    # Thirty-third experiment, and the first this session to change the prior on the *error* rather than on the
+    # effects. The scale carries more of the remaining loss than any effect does: splitting the champion's pointwise
+    # cross-validated log density by censoring state, the 98 on-grid isolates contribute 17%, the 256 isolates at the
+    # plate bottom 27% and the 204 above the top 56%, and for a right-censored isolate the likelihood is
+    # 1 - Phi((hi - mu)/s), which is flat in mu once mu is past hi + 3s - so what those rows say about the data is
+    # almost entirely a statement about s. The champion puts HalfNormal(2) on it, a prior chosen in
+    # heavy-tailed-error-scale as "the weakly informative default for a scale" and worth +0.60 +/- 0.19 over the
+    # variance-matched HalfNormal(3.47); but a half-normal on a scale is only weakly informative near zero, and this
+    # posterior sits at 6.8 doublings with a 95% interval of 5.2-8.7 (heavy-tailed-error-scale, Data), i.e. the
+    # parameter the censored rows identify least well is also the one whose prior is furthest from the region they
+    # actually inform. Half-normal(2) puts 79% of its mass below 2 doublings - so it is not a weak prior at the
+    # posterior mode, it is a hard pull downward that the likelihood then has to overcome, and the amount it has to
+    # overcome is exactly the residual the censored rows are arguing about. Replace it with a prior that is flat over
+    # the assay's own resolvable range and declines outside it: HalfUniform-ish is not smooth, so use a half-Cauchy
+    # at 4 doublings, half the width of the dilution series - unit density through the posterior mode, so the
+    # likelihood is left alone where it speaks, and no exponential truncation of the upper tail it is arguing for.
+    # The half-Cauchy is also BDA3's recommended scale prior precisely where the likelihood is weak.
+    scale = numpyro.sample("scale", dist.HalfCauchy(4.0))
     # The champion needs very large effects on a few QRDR alleles (gyrA D87N ~ +11, parC S80I ~ +9 log2
     # units) - the MIC really does leave the plate for those isolates - so width 2 is already close to the
     # posterior of the alleles that matter. A Student-t(4, 0, 2) prior has that width in the middle but
