@@ -75,7 +75,31 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Eleventh variant of the rare-column slab, and the one the diagnostics finally point to. Varying only the 14
+    # columns carried by at most 15 isolates, the gain rose with the prior's tail mass: t(4,0,2), which is the
+    # champion's prior on a split site, +2.4; t(3,0,1.5) +3.0; t(2.5,0,2) +3.5; t(2,0,2) +4.5 - and every variant
+    # with a heavy tail diverged (t(2,0,2) at 6000 draws: 9 divergences, and *more* at target_accept_prob 0.99,
+    # 20, which rules out step size: the trajectories are leaving the support, not stepping too coarsely). A
+    # Student-t's tail is polynomial, so with three carriers the likelihood cannot contain it and the sampler walks
+    # out to coefficients of hundreds of doublings, where the log density is numerically flat. Keep the shrinkage
+    # that earns the gain but bound the reach: a StudentT(3, 0, 2) *truncated* to +/- 8 doublings on those columns
+    # - eight doublings is the whole width of the dilution series (0.008 to 4 mg/L), so an effect beyond it cannot
+    # be distinguished from a shift of the intercept for an isolate carrying that one determinant, and a truncation
+    # at the assay's own range is a statement about the measurement, not about the biology (Gelman et al., BDA3
+    # ch. 21: bound the parameter at the point where the data cannot tell). The truncated density is a smooth,
+    # bounded, finite-support function, so there is no tail to escape into; the 63 common columns keep the
+    # champion's prior exactly.
+    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Implemented as a factor rather than dist.TruncatedDistribution (whose sampler needs the incomplete beta
+    # inverse, unavailable here without tensorflow_probability): sample the champion's t(4) and add the log ratio
+    # between a t(3, 0, 2) prior and a hard cut at +/- 8. Same posterior density up to a constant, no new site
+    # beyond the effect itself, and the potential is finite and flat-but-bounded outside the cut.
+    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    inside = (jnp.abs(beta_rare) <= 8.0).astype(jnp.float32)
+    log_t3 = -2.0 * jnp.log1p(beta_rare ** 2 / 12.0)          # t(3, 0, 2) log density, up to a constant
+    numpyro.factor("rare_prior", jnp.sum(log_t3 + jnp.log(jnp.maximum(inside, 1e-12))))
+    beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
