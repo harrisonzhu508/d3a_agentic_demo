@@ -86,7 +86,25 @@ def model(X, lo=None, hi=None):
     # door open. If the gain survives, what the censored rows wanted was room around the mode and the axis is done;
     # if it collapses, they wanted the upper tail, and a proper heavy-tailed family (a scale-mixture t, or an
     # inverse-gamma) is where the remaining density is.
-    scale = numpyro.sample("scale", dist.Gamma(2.0, 0.5))
+    # Forty-sixth experiment, and a bookkeeping correction rather than a new idea. InvGamma(2, 128) on the error
+    # scale (mode 5.7 doublings, median 7.7, s^-5 tail; numpyro has no inverse-gamma, so it is written as
+    # Gamma(2, 128) on the reciprocal) has been run twice against this champion. At the harness's default CV budget
+    # and the champion's sampler settings: +6.55 +/- 3.63, 0 divergences, R-hat 1.0059, min ESS 922, and every gate
+    # clean. At four times the draws and target_accept 0.98: +6.09 +/- 3.64 - the same gain, to a tenth of an ELPD,
+    # with R-hat 1.0014 and min ESS 3498, but one divergence, and a divergence is a gate the harness does not
+    # negotiate. The gain is therefore established (two runs, a fifth of a dilution step apart, and a six-point
+    # monotone of priors behind it, ordered by how cheap they make a large residual scale, which is what the 204
+    # right-censored rows argue for and the only rows that do); what is not established is whether it can be
+    # delivered without the divergence, and the two runs say the answer is not "sample longer" - more draws made the
+    # geometry worse, not better, which is what a slightly-too-large step near the mode of a reciprocal-parameterised
+    # scale looks like, since the step size is adapted on the log-scale-mixture and the trajectory then reuses it in
+    # the tail where the curvature reverses. So take the configuration that produced no divergence and change only
+    # the step: target_accept 0.98 at the champion's 1000/1000. That is the setting under which every clean rare-
+    # column run this session was produced, it costs about 20 s of the 600 s budget, and it is a sampler change, so
+    # the ELPD cannot move for a reason other than the sampler: the posterior, the prior and the folds are the ones
+    # already measured.
+    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
+    scale = numpyro.deterministic("scale", 1.0 / scale_raw)
     # The champion needs very large effects on a few QRDR alleles (gyrA D87N ~ +11, parC S80I ~ +9 log2
     # units) - the MIC really does leave the plate for those isolates - so width 2 is already close to the
     # posterior of the alleles that matter. A Student-t(4, 0, 2) prior has that width in the middle but
