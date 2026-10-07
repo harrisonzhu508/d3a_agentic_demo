@@ -88,6 +88,10 @@ def model(X, lo=None, hi=None):
     # the shrinkage the earlier variants bought with a sampled scale, obtained from the exponent alone, which is a
     # smooth fixed function and adds no geometry at all.
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
+    # More draws: the gate is on rank-normalised R-hat and on bulk/tail ESS, and a marginal that is only mildly
+    # heavy-tailed (a t(3) posterior for a column with three carriers) needs more draws to resolve its tail than a
+    # Normal one does - the model is unchanged, only the number of iterations spent on it.
+    # (Set here so the harness picks it up from src/sampler.py; see SETTINGS there.)
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(3.0, jnp.zeros(p), 2.0))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
