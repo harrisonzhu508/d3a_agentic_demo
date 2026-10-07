@@ -109,7 +109,34 @@ def model(X, lo=None, hi=None):
     # degree of freedom expressed twice - which the 84% additivity of the last pair had already hinted at - and the
     # session's conclusion is the single InvGamma, +6.43 +/- 3.56, ratio 1.81, which is as close to the harness's rule
     # as anything has come and is where this loop should stop.
-    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
+    # One hundred and sixteenth experiment: the design's one free number, which nothing has ever moved. Everything in
+    # this model that separates a coefficient into one of two priors rests on a single comparison, written once in
+    # line 112 and read by forty runs: a column is rare if it is carried by fifteen isolates or fewer. That threshold
+    # has never been a hypothesis here. It is the cut the sparse-prior skill suggests for "genomic prevalence of a few
+    # percent", it sits two isolates below the fourfold difference between the narrow and wide rare priors that won
+    # the champion its +9.19, and every one of the fifty subsequent campaigns has moved a prior width, a prior tail or
+    # a penalty knee while leaving it exactly where it was found - which makes it the only free parameter on this
+    # branch that has never been measured, and the only one whose measurement would change how the last fifty are read.
+    # The data have an opinion about it and the opinion is small, which is itself worth knowing before the run: the
+    # carrier counts of these 77 columns are 191, 257, 200, 178 and down through tens to a tail of threes, and exactly
+    # one column sits at the boundary this run moves - ampC_T-32A, a promoter variant carried by sixteen isolates,
+    # which is the whole of the change. No other column is within one isolate of either side of the cut, so this is
+    # not a reassignment of a block but of one allele, carried by three per cent of the plate, which a t(4, 0, 2)
+    # prior with no penalty is swapping for a t(4, 0, 8) prior discounted past sixteen doublings. On a plate where 204 of the
+    # 558 isolates were never read above the top well, extra room on a handful of resistance alleles is worth density
+    # on exactly those rows, and this loop has measured that trade something near thirty times - always with the same
+    # result, a positive point estimate whose paired error is a little too large. What makes this run worth doing
+    # anyway is that its answer is not a point estimate at all. If the prevalence cut is a design choice the data
+    # support, then the allele that sits exactly on the boundary is one the plate can resolve at three per cent
+    # prevalence and should be losing a fourfold-prior and a discount it does not need, at a cost the harness can see
+    # on twenty rows. If the answer is another zero within a twentieth - the far likelier outcome for a one-column
+    # change, and the reason to prefer this to another point on the knee - then a block boundary here is not doing
+    # model work at all - which, joined to the eleven measurements
+    # of the residual scale and the twelve of the penalty knee, would leave this loop with the conclusion it has been
+    # walking towards for fifty runs: that the champion's -142.29 is a fit to the censored rows' intervals by way of a
+    # residual the size of the plate, and that everything built around it, including the two-prior design that earned
+    # it, is decoration. Either reading is worth more than a forty-first point on the knee.
+    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 16.0
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
