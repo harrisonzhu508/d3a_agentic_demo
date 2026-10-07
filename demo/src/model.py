@@ -86,7 +86,25 @@ def model(X, lo=None, hi=None):
     # door open. If the gain survives, what the censored rows wanted was room around the mode and the axis is done;
     # if it collapses, they wanted the upper tail, and a proper heavy-tailed family (a scale-mixture t, or an
     # inverse-gamma) is where the remaining density is.
-    scale = numpyro.sample("scale", dist.Gamma(2.0, 0.5))
+    # Fifty-sixth experiment, and the last on this axis: the far end of it, run with the sampler settings its own
+    # diagnostics asked for. InvGamma(2, 256) on the residual scale (mode 11.4 doublings, median 15.4, the same s^-5
+    # tail) scored +7.22 ELPD at 1000+1000 draws - the largest single gain of the session apart from nothing - and
+    # was rejected by the gates rather than by the keep rule: R-hat 1.0193 against a limit of 1.01, minimum bulk ESS
+    # 343 against a floor of 400, zero divergences. Those are exactly the numbers a chain that has not finished
+    # exploring a wide scale produces, not the numbers of a model the posterior dislikes, and the same family one
+    # step inboard behaves impeccably (InvGamma(2,128): R-hat 1.0017-1.0092 and ESS 897-4016 across four runs, at
+    # the default sampler, at target_accept 0.98, at four times the draws, and with a dense mass matrix). The prior
+    # at 256 puts its mass where the posterior mean already is (s = 9.2 at 128, and the point estimate of the ELPD
+    # gain says further out is better still), so the fit has to move s twice as far as the champion's does and the
+    # chains disagree about where it lands at 1000 draws. Four times the draws and a denser mass matrix are the two
+    # things that fixed that class of failure earlier in this session, when the rare-column slab would not converge
+    # below 3000 draws and target_accept 0.98, and the budget affords it six times over (the champion's full run is
+    # 14 s of 600). If the gates clear at 2115-equivalent ESS, then the gain is +7.2 against an SE whose value this
+    # loop has now measured twice at 4.70 for this prior - the run with four times the draws reproduced the point
+    # estimate and the SE digit for digit - and 7.2 > 2 x 4.7 fails by a whisker; if the SE comes back smaller, this
+    # is the biggest keep available and the axis was never the problem, the resolution was.
+    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 256.0))
+    scale = numpyro.deterministic("scale", 1.0 / scale_raw)
     # The champion needs very large effects on a few QRDR alleles (gyrA D87N ~ +11, parC S80I ~ +9 log2
     # units) - the MIC really does leave the plate for those isolates - so width 2 is already close to the
     # posterior of the alleles that matter. A Student-t(4, 0, 2) prior has that width in the middle but
