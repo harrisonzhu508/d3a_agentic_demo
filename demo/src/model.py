@@ -112,10 +112,37 @@ def model(X, lo=None, hi=None):
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
-    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
+    # One hundred and tenth experiment: the champion's prior for the 63 columns the plate can resolve, kept exactly,
+    # and the same ceiling the rare columns have put on top of it at a height the fitted coefficients never reach.
+    # Fourteen runs have now probed the slack in this model, and between them they have established one fact the loop
+    # has kept failing to use: the champion's whole gain of +9.19 came from loosening two priors at once, and every
+    # loosening since has measured positive but refused. On the rare block, the knee has been walked from 12 to no
+    # bound at all and the score has risen the whole way, -3.66, main, 0.00, 0.01, +0.49, +1.05, +1.99. On the common
+    # block, the width has been walked from 1 to 8 and the score has risen the whole way too, -0.49, main, +1.24,
+    # +2.68. On the residual scale, eleven runs say the parameter is not identified at all. The one intervention that
+    # goes the other way - putting the rare columns' ceiling on the common columns as well, at the same knee of
+    # sixteen doublings - cost 19.11 ELPD, the largest loss the loop has inflicted on itself, with an R-hat that came
+    # back clean and a coverage of 93% that says the fit simply gave up on the censored rows. That single number is
+    # the reason to run this one: it is evidence that a ceiling on a common column is not neutral, that it bites,
+    # because sixteen doublings is inside the range that a determinant carried by two hundred isolates can be pushed
+    # into by a censored likelihood with a fifteen-doubling residual to spend. It is not evidence that a ceiling above
+    # that range bites, and the loop has never tried one. Thirty-two doublings is four dilution steps and twice the
+    # height at which the same penalty was measured destructive; the champion's common-column posterior puts its
+    # largest coefficient within nine doublings of zero, so a softplus knee there contributes a log density that is
+    # flat to four decimal places over every draw the model produces and its gradient contributes nothing that a NUTS
+    # trajectory will notice. Which makes it, in the strict sense, a prior statement with no consequences for this
+    # fit - and that is precisely the quantity worth measuring once on this branch, because if a term that cannot
+    # reach the posterior nevertheless moves the score by more than its standard error, then what the harness is
+    # scoring is not the model but the geometry of the function it samples, and every comparison in the last thirty
+    # runs has to be read as a statement about step sizes. If it comes back at zero within its noise, as I expect,
+    # then the ceiling at sixteen cost nineteen ELPD by doing model work on the columns it was placed on, ceilings
+    # belong to the columns that need them, and the design on main is the right one for the reason the design claims:
+    # a bound where the evidence is thin and none where it is not.
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
+    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0))
+                   - jnp.sum(jax.nn.softplus(jnp.abs(beta_common) - 32.0)))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
