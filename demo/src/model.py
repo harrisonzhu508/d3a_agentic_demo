@@ -12,11 +12,13 @@ effects (skill: censored-mic-regression).
 
 import jax
 import jax.numpy as jnp
+import numpy as np
 import numpyro
 import numpyro.distributions as dist
 from jax.scipy.special import log_ndtr
 
 FEATURE_EFFECTS = "beta"
+GENE_GROUPS = None            # set by src/features.py: (gene index per column, number of genes)
 
 
 def log_interval_prob(lo, hi, mu, sigma):
@@ -54,18 +56,52 @@ def logistic_log_interval_prob(lo, hi, mu, scale):
     return jnp.where(jnp.isposinf(hi), log_surv, jnp.where(jnp.isneginf(lo), log_upper, interval))
 
 
+def _gene_groups(names):
+    """Gene/locus identity per column, from the AMRFinderPlus names (gyrA_S83L -> gyrA, blaCTX-M-15 -> blaCTX)."""
+    import re
+    def gene_of(n):
+        return re.match(r"^[A-Za-z]+", n).group(0)
+    groups = sorted({gene_of(n) for n in names})
+    index = {g: i for i, g in enumerate(groups)}
+    return np.array([index[gene_of(n)] for n in names]), len(groups)
+
+
 def model(X, lo=None, hi=None):
     p = X.shape[1]
     alpha = numpyro.sample("alpha", dist.Normal(-4.0, 3.0))
     # Logistic errors with the same variance as the baseline HalfNormal(2) errors: s = sigma sqrt(3/pi)
     scale = numpyro.sample("scale", dist.HalfNormal(2.0 * jnp.sqrt(3.0 / jnp.pi)))
-    # The champion needs very large effects on a few QRDR alleles (gyrA D87N ~ +11, parC S80I ~ +9 log2
-    # units) - the MIC really does leave the plate for those isolates - so width 2 is already close to the
-    # posterior of the alleles that matter. A Student-t(4, 0, 2) prior has that width in the middle but
-    # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
-    # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
-    # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # The champion's fit splits the freedom in the QRDR columns into gyrA_D87N +38 against glpT_E448K -14, and
+    # every prior tried so far that shrinks coefficients either costs ELPD (width 1: -35.3) or cannot be sampled
+    # (the scale mixtures). What is not in question is the *champion's* fit for the columns it identifies; what
+    # is wrong is the difference between near-collinear columns. So penalise only differences, and only within
+    # a gene: the four gyrA columns are alternative mutations of one target, which the mechanism can alter in
+    # one step at each of two codons, so their fitted effects should sit within a couple of doublings of each
+    # other, whereas gyrA versus glpT may differ by twenty (Hooper & Jacoby 2015). A ridge on within-gene
+    # differences is a soft version of that, keeps 76 free effects for everything else, and adds no hierarchical
+    # scale (which is what diverged in discarded/hierarchical-gene-family-effects, 70 divergences).
+    if GENE_GROUPS is None:                       # features.py did not label the columns: no grouping
+        beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+        mu = numpyro.deterministic("mu", alpha + X @ beta)
+        if lo is not None:
+            ll = logistic_log_interval_prob(lo, hi, mu, scale)
+            numpyro.factor("censored_lik", ll.sum())
+            numpyro.deterministic("log_lik", ll)
+        return
+    gene, n_gene = GENE_GROUPS
+    beta_raw = numpyro.sample("beta_raw", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Ridge on within-gene deviations of the raw effects: a centred quadratic penalty (the centring by the group
+    # mean shrinks differences rather than shifting the whole fit), with no extra site and so no extra funnel.
+    # w = 2 doublings: the alleles of one gene may differ, but not by twenty.
+    D = jnp.eye(n_gene)[gene]                       # (p, n_gene) indicator matrix
+    gcnt = D.sum(axis=0)
+    dev = beta_raw - ((beta_raw @ D) / jnp.maximum(gcnt, 1.0))[gene]
+    within = jnp.sum(jnp.where(gcnt[gene] > 1, dev ** 2, 0.0)) / (2.0 * 2.0 ** 2)
+    numpyro.factor("gene_ridge", -within)
+    # One centred offset per gene (centred so it is not confounded with the intercept), moving all of a gene's
+    # alleles together - the direction the data do identify, gyrA up and glpT down. Non-centred, sd 2 doublings.
+    theta = 2.0 * numpyro.sample("theta_z", dist.Normal(jnp.zeros(n_gene), 1.0))
+    beta = numpyro.deterministic("beta", beta_raw + (theta - theta.mean())[gene])
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
