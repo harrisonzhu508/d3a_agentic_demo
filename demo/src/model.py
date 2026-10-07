@@ -111,7 +111,31 @@ def model(X, lo=None, hi=None):
     # as anything has come and is where this loop should stop.
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
-    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
+    # One hundred and fortieth experiment: the design's original transaction, taken three steps further along the axis
+    # on which it was made, with the ceiling left exactly where the loop found it. Four points measure the slab of the
+    # 34 low-prevalence columns, and they rise: the tight prior the resolved block carries, applied to these columns
+    # too, costs 1.69 ELPD; the champion's eight doublings is main; ten gains 0.16 +/- 0.33; twelve, joined to a ceiling
+    # moved out to 24 doublings, gains 0.98 +/- 1.21; and twelve applied to every column in the model gains 2.68 +/-
+    # 3.66 for the best gated score this loop has produced. Twelve points more measure the ceiling on the same block,
+    # and they rise too: twelve doublings costs 3.66 of the +9.19 the keep earned, sixteen is main, eighteen and twenty
+    # are main to a hundredth of an ELPD with the tightest errors in the log, twenty-four gains half an ELPD, thirty-two
+    # gains 1.05 for -141.24, and no ceiling at all reaches -140.30 for +1.99 and is refused by a single divergence.
+    # Read as one surface, the two axes are the same axis seen from opposite ends - how much room a rare determinant is
+    # allowed in a fit whose censored rows want every isolate to be resistant - and the loop has moved along it only
+    # diagonally, one coordinate at a time, which is why the same sign keeps appearing at a magnitude just below the
+    # harness's resolution. What has never been done is to move both in the same direction at once from the champion,
+    # and the reason it has not is that the pair reads as an evasion of the ceiling rather than as a prior: a wider slab
+    # and a further knee together let a three-carrier allele claim twenty doublings of MIC, which no mechanism in this
+    # organism does. That objection is the reason to keep the ceiling exactly where the keep placed it and to move only
+    # the slab, which is the coordinate that decides what a determinant with no information in it is believed to be
+    # worth before the plate speaks. Sixteen doublings is the width at which a Student t with four degrees of freedom
+    # has a prior median coefficient of about six doublings and a prior 95th percentile near forty; the champion's eight
+    # puts the median near three, which is already the whole fluoroquinolone step, and the eight-to-sixteen step is
+    # therefore not a widening of what an allele may plausibly do but a widening of the range within which an allele
+    # carrying three isolates may be told it does something at all. Under a ceiling fixed at sixteen doublings, the
+    # effect of that widening is bounded by the ceiling for every draw the model produces, which is the property the
+    # champion's keep bought and the property this run keeps intact while asking what the bulk of the prior is worth.
+    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 16.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
