@@ -56,7 +56,36 @@ def logistic_log_interval_prob(lo, hi, mu, scale):
 
 def model(X, lo=None, hi=None):
     p = X.shape[1]
-    alpha = numpyro.sample("alpha", dist.Normal(-4.0, 3.0))
+    # One hundred and thirty-eighth experiment: the champion's largest lever, given half of what every run so far has
+    # asked it to give, in the one direction this loop has never taken it. The intercept prior is the only quantity on
+    # this fit whose effect has reproduced exactly: Normal(-4, 3) to Normal(0, 10) is worth 3.56 +/- 3.13 ELPD measured
+    # from four different parents at four different commits, the same lever taken to 15 doublings is worth 4.91, and
+    # taken to a thousand it loses its gates at three divergences and an R-hat of 1.0143. Those four measurements, in
+    # increasing width, are -1.6 relative to main, main, +3.56, +4.91, refused; and one number in that list has never
+    # been separated from the others, because every run on this axis has changed the width and almost none has changed
+    # anything else. Three of them did: the intercept's centre has been moved twice, once to the plate's bottom well at
+    # -7.06 doublings and once to the top at -2, worth +0.63 +/- 0.51 and -0.78 +/- 0.43, and the loop concluded from
+    # those two that the centre does not matter. But a prior's centre and a prior's width act on the same Normal
+    # density and their effects are not independent - moving the centre from -4 to -7 with a width of 3 leaves the
+    # champion's own fitted level of -3.5 nearly as probable as before, while widening the same Normal from 3 to 10
+    # makes the level free to sit anywhere from -34 doublings to +26 - and the loop's conclusion that the gain is in the
+    # width has never been tested against the alternative that it is in the centre's distance from the level the fit
+    # chooses, which is the quantity a Normal prior actually penalises. Here both move together, in the direction of
+    # less slack, and by an amount chosen from the plate rather than from the prior's arithmetic. The centre is set to
+    # the median of the 98 isolates whose MIC the dilution series actually read - three and a half doublings below zero
+    # in these units, the single measurement of a level this fit could take from data instead of from assumption, and
+    # the number the champion's own intercept prior was already centred on to within half a doubling. The width is cut
+    # from three doublings to two and a half, which is the interquartile spread of those same measured MICs divided by
+    # two: a prior that says the level of a plate of Escherichia coli against ciprofloxacin sits within a doubling and
+    # a half of what a plate of Escherichia coli against ciprofloxacin was measured at, for the isolates whose MICs were
+    # measured. If the mechanism the loop has been describing is real - that the censored rows pay the level to float -
+    # then binding it to the on-grid rows should cost something proportionate to the four fifths of this fit's density
+    # that lives off the grid, and the loop will at last have measured the price of the assumption rather than the price
+    # of removing it. If it comes back at main, then the 98 readable isolates and the 460 unreadable ones agree about
+    # the level and the intercept prior has been doing nothing all along, which is the finding that would let the report
+    # say that everything this session built on top of it - the ridge, the refusals, the four assemblies at 4.7 - is
+    # about the slopes after all.
+    alpha = numpyro.sample("alpha", dist.Normal(-3.5, 2.5))
     # Logistic errors with the same variance as the baseline HalfNormal(2) errors: s = sigma sqrt(3/pi)
     # The error scale of the interval-censored likelihood is the parameter the censored rows identify least
     # well - a right-censored isolate is happy with almost any mu once mu is past the top of the plate, so what
