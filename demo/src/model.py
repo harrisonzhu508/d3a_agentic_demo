@@ -111,7 +111,21 @@ def model(X, lo=None, hi=None):
     # as anything has come and is where this loop should stop.
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
-    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
+    # Sixty-eighth experiment: the kept fit's rare-column prior at the one width the harness has never been given,
+    # with the plate's own bound kept exactly where the keep was earned. The ablation of this champion - the
+    # inverse-gamma scale with the champion's old t(4, 0, 2) on every column - came back at -2.61 +/- 1.84 against
+    # it, so the rare-column half of the keep contributes a quarter of the +9.19 outright, and its prior is now one
+    # of the two parameters that decide where the model's held-out density sits. The widths that prior has been tried
+    # at form a curve measured at four points, all at the residual scale this fit has or narrower: 2 (the old
+    # champion, +2.4 by control), 3 (+2.72 +/- 2.23, ratio 1.22, the session's best-resolved), 8 (+6.75 with seven
+    # divergences uncut, +3.66 cut at 12, and the +9.19 cut at 16 that is now the champion), and 4 and 5 in between
+    # on the earlier fit (+3.09 +/- 3.48 and +3.51 +/- 4.05, both clean). That curve is monotone in gain and
+    # monotone in cost, and it has a hole: nothing has been measured between 5 and 8, which is exactly where the
+    # optimum of a gain-versus-variance ratio like elpd_diff / se_diff would sit if gain saturates while cost grows -
+    # and gain on this axis is known to saturate (widths 3, 4, 5, 6, 8 gained +2.7, +3.1, +3.5, +3.0, +3.4 on the old
+    # fit: a plateau, not a slope), while the paired SE rises roughly with the width. Width 4 with the cut at 16 is
+    # that point, and it is the only untested interior of a curve this session has otherwise mapped end to end.
+    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 4.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
