@@ -67,7 +67,21 @@ def model(X, lo=None, hi=None):
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
     beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
+    # Per-isolate soft cap on how far the linear predictor may sit above the top of that isolate's own tested
+    # range. 204 of the 558 isolates are `>4`: their likelihood contribution is flat once mu is a few doublings
+    # past +2, so nothing in the data stops mu there drifting to +42 log2 units (a MIC of 10^12 mg/L), which is
+    # what the champion does with the unidentified QRDR contrast (gyrA_D87N +38 against glpT_E448K -14). This is
+    # not a claim that MICs cannot be higher - it is applied to the *prediction error of extrapolation*, not to
+    # the data: a softplus penalty on (mu - hi_j - 3) for right-censored rows, hi_j = +2 for the `>4` isolates and
+    # the isolate's own upper dilution for the on-grid ones (an isolate measured at 0.5 mg/L has no business being
+    # predicted at 2^20 either). No effect anywhere inside the plate, and it is the only prior term that touches
+    # the direction the likelihood is blind to (Gelman et al., BDA3 ch. 21: regularise the unidentified part, on
+    # the scale of the predicted quantity - one doubling per unit of excess, so the cost of sitting ten doublings
+    # above the plate is the same as that of a ten-doubling misfit).
     if lo is not None:
+        hi_eff = jnp.where(jnp.isposinf(hi), 2.0, hi)          # top of the dilution series, for the `>4` rows
+        excess = jnp.maximum(mu - (hi_eff + 3.0), 0.0)
+        numpyro.factor("plate_cap", -jnp.sum(excess))
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
         numpyro.factor("censored_lik", ll.sum())
         numpyro.deterministic("log_lik", ll)
