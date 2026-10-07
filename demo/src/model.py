@@ -111,7 +111,31 @@ def model(X, lo=None, hi=None):
     # as anything has come and is where this loop should stop.
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
-    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
+    # Ninety-fifth experiment: a prior that is flat at zero rather than peaked, on the coefficients this design can
+    # barely estimate at all. The champion gives the 14 rare columns a StudentT(4, 0, 8) and discounts them again with a
+    # softplus hinge, and twenty runs have established what that combination is worth and what it costs. It is worth
+    # a great deal: removing the whole rare block, or replacing it with the narrow prior the common columns carry,
+    # costs between 2 and 7 ELPD depending on how the ablation is done. It costs one divergence every time its slack
+    # is widened by anything - a knee at 14 diverges once, an uncut prior once, a Normal(0, 8) in place of the t once,
+    # a t(4, 0, 12) at four times the draws twice - which is the signature of a posterior whose rare coefficients are
+    # near-flat over a wide range, an alignment between a prior's tail and a likelihood's indifference that NUTS reads
+    # as a funnel. What has not been tried is the opposite move on the same object: a prior for a rare determinant
+    # that is heavy-tailed where a determinant of unknown importance has to be, and thin beyond, because these are
+    # columns whose coefficient cannot be estimated at all in three quarters of the folds. HalfCauchy(0, 8) is that
+    # prior: the same scale as the kept t, the same spike at zero, an s^-2 tail against the t's s^-5 - heavier through
+    # the 8-to-24-doubling region where the champion's own posterior actually sits, with 1.2% of its rare mass above
+    # the knee and its largest draw at 23.6 - and the same knee at 16 left exactly where main has it, since the
+    # penalty has been shown to be load-bearing and this run changes only the shape underneath it. The two priors
+    # differ by a factor of three in density at 24 doublings and agree to a few per cent at 4, so this is a statement
+    # about the last percent of the rare coefficients and nothing else, which is where the loop's remaining
+    # disagreement with the champion lives: the eleven isolates whose MIC is above the plate's top and whose genotype,
+    # apart from one rare allele, says nothing. If it lands positive with clean gates, the tail the t(4) was chosen
+    # for was the wrong shape for these columns and the rare block wants a prior with a tighter bulk and fatter
+    # shoulders. If it diverges, as every widening of this block has, then the slack of the rare prior has been
+    # refused in four independent directions - wider, looser, deeper at zero, unpenalised - and the finding belongs
+    # in the report rather than in another branch: on 14 columns carried by at most fifteen isolates a censored MIC
+    # likelihood has a flat ridge, and every prior that walks it is refused for geometry rather than for fit.
+    beta_rare = numpyro.sample("beta_rare", dist.Cauchy(0.0, 8.0).expand([p]))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
