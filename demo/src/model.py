@@ -56,7 +56,29 @@ def logistic_log_interval_prob(lo, hi, mu, scale):
 
 def model(X, lo=None, hi=None):
     p = X.shape[1]
-    alpha = numpyro.sample("alpha", dist.Normal(-4.0, 3.0))
+    # Eighty-fourth experiment: one number in the prior the loop has never touched, moved to where the data
+    # actually are. The intercept's prior, Normal(-4, 3), is inherited from the baseline: -4 doublings is 0.0625
+    # mg/L, the middle of the plate, with two prior standard deviations reaching both of the plate's ends. That was
+    # a reasonable place to start and it has never been tested, while the quantity it is a prior for has been
+    # measured repeatedly by the fits themselves: of the 558 isolates, 256 - very nearly half - are left-censored at
+    # the plate's bottom, their MIC somewhere below 0.008 mg/L, and the posterior of the kept fit puts their mu at a
+    # median of -54.6, which is a model that has stopped describing the assay at all and is instead buying
+    # cross-validated density on rows the assay only bounds. A prior whose centre sits at the middle of a plate half
+    # of whose readings are below its bottom floor is not a neutral starting point; it is a claim that the
+    # susceptible population's MIC mode is a doubling and a half above where the plate can display it, and it pushes
+    # the intercept - which shares a funnel with the residual scale, and which this loop has attacked from the
+    # scale's side five times without reward - in the direction the censored rows dislike. Moving the centre to
+    # -7.06, the bottom dilution's own log2 value, says the weaker thing: the mode of a commensal E. coli
+    # population's ciprofloxacin MIC sits at or near the lowest concentration the plate tests, which is what the
+    # wild-type epidemiological cutoff for this drug and organism means in practice (the mechanism reference's
+    # wild-type distribution for fluoroquinolones in E. coli has its mode at the bottom dilution, with resistant
+    # genotypes forming the upper tail rather than shifting the whole population upward). The width is left at 3
+    # exactly, so this is not a looser prior - it is the same prior moved by one standard deviation downward, and
+    # the only thing it can do is move the intercept's compromise with the scale. If the gain is small and positive,
+    # the loop has found a third prior dimension the harness can see; if it is flat, the intercept's location is as
+    # unidentified as its scale's proved to be over six runs, which is the same conclusion with one more parameter
+    # in it and belongs in the report as such.
+    alpha = numpyro.sample("alpha", dist.Normal(-7.06, 3.0))
     # Logistic errors with the same variance as the baseline HalfNormal(2) errors: s = sigma sqrt(3/pi)
     # The error scale of the interval-censored likelihood is the parameter the censored rows identify least
     # well - a right-censored isolate is happy with almost any mu once mu is past the top of the plate, so what
