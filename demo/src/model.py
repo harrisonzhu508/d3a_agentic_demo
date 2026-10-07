@@ -112,7 +112,34 @@ def model(X, lo=None, hi=None):
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
-    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
+    # Ninetieth experiment: a point on the rare-column penalty that the loop's own measurements now bracket, chosen
+    # because it has the least disagreement between the fits it produces. Four runs have varied this knee alone. At
+    # 12 doublings the fit costs 3.66 ELPD of the +9.19 the champion earns and pays an SE of 3.09 for the
+    # privilege; at 16 it is the champion, +9.19 +/- 4.45; at 20 it gains +0.01 +/- 0.38; at 24 it gains +0.49 +/-
+    # 0.65; and with no knee at all it reaches the best absolute held-out density the loop has produced, ELPD
+    # -140.30 against main's -142.29, worth +1.99 +/- 1.66, and is refused for one divergence and an ESS of 555.
+    # Reading those five points in order, the score rises almost monotonically as the bound loosens while the
+    # standard error of the difference falls almost monotonically in the same direction - 3.09, 4.45, 0.38, 0.65,
+    # 1.66 - and the reason is worth more than any of the point estimates. The harness's SE is sqrt(n) times the
+    # across-isolate sd of the pointwise held-out log-density change: it is not the uncertainty of either fit taken
+    # separately, it is a measure of how much the two fits disagree about individual isolates, and a loose bound lets
+    # a determinant carried by three isolates in the training fold move the held-out mu of an isolate carrying it by
+    # fifteen doublings. Loosening the knee buys density on the right-censored rows in exactly the rows that no
+    # genotype explains, and it buys it by making the fit more willing to say something extreme about a rare allele,
+    # which is precisely what makes it differ from its reference point by point. The knee at 14 is the last interior
+    # point of this curve and the only one on the tight side of the champion, a place where the discount starts one
+    # doubling earlier than main - inside the plateau of the penalty's sharpness, where a hinge and a softplus
+    # differed by a third of an ELPD, and inside the region where the kept fit's rare posterior has only 1.2% of its
+    # mass above the current knee, so this move taxes a little more of a mass the model has already committed to
+    # rather than reaching into the tail. The prediction the disagreement reading gives is specific and unlike the
+    # reading the score alone gives: a knee at 14 should cost less than the three and two thirds ELPD a knee at 12
+    # cost - the response is steep between 12 and 16 only because between those numbers the discount first touches
+    # the fitted coefficients that matter - and it should arrive with an SE below one, because the tighter bound makes
+    # the fit disagree with itself less. If it lands positive with a small SE, then this axis has a maximum to the
+    # left of main as well as to the right, the champion sits on a slope rather than a plateau, and the loop should
+    # have measured the interior of this curve a dozen experiments ago. If it lands negative with a small SE, the
+    # knee's response is monotone and saturating and the champion is the last point on it worth taking.
+    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 14.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
