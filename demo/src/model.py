@@ -86,7 +86,23 @@ def model(X, lo=None, hi=None):
     # door open. If the gain survives, what the censored rows wanted was room around the mode and the axis is done;
     # if it collapses, they wanted the upper tail, and a proper heavy-tailed family (a scale-mixture t, or an
     # inverse-gamma) is where the remaining density is.
-    scale = numpyro.sample("scale", dist.Gamma(2.0, 0.5))
+    # Fifty-fifth experiment, and the run that decides the only large gain left on the table. InvGamma(2, 192) on the
+    # residual scale scored +7.17 ELPD, the largest of the session, with zero divergences, R-hat 1.0072 and every
+    # gate clean - and it was discarded for a paired SE of 4.70, 1.43 above the 3.27 needed. The 4.70 came from one
+    # sample of that difference, and I know how to tell whether 4.70 is its size or its luck: the harness computes
+    # sqrt(n) times the sd across isolates of the pointwise held-out log-density change, and its two ingredients are
+    # the model's disagreement with the champion (a property of the fit) and the Monte-Carlo error on top of it (a
+    # property of the draws). The prior for that scale sits at 3.6: the winner at 128 gave 3.63, 3.64, 3.63, 3.56 in
+    # four runs - the same number to two decimals whether the run used the default sampler, target_accept 0.98, four
+    # times the draws, or a dense mass matrix, which is as tight a spread as a Monte-Carlo quantity produces. This
+    # prior is one step further out and landed at 4.70 on its first run; if the SE is a property of the model
+    # comparison, quadrupling the draws should leave it near 4.7 and the gain is real but the rule cannot see it; if
+    # 4.70 was one draw from a wide sampling distribution, four times the draws will move it, and the direction it
+    # moves is the answer to the question this loop has been asking for eleven experiments - whether the harness's
+    # 2-SE rule can ever see a change whose whole effect is on 204 rows whose MICs were never measured. Nothing about
+    # the model changes from the run that scored +7.17: same prior, same folds, same seed, four times the samples.
+    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 192.0))
+    scale = numpyro.deterministic("scale", 1.0 / scale_raw)
     # The champion needs very large effects on a few QRDR alleles (gyrA D87N ~ +11, parC S80I ~ +9 log2
     # units) - the MIC really does leave the plate for those isolates - so width 2 is already close to the
     # posterior of the alleles that matter. A Student-t(4, 0, 2) prior has that width in the middle but
