@@ -114,8 +114,34 @@ def model(X, lo=None, hi=None):
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
-    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
-    scale = numpyro.deterministic("scale", 1.0 / scale_raw)
+    # Eighty-seventh experiment: the fit that is on main, minus the assumption its own diagnostics contradict. The
+    # scale parameter has now been measured under eight priors spanning four families, and its posterior does not
+    # behave like a parameter that the data inform: half-normal and gamma priors end at 6.9 and 8.9 doublings, the
+    # kept inverse-gamma at 15.6, an inverse-gamma with a slightly heavier tail at 33.0, a log-normal with a 95%
+    # interval from 3.4 to 25 at 10.8, and an inverse-gamma whose far tail is cut from s^-5 to s^-9 - the prior that
+    # forbids enormous scales hardest - at 82.1 with an interval of [58.5, 119.6]. Ordered by tail weight the
+    # posterior rises monotonically with the effort made to hold it down, and that is the behaviour of a one-sided
+    # likelihood being exploited rather than a quantity being estimated: for a right-censored isolate the held-out
+    # term 1 - Phi((hi - mu)/s) increases toward its limit as s grows, so a wide residual is worth density on the 204
+    # rows whose MIC the plate bounds from above, and the only thing standing between that trade and an infinite
+    # scale is whatever the prior says last. An inverse-gamma with shape 2 says it last as a power law, which is why
+    # this loop's attempts to tighten it moved the answer in the wrong direction. A log-normal says it as exp(-(log
+    # s)^2/2), which decays faster than any power of s and outruns the reward for good; the run two experiments ago
+    # used it centred at the geometric mean of the fit that predates this family, 9.2 doublings, and the fit gave up
+    # 4.01 +/- 2.38 ELPD to land at 10.8 - the harness's verdict that the model prefers a residual three times the
+    # assay's own repeatability, which is a finding about the censored rows and not about the assay. What that run
+    # cannot say is whether the loss came from the shape or from the location, because the centre it chose was a
+    # historical value rather than the kept fit's: 10.8 against the champion's 15.6 is a move of nearly five
+    # doublings, and the harness charges about one ELPD per doubling of this parameter's location. Centring the same
+    # log-normal at the posterior the champion actually reaches, log 15.6 with unit width on the log scale - a prior
+    # whose 95% range, 5.0 to 48 doublings, is as permissive as anything tried here - leaves the shape as the only
+    # difference from main. Two answers, both usable. If the score matches main within its own noise, then the entire
+    # advantage of the kept inverse-gamma is its tail, the scale is unidentified and plateau-flat, and the model on
+    # main should be reported as exploiting a one-sided likelihood in a way the log-normal fit shows how to stop
+    # doing at a price the loop can now quote. If the score falls by the several ELPD the location-only move cost,
+    # then this prior's tail is doing model work on the boundary rows and the honest statement is that the residual
+    # scale of an interval-censored MIC regression carries whatever the last term of the prior tells it to.
+    scale = numpyro.sample("scale", dist.LogNormal(jnp.log(15.6), 1.0))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
