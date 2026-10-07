@@ -75,7 +75,28 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Twenty-fourth experiment on the rare-column slab, and the one that decides whether this axis can ever be
+    # kept. With the threshold (15 carriers) and the cut (16 doublings) fixed, the prior width has four measured
+    # points, each against the same champion and the same folds:
+    #     width 2 (+- the champion's own prior, on a split site): +2.40 +/- 2.26   ratio 1.06, coverage 83.0%
+    #     width 3:  (this experiment)                             expected ~+2.7    ratio ~0.85
+    #     width 4:                                                +3.09 +/- 3.48   ratio 0.89, coverage 85.7%
+    #     width 5:                                                +3.51 +/- 4.05   ratio 0.87, coverage 86.9%
+    #     width 8:                                                +3.37 +/- 5.11   ratio 0.66, coverage 89.1%
+    # The gain is flat from 2 to 8 - a fourfold change in 14 priors moves cross-validated ELPD by less than its own
+    # standard error at every point - while the SE grows roughly with it, so the keep ratio (gain / SE) falls
+    # monotonically from 1.06. That is the signature of a direction the data do not inform: the model's predictions
+    # are unchanged by the prior because no fold can see these determinants, and the harness's paired SE correctly
+    # charges for whatever residual movement there is. Width 3 is the falsification test for the reading: if the
+    # +2.4 at width 2 is a real mechanism, halving the width-4 gain's distance to the champion should reproduce
+    # ~+2.7 at a ratio near or above 1.0 (the champion itself won at 28.9 +/- 7.3, ratio 4.0, and the harness's rule
+    # needs > 2); if instead the ratio is again ~0.9, then no width on this axis can clear the bar, the +2.4 at
+    # width 2 was the split-site control fluctuating, and the axis is closed.
+    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 3.0))
+    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
+    beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
