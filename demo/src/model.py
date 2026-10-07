@@ -86,7 +86,24 @@ def model(X, lo=None, hi=None):
     # door open. If the gain survives, what the censored rows wanted was room around the mode and the axis is done;
     # if it collapses, they wanted the upper tail, and a proper heavy-tailed family (a scale-mixture t, or an
     # inverse-gamma) is where the remaining density is.
-    scale = numpyro.sample("scale", dist.Gamma(2.0, 0.5))
+    # Fortieth experiment: the last measurement on the parameter this session has found still worth ELPD, and the
+    # third member of a design written down before fitting. Any gamma prior with mean m doublings and shape a has log
+    # density (a-1) log s - (a/m) s + const, so the pressure it puts on a posterior mode far from its own mean is
+    # fixed by one number, a. Three points on that line are measured, against the same champion and folds, all with
+    # clean gates and the same agreement and coverage, so the only thing that moves is ELPD:
+    #     HalfNormal(2)  ~ gamma(a = 1.5, m = 2)  the champion by construction  ->  0
+    #     Gamma(2, 0.5)      a = 2,   m = 4       kept, +3.98 +/- 1.97  (ratio 2.02)
+    #     Gamma(0.5, 0.125)  a = 0.5, m = 4       +0.89 +/- 0.50        (ratio 1.78)
+    # The shape has an interior maximum, not at either end: it is not the tail (a = 0.5 is the heaviest-tailed of the
+    # three and gains almost nothing) and it is not the location alone (a = 2 and a = 0.5 share a mean of 4). What
+    # differs is the pressure on large s: at 20 doublings the a = 0.5 prior sits 2.6 nats above the a = 2 prior, and
+    # the kept fit already has posterior mean 9.2 with a 97.5% point of 13.1, so a shape below 2 lets the censored
+    # rows take s wherever they like and the gain goes flat, while the champion's a = 1.5 at mean 2 pulls it down and
+    # loses four. Gamma(3, 0.75) is the other side of the peak: mean still 4, mode 2.67, prior density at s = 9.2
+    # within a factor 1.6 of the kept fit, but 3.4 nats firmer above 16 doublings. If 1.5 -> 2 -> 3 keeps rising, the
+    # censored rows want a scale near 9 and the prior exists only to stop them running off; if it peaks at 2, the
+    # gain was density where the likelihood is and 2 is the answer.
+    scale = numpyro.sample("scale", dist.Gamma(3.0, 0.75))
     # The champion needs very large effects on a few QRDR alleles (gyrA D87N ~ +11, parC S80I ~ +9 log2
     # units) - the MIC really does leave the plate for those isolates - so width 2 is already close to the
     # posterior of the alleles that matter. A Student-t(4, 0, 2) prior has that width in the middle but
