@@ -5,7 +5,7 @@ SETTINGS = {
     "num_warmup": 1000,
     "num_samples": 1000,
     "num_chains": 4,
-    "target_accept_prob": 0.95,
+    "target_accept_prob": 0.99,   # the width-4 effect prior leaves one divergent transition at 0.95
     "max_tree_depth": 10,
     "dense_mass": False,
 }

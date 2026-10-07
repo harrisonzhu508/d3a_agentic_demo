@@ -59,7 +59,10 @@ def model(X, lo=None, hi=None):
     alpha = numpyro.sample("alpha", dist.Normal(-4.0, 3.0))
     # Logistic errors with the same variance as the baseline HalfNormal(2) errors: s = sigma sqrt(3/pi)
     scale = numpyro.sample("scale", dist.HalfNormal(2.0 * jnp.sqrt(3.0 / jnp.pi)))
-    beta = numpyro.sample("beta", dist.Normal(jnp.zeros(p), 2.0))
+    # The champion needs very large effects on a few QRDR alleles (gyrA D87N ~ +11, parC S80I ~ +9 log2
+    # units) - the MIC really does leave the plate for those isolates - so width 2 is already close to the
+    # posterior of the alleles that matter. Widening to 4 doublings lets the data decide.
+    beta = numpyro.sample("beta", dist.Normal(jnp.zeros(p), 4.0))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
