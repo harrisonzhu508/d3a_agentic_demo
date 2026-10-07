@@ -111,6 +111,29 @@ def model(X, lo=None, hi=None):
     # as anything has come and is where this loop should stop.
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # One hundred and twenty-seventh experiment: the champion's own prior, widened by a quarter, at the point where
+    # this loop's densest curve has stopped being a curve and started being a plateau with a cliff at its end. The
+    # rare-column slab has been measured at four widths and the response in it is not the flat nothing the loop has
+    # been reporting: t(4, 0, 2) - the resolved block's own prior, applied to the whole matrix - is worth -1.69 of
+    # ELPD relative to main, the wide t(4, 0, 8) that this design carries is main, t(4, 0, 12) with the knee moved to
+    # 24 gains 0.98 +/- 1.21, and the same 12 applied to every column in the model gains 2.68 +/- 3.66 for -139.61.
+    # Four points, monotone to within their errors, over a sixfold range of prior slack. Joined to the twelve
+    # measurements of the penalty knee - 12 doublings costing 3.66, 16 being main, 18 and 20 flat to a hundredth, 24
+    # gaining half an ELPD, 32 gaining one and a fifth, no knee at all gaining two and losing its gates - the picture
+    # on this block is a fit that wants more room on its low-prevalence columns and cannot be given it in one step
+    # without the harness charging more for the disagreement than the room is worth. Which is the moment at which the
+    # right experiment stops being a survey of the axis and becomes a measurement of its slope: not another of the
+    # quarter-steps this branch has taken twenty times and reported as flat, and not another doubling, whose gains this
+    # log already contains at -139.61 with an error that will not shrink. A width of ten is the smallest change on
+    # this axis that the plateau's own shape predicts anything about. Between 8 and 12 the knee-curve says the response
+    # is linear at roughly a third of an ELPD per doubling of slab width; between 8 and 6 it says the same at steeper
+    # account, since the drop to the tight prior is three quarters of an ELPD per halving. A quarter-step, a fourth of
+    # the way in log-width between the two measured neighbours, should therefore be worth a tenth of an ELPD with an
+    # error of about half, and a run that lands there is the fourth independent confirmation that this axis has a
+    # gradient and no optimum inside the harness's reach - which is a different claim from the one the last thirty
+    # discards have made, and the claim the report needs, because it is what licenses saying that the champion was not
+    # found by search but inherited from a design, and that the search on this branch has measured the derivative of
+    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 10.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
