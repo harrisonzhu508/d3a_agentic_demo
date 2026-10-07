@@ -1,17 +1,19 @@
 """Shared code for the demo's hooks (standard library only; run with the project's .venv Python, 3.12).
 
 Each hook reads one event, normalises it across harnesses, and exits 0 (allow) or 2 (block; message on
-stderr, which Claude Code and the pi extension both pass back to the model).
+stderr, which Claude Code, Codex and the pi extension all pass back to the model).
 
 Accepted payloads:
-- Claude Code (JSON on stdin): {"hook_event_name", "tool_name", "tool_input": {...}, ...}
-  Tools: Read/Edit/Write/MultiEdit (file_path), Bash (command), Grep/Glob (path, pattern).
+- Claude Code / Codex (JSON on stdin): {"hook_event_name", "tool_name", "tool_input": {...}, ...}
+  Claude tools: Read/Edit/Write/MultiEdit (file_path), Bash (command), Grep/Glob (path, pattern).
+  Codex tools: Bash (tool_input.command), apply_patch (tool_input.command holds the patch text).
 - pi extension (--payload '<json>'): {"event", "tool": "read|bash|edit|write|grep|find|ls", "input": {...}}
 """
 
 import datetime as dt
 import json
 import os
+import re
 import sys
 from fnmatch import fnmatch
 from pathlib import Path
@@ -23,7 +25,7 @@ from checks.settings import (experiment_branch, experiment_dir, feedback_file, i
 
 POLICY = json.loads((DEMO / "hooks" / "policy.json").read_text())
 
-WRITE_TOOLS = {"edit", "write", "multiedit", "notebookedit"}
+WRITE_TOOLS = {"edit", "write", "multiedit", "notebookedit", "apply_patch"}
 READ_TOOLS = {"read", "grep", "glob", "find", "ls"}
 
 
@@ -43,19 +45,27 @@ def read_event(argv: list[str] | None = None) -> dict:
     return normalise(ev, harness)
 
 
+def patch_paths(patch: str) -> list[str]:
+    """File paths touched by a Codex apply_patch patch (*** Add/Update/Delete File: ..., *** Move to: ...)."""
+    return [m.group(1).strip() for m in re.finditer(
+        r"^\*\*\* (?:(?:Add|Update|Delete) File|Move to): (.+)$", patch, flags=re.M)]
+
+
 def normalise(ev: dict, harness: str) -> dict:
-    if "hook_event_name" in ev:                      # Claude Code
+    if "hook_event_name" in ev:                      # Claude Code or Codex
         tool = str(ev.get("tool_name", "")).lower()
         ti = ev.get("tool_input") or {}
         paths, command = [], ""
-        if tool == "bash":
+        if tool == "apply_patch":
+            paths = patch_paths(ti.get("command", "") if isinstance(ti, dict) else str(ti))
+        elif tool == "bash":
             command = ti.get("command", "")
         else:
             for key in ("file_path", "path", "notebook_path"):
                 if ti.get(key):
                     paths.append(ti[key])
         return {"event": ev.get("hook_event_name", ""), "tool": tool, "paths": paths, "command": command,
-                "harness": harness if harness != "unknown" else "claude",
+                "harness": harness if harness != "unknown" else ("codex" if "turn_id" in ev else "claude"),
                 "stop_hook_active": bool(ev.get("stop_hook_active")), "raw": ev}
     tool = str(ev.get("tool", "")).lower()           # pi extension
     inp = ev.get("input") or {}

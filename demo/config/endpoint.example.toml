@@ -18,7 +18,7 @@ thinking = "off"
 # Other OpenAI-compatible servers, one [endpoints.<name>] each; pi calls them "<name>/<model>".
 # The local vLLM server ("local") is added from config/vllm.toml, so it is not listed here.
 [endpoints.myserver]
-# vLLM behind Ray Serve on myserver, route /qwen3.8-27b. Direct from this machine or anywhere on your network:
+# Example of a shared server: vLLM behind Ray Serve on myserver (your network), route /qwen3.8-27b:
 base_url = "http://your-server.example.org:8001/qwen3.8-27b/v1"
 model = "qwen3.8-27b"
 # vLLM on myserver does not check keys, but pi needs one.

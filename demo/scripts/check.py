@@ -5,8 +5,9 @@
 
 - the agent's model ([agent] in config/endpoint.toml): if it is an OpenAI-compatible endpoint (local vLLM,
   myserver), one chat request that must return a tool call (an api_key "$NAME" is read from config/secrets.env);
-- GITHUB_TOKEN: can read the repository's branches and open pull requests (probed without creating anything);
-- OPENAI_API_KEY, DEEPSEEK_API_KEY: list the models; WANDB_API_KEY: who it belongs to.
+- GITHUB_TOKEN: can read the repository of your git remote (your fork) and open pull requests there (probed
+  without creating anything);
+- OPENAI_API_KEY, DEEPSEEK_API_KEY: list the models; WANDB_API_KEY: who it belongs to and where runs go.
 """
 
 import base64
@@ -20,6 +21,8 @@ from pathlib import Path
 
 DEMO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(DEMO / "scripts"))
+sys.path.insert(0, str(DEMO))
+from checks.settings import settings  # noqa: E402
 from render_configs import endpoints, load  # noqa: E402
 
 
@@ -56,12 +59,16 @@ def endpoint(spec: str, keys: dict) -> str:
 
 
 def github(token: str) -> str:
-    url = subprocess.run(["git", "remote", "get-url", "origin"], cwd=DEMO, capture_output=True, text=True).stdout
-    repo = "https://api.github.com/repos/" + re.search(r"github\.com[:/](.+?)(?:\.git)?$", url.strip()).group(1)
+    url = subprocess.run(["git", "remote", "get-url", settings()["remote"]], cwd=DEMO, capture_output=True, text=True).stdout
+    name = re.search(r"github\.com[:/](.+?)(?:\.git)?$", url.strip()).group(1)
+    repo = "https://api.github.com/repos/" + name
     if call(repo + "/branches?per_page=1", f"Bearer {token}")[0] != 200:
-        return "FAIL: the token cannot read this repository (give it access, and Contents: Read-only)"
-    s, _ = call(repo + "/pulls", f"Bearer {token}", {"title": "probe", "head": "no-such-branch", "base": "main"})
-    return "ok: can open pull requests" if s == 422 else f"FAIL {s}: cannot open pull requests (Pull requests: write)"
+        return (f"FAIL: the token cannot read {name} (is that your fork? give the token access to it, "
+                "with Contents: Read-only)")
+    s, _ = call(repo + "/pulls", f"Bearer {token}", {"title": "probe", "head": "no-such-branch",
+                                                      "base": settings()["base_branch"]})
+    return (f"ok: can open pull requests in {name}" if s == 422 else
+            f"FAIL {s}: cannot open pull requests in {name} (Pull requests: Read and write)")
 
 
 def models(url: str, token: str) -> str:
@@ -71,9 +78,13 @@ def models(url: str, token: str) -> str:
 
 def wandb(token: str) -> str:
     s, r = call("https://api.wandb.ai/graphql", "Basic " + base64.b64encode(f"api:{token}".encode()).decode(),
-                {"query": "{ viewer { username } }"})
+                {"query": "{ viewer { username entity } }"})
     v = (r.get("data") or {}).get("viewer") if s == 200 else None
-    return f"ok: user {v['username']}" if v else f"FAIL {s}"
+    if not v:
+        return f"FAIL {s}"
+    project = settings()["wandb_project"]
+    where = (project if "/" in project else f"{v['entity']}/{project}") if project else "nowhere (tracking is off)"
+    return f"ok: user {v['username']}, runs go to {where}"
 
 
 def main() -> None:

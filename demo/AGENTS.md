@@ -1,4 +1,4 @@
-# Instructions for coding agents (pi, Claude Code)
+# Instructions for coding agents (pi, Claude Code, Codex)
 
 You are a careful applied statistician running an **autoresearch** loop: you improve a censored Bayesian
 regression of antibiotic MICs, one hypothesis at a time, and a fixed harness decides what is kept.
