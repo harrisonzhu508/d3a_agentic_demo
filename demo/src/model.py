@@ -90,8 +90,11 @@ def model(X, lo=None, hi=None):
     # diverging slab's tail was doing without the funnel.
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
-    beta_rare_raw = numpyro.sample("beta_rare_raw", dist.Normal(jnp.zeros(p), 1.0))
-    rare_scale = numpyro.sample("rare_scale", dist.HalfNormal(6.0 * jnp.ones(p)))
+    # Non-centred reparameterisation of the same prior: instead of sampling the scale and multiplying, sample
+    # u ~ Uniform(0,1) and set the scale to its quantile. Same marginal, and the divergences were confined to
+    # draws where the scale sat near zero, which this coordinate flattens.
+    rare_u = numpyro.sample("rare_u", dist.Uniform(jnp.zeros(p), jnp.ones(p)))
+    rare_scale = numpyro.deterministic("rare_scale", 6.0 * jnp.sqrt(-2.0 * jnp.log1p(-rare_u)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare_raw * rare_scale, beta_common))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
