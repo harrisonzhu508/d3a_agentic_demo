@@ -20,7 +20,7 @@ FEATURE_EFFECTS = "beta"
 
 # Prior width for a column carried by essentially no one (see model(): the width interpolates from this down to
 # the champion's 2 as the number of carriers grows). Set by experiments; 2.0 reproduces the champion exactly.
-W_MAX = 10.0
+W_MAX = 3.0
 
 
 def log_interval_prob(lo, hi, mu, sigma):
