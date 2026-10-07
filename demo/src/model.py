@@ -136,7 +136,8 @@ def model(X, lo=None, hi=None):
     # back positive by more than its error, the line is locally curved and the maximum is interior, which the eleven
     # points on the rare knee say it is not. If it comes back negative, the champion's width is a local optimum after
     # all and the four-run monotone line was the noise of a flat function, in which case the last fifty comparisons in
-    # this log have all been measuring the same zero and the report should say that instead of tabulating them.    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.5))
+    # this log have all been measuring the same zero and the report should say that instead of tabulating them.
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.5))    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.5))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
