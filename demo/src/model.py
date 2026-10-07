@@ -55,11 +55,19 @@ def logistic_log_interval_prob(lo, hi, mu, scale):
 
 
 def model(X, lo=None, hi=None):
-    p = X.shape[1]
+    n, p = X.shape
     alpha = numpyro.sample("alpha", dist.Normal(-4.0, 3.0))
     # Logistic errors with the same variance as the baseline HalfNormal(2) errors: s = sigma sqrt(3/pi)
     scale = numpyro.sample("scale", dist.HalfNormal(2.0 * jnp.sqrt(3.0 / jnp.pi)))
-    beta = numpyro.sample("beta", dist.Normal(jnp.zeros(p), 2.0))
+    # Regularised horseshoe on the effects (Piironen & Vehtari 2017), non-centred.
+    p0 = 8.0                                        # prior guess: ~8 determinants matter for ciprofloxacin
+    tau0 = p0 / (p - p0) * scale / jnp.sqrt(n)       # variance-explained scaling of the global shrinkage
+    tau = numpyro.sample("tau", dist.HalfCauchy(tau0))
+    lam = numpyro.sample("lambda", dist.HalfCauchy(jnp.ones(p)))
+    c2 = numpyro.sample("c2", dist.InverseGamma(2.0, 2.0 * 3.0 ** 2))   # slab: effects up to ~3 doublings
+    lam_tilde = jnp.sqrt(c2 * lam ** 2 / (c2 + tau ** 2 * lam ** 2))
+    z = numpyro.sample("z", dist.Normal(jnp.zeros(p), 1.0))
+    beta = numpyro.deterministic("beta", z * tau * lam_tilde)
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
