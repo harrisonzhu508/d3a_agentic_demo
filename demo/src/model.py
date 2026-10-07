@@ -114,7 +114,24 @@ def model(X, lo=None, hi=None):
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
-    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
+    # Seventy-third experiment: the other side of the knee. The last experiment moved this prior's rate a quarter of the
+    # way out (128 -> 160, same tail slope, mode 5.7 -> 7.1 doublings) and the fit lost 0.10 +/- 0.62 ELPD with every
+    # gate clean - a flat response to a step that, on the straight-line reading of this axis, should have cost about 1.6.
+    # That is the first evidence in the session that the scale prior's response is a curve rather than a trade-off line,
+    # and a curve has a top, which is what the harness has been paying two SEs to find. The measurement so far, all at
+    # the same tail slope of an inverse-gamma with shape 2: rate 192 and 256 gained +7.17 and +6.85 against the champion
+    # before this one and were rejected by a paired SE of 4.70, 5.56 and by their own gates; rate 128 gained +6.43 +/-
+    # 3.56 four times, was kept when paired with the wide rare-column prior, and is main; rate 160 is flat. What the
+    # sequence does not contain is the interior between the plateau and main, and a quarter-step to the flat side of a
+    # peak that the outside steps put there is exactly the missing point: rate 120, mode 5.4 doublings against the kept
+    # 5.7, median 7.2 against 7.7, the prior's density at the on-grid rows' preferred scale of three to five doublings
+    # raised by 7% and nothing else about the fit touched. Two things can come back. A small positive number says main
+    # sits a little to the outside of the maximum and the optimum of this axis is between 120 and 128, which no run of
+    # this loop will resolve but which the report can state as a bracket rather than a point. A small negative number,
+    # with 160 also flat, says the maximum is at 128 to within a quarter-step: the best-fitting prior, the best-resolved
+    # one (its four measurements have SEs between 3.56 and 3.64, the tightest of any change tried here) and the one the
+    # keep rule certified are the same setting, and the axis closes with an optimum rather than an accident.
+    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 120.0))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
