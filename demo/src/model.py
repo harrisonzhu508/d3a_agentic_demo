@@ -86,7 +86,31 @@ def model(X, lo=None, hi=None):
     # door open. If the gain survives, what the censored rows wanted was room around the mode and the axis is done;
     # if it collapses, they wanted the upper tail, and a proper heavy-tailed family (a scale-mixture t, or an
     # inverse-gamma) is where the remaining density is.
-    scale = numpyro.sample("scale", dist.Gamma(2.0, 0.5))
+    # Forty-seventh experiment: the same one line, one notch further, because the shape of this axis is now known
+    # and the harness's rule is about the SE, not about the gain. Seven priors on the residual scale are on the
+    # record against this champion, all with clean gates, all with agreement 78.1-78.3% and coverage 81-83% (that
+    # is the tell: nothing in the mean function changes, only how much the censored rows are allowed to say about
+    # the residual), ordered by how cheap the prior makes a large scale:
+    #     HalfNormal(2)  champion                            0
+    #     Gamma(3,0.75)  mode 2.7, firm above 16            -0.22 +/- 0.40
+    #     Gamma(0.5,.125) mode 0                            +0.89 +/- 0.50
+    #     Gamma(2,0.5)   mode 2                             +3.98 +/- 1.97   (kept)
+    #     HalfCauchy(2)  no mode                            +4.06 +/- 2.28
+    #     HalfCauchy(4)  no mode                            +4.55 +/- 2.41
+    #     InvGamma(2,128) mode 5.7, median 7.7              +6.55 / +6.09, +6.09 (three runs, SE 3.6 both times)
+    # The gains rise monotonically with the prior's mode, and the SEs rise with them - not because the fits get
+    # worse (R-hat is under 1.009 and divergences zero in all of them, including the three inverse-gamma runs) but
+    # because the paired ELPD difference between a fit that lets the 204 right-censored rows take a wide residual and
+    # one that does not is concentrated in those rows, and its variance is theirs. That is why this axis has not been
+    # kept despite being the only one that pays: +6.1 needs an SE under 3.0. The one thing that can break the tie
+    # without touching the folds or the harness is a larger gain, and the axis's own slope says where it is: mode 5.7
+    # gains 6.1, mode 2 gains 4.0, the half-Cauchys with no mode gain 4.3 - the peak is not at the mode but past it,
+    # so InvGamma(2, 256) (mode 11.4 doublings, median 15.4, the same s^-5 tail) is the next point, at which the
+    # prior's density over the assay's own range is flat to within 15%. If it beats 7.3 the axis has more and the SE
+    # will be overtaken; if it falls below 6.1 the peak is between 5.7 and 11.4, and then the harness's rule, not the
+    # data, decides - which is a result worth recording even though it cannot be kept.
+    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 256.0))
+    scale = numpyro.deterministic("scale", 1.0 / scale_raw)
     # The champion needs very large effects on a few QRDR alleles (gyrA D87N ~ +11, parC S80I ~ +9 log2
     # units) - the MIC really does leave the plate for those isolates - so width 2 is already close to the
     # posterior of the alleles that matter. A Student-t(4, 0, 2) prior has that width in the middle but
