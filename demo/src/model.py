@@ -110,7 +110,31 @@ def model(X, lo=None, hi=None):
     # session's conclusion is the single InvGamma, +6.43 +/- 3.56, ratio 1.81, which is as close to the harness's rule
     # as anything has come and is where this loop should stop.
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
-    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Eighty-third experiment: the same prior on the other side of the same line. The champion splits the 77
+    # determinants at a carrier count of 15 and treats the two groups differently - t(4, 0, 8) with a soft knee at 16
+    # doublings on the 14 rare columns, a plain t(4, 0, 2) on the 63 the plate can see - and that split has been
+    # argued from the rare side alone for twenty experiments. The measurement on the common side, done once, was a
+    # narrowing: width 1 on all 63 cost 0.49 +/- 1.69 with clean gates. What has never been run is the symmetric
+    # question, which is whether the wide prior is doing anything at all for the columns it was built for, or whether
+    # the +9.19 that this champion earned came entirely from the residual scale and the split is decoration. The
+    # ablation that should have answered it - the whole rare block replaced by the champion's old t(4, 0, 2), the
+    # scale left alone - scored -2.61 +/- 1.84, so the block as a whole carries a quarter of the keep; but that run
+    # moved two things at once, the width of 14 columns and the presence of the knee, and a difference of -2.61 with
+    # an SE of 1.84 is a direction rather than a quantity. This run moves one thing and moves it in the direction the
+    # keep's own logic would forbid: the 63 columns carried by more than 15 isolates take the wide prior too, t(4, 0,
+    # 8) with the same knee at 16, so every determinant in the table is free to claim a large effect and the
+    # difference between this fit and main is exactly the regularisation the common columns have been quietly under.
+    # Three readings, and each changes what the report says. If the score holds, the common columns were being
+    # shrunk for nothing and the champion's gain is the scale's plus a wide prior applied everywhere - in which case
+    # the prevalence-based split is not a modelling insight but one point on a flat surface, and the loop should say
+    # the rare-column block earned its keep through the scale it shares rather than through the columns it names. If
+    # the score falls by roughly what the ablation gained, then width is doing the work and prevalence is irrelevant,
+    # which is the same conclusion by a different road. If it falls by much more - several ELPD, with the fitted
+    # effects on the common columns visibly inflating - then a t(4, 0, 2) on a determinant carried by two hundred
+    # isolates is doing real model work, the split is the load-bearing part of the design, and the session's picture
+    # of this model is what it should be: a narrow prior where the plate can see the allele, a wide one where it
+    # cannot, and a residual that admits what neither can.
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
