@@ -18,6 +18,11 @@ from jax.scipy.special import log_ndtr
 
 FEATURE_EFFECTS = "beta"
 
+# Feature metadata, set by src/features.py when it builds the design matrix (only features.py sees the column
+# names). QRDR_ALLELE_GROUPS: one array of column indices per ciprofloxacin target gene, listing that gene's
+# allele columns; None means no grouping penalty is applied.
+QRDR_ALLELE_GROUPS = None
+
 
 def log_interval_prob(lo, hi, mu, sigma):
     """log P(lo < y <= hi) for y ~ Normal(mu, sigma); lo may be -inf and hi may be +inf.
@@ -65,7 +70,28 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
+    # The QRDR allele columns are alternatives at two codons of the same two targets - gyrA_D87N and parC_S80I
+    # correlate at 0.95 - so the likelihood does not identify their individual effects, and the champion spends
+    # that freedom on gyrA_D87N +38 against glpT_E448K -14 (a 52-doubling spread that cancels for every isolate
+    # inside the tested range). Every prior that shrinks coefficients has already been rejected: halving the
+    # width costs 35.3 ELPD, the horseshoe family gains 29 but cannot be sampled, a gene-level hierarchical
+    # effect costs 2.6 with 70 divergences, a ridge on within-gene deviations costs 17.8. What has not been
+    # penalised is the specific contrast the mechanism says is spurious: *differences between the alleles of one
+    # gene*, with no penalty on the level of a gene and no penalty at all on the ~60 non-QRDR columns, whose
+    # wide prior is what buys the +28.9. Penalty: sum over the 4 target genes, over their alleles j,
+    # (beta_j - mean beta of that gene)^2 / (2 * 1^2) - one doubling, since gyr codon-83 and codon-87 substitutions
+    # alter the same drug-binding pocket and differ by less than that (Hooper & Jacoby 2015, Table 1; Huseby et
+    # al. 2017 on resistance mutations being small individual steps that combine). Centred on the group mean, so
+    # the level of each gene, which is the identified part, is untouched and no prior mass moves the fit.
     beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    groups = QRDR_ALLELE_GROUPS
+    if groups is not None:                        # list of column-index arrays, one per target gene
+        pen = []
+        for idx in groups:
+            g = jnp.asarray(idx, dtype=jnp.int32)
+            dev = beta[g] - beta[g].mean()
+            pen.append(jnp.where(g.size > 1, jnp.sum(dev ** 2), 0.0))
+        numpyro.factor("allele_ridge", -0.5 * jnp.sum(jnp.stack(pen)))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
