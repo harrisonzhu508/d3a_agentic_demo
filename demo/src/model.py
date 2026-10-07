@@ -59,14 +59,19 @@ def model(X, lo=None, hi=None):
     alpha = numpyro.sample("alpha", dist.Normal(-4.0, 3.0))
     # Logistic errors with the same variance as the baseline HalfNormal(2) errors: s = sigma sqrt(3/pi)
     scale = numpyro.sample("scale", dist.HalfNormal(2.0 * jnp.sqrt(3.0 / jnp.pi)))
-    # The champion needs very large effects on a few QRDR alleles (gyrA D87N ~ +11, parC S80I ~ +9 log2
-    # units) - the MIC really does leave the plate for those isolates - so width 2 is already close to the
-    # posterior of the alleles that matter. A Student-t(4, 0, 2) prior has that width in the middle but
-    # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
-    # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
-    # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
-    mu = numpyro.deterministic("mu", alpha + X @ beta)
+    # The QRDR alleles are near-collinear (gyrA D87N and parC S80I correlate at 0.95) and enter the model as
+    # alternatives at the same targets, so only certain combinations of their coefficients are identified;
+    # the champion spends that freedom on a 52-doubling spread (gyrA_D87N +38, glpT_E448K -14) that cancels
+    # for every isolate in the observed range and blows the linear predictor up to log2 MIC ~ +42 for the
+    # ones the harness has to extrapolate. Rescale the columns that mark a *pathway* rather than a specific
+    # mechanism onto their standard deviation, so the same prior width is a much stronger pull on their raw
+    # coefficients: the ~27 rare acquired-gene columns (prevalence 3-15%, where the wide tail is wanted to
+    # let an allele like gyrA D87N reach past the plate) are left exactly as before.
+    sd = jnp.maximum(jnp.std(jnp.asarray(X), axis=0), 1e-6)
+    common = sd > 0.15                            # columns carried by >~11% of isolates
+    beta_raw = numpyro.sample("beta_raw", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    beta = numpyro.deterministic("beta", jnp.where(common, beta_raw * 0.3 / sd, beta_raw))
+    mu = numpyro.deterministic("mu", alpha + jnp.asarray(X) @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
         numpyro.factor("censored_lik", ll.sum())
