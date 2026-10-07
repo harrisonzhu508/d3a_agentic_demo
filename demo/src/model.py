@@ -75,7 +75,20 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Nineteenth point on the rare-column prior, and the last on this axis. At a fixed width of 8 the soft cut has
+    # a resolved interior optimum at 16 doublings: 0 divergences and +3.37 at 16, 1 divergence and +2.41 at 24, 69
+    # divergences and -2.46 at width 16 / cut 32. The cut's job is to bound a coefficient the likelihood cannot
+    # reach - a determinant carried by three isolates needs a coefficient of ~6 log2 units to move one isolate by
+    # one doubling, so anything past twice the plate's range is pure extrapolation - and 16 doublings is where that
+    # argument stops biting. Move it inside the plate's own range instead, to 8 doublings, which is the assay's
+    # width (0.008 to 4 mg/L): a rare determinant may take an isolate from the bottom of the series to the top and
+    # no further, which is a claim a microbiologist would sign, and the softplus keeps the log density Lipschitz so
+    # nothing for a trajectory to escape into.
+    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
+    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 8.0)))
+    beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
