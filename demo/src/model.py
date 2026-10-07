@@ -56,7 +56,30 @@ def logistic_log_interval_prob(lo, hi, mu, scale):
 
 def model(X, lo=None, hi=None):
     p = X.shape[1]
-    alpha = numpyro.sample("alpha", dist.Normal(-4.0, 3.0))
+    # Ninety-second experiment: the second and last point on the only response curve this loop has measured on
+    # both sides of the champion. Four runs have moved the intercept's prior while the rest of the model sat
+    # unchanged. Centred at -4 doublings - 0.0625 mg/L, the middle of a fourteen-doubling plate of which 256 isolates
+    # read below the bottom - it is main. Centred at -7.06, the plate's own floor, it gains +0.63 ELPD with an SE of
+    # 0.51 and zero divergences, the smallest SE of any change this session has produced. Loosened to Normal(0, 10),
+    # which claims nothing about where a ciprofloxacin MIC distribution sits, it gains +3.56 +/- 3.13. And a run that
+    # moved the intercept's centre to the floor and left everything else alone measured the identical numbers twice,
+    # which is what told me this axis is not noise: an SE of half an ELPD on a fit whose differences against main
+    # total six is a quantity, not a coincidence. Three points do not make a maximum, and the direction the two
+    # positive ones point is upward and outward, so the curve's peak, if it has one, is above the floor the last run
+    # moved it to. -2 doublings is 0.25 mg/L: the plate's top dilution is +2, the EUCAST epidemiological cutoff for
+    # ciprofloxacin in E. coli sits at 0.06 mg/L with resistant isolates above it, and a prior centred at the upper
+    # end of the susceptible range is a claim that half this collection is non-susceptible - which, given 204
+    # right-censored MICs out of 558, is the claim the data actually make. The width stays at 3 exactly, so this run
+    # moves one number and moves it two doublings upward from the last positive measurement, four and a half above
+    # main, into the region where the prior stops describing a susceptible population and starts describing a
+    # resistant one. The prediction from the two measured points is that the score keeps rising and the SE rises with
+    # it, because the harness's paired SE is the across-isolate disagreement between two fits and an upward-shifted
+    # intercept disagrees most with the champion on precisely the 204 rows that generate the gain. If it comes back
+    # above +1.5 with an SE under 2 - which the trend of 0.63/0.51 and 3.56/3.13 makes plausible rather than certain -
+    # then the loop's champion has been leaving density on the table by pinning the location term of a censored
+    # likelihood at a value inherited from a baseline model fitted without censoring, and the experiment to run next
+    # is the one that stops centring the intercept at all.
+    alpha = numpyro.sample("alpha", dist.Normal(-2.0, 3.0))
     # Logistic errors with the same variance as the baseline HalfNormal(2) errors: s = sigma sqrt(3/pi)
     # The error scale of the interval-censored likelihood is the parameter the censored rows identify least
     # well - a right-censored isolate is happy with almost any mu once mu is past the top of the plate, so what
