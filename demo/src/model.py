@@ -75,7 +75,27 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Fourth variant of the rare-column slab, and the first of them that samples cleanly is the half-normal-scale
+    # one (discarded/slab-halfnormal-scale: 0 divergences, +1.37 +/- 2.05), so the geometry is right and only the
+    # width is wrong. What the slab must do is shrink the ~14 determinants carried by at most 15 isolates, whose
+    # columns have sd 0.10-0.16: a coefficient of 2 log2 units on such a column moves mu by 0.3, so the data
+    # cannot tell 2 from 12 and the prior alone decides - that is where the champion's unidentified contrast lives
+    # (gyrA_D87N +38 against glpT_E448K -14, a spread that cancels for every isolate inside the plate). Scale the
+    # slab by the column's own sd so the prior is on the *effect on mu*, which is the quantity the likelihood
+    # speaks to: prior sd_j = 1 doubling x sqrt(0.5 / sd_j) - one doubling for a common column, four for a 1%
+    # column. Rare columns additionally get a half-normal scale with sd equal to that, i.e. the sparsity prior on
+    # the identified scale (Gelman et al., BDA3 ch. 21 on parameterising by what the data inform; the same
+    # prevalence-scaled idea as discarded/prevalence-scaled-prior, which used 0.3 and 0.05 and cost a divergence,
+    # here at assay width with a half-normal rather than a hard cut). The common columns' t(4,0,2) is rescaled by
+    # the same factor so that, for them, beta_common keeps exactly the champion's marginal on the raw coefficient -
+    # only the rare columns' prior changes.
+    sd_j = jnp.asarray(X, dtype=jnp.float32).std(axis=0)
+    slab = jnp.maximum(1.0 * jnp.sqrt(0.5 / jnp.maximum(sd_j, 1e-3)), 1e-3)
+    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    beta_rare_raw = numpyro.sample("beta_rare_raw", dist.Normal(jnp.zeros(p), 1.0))
+    rare_scale = numpyro.sample("rare_scale", dist.HalfNormal(slab))
+    beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare_raw * rare_scale, beta_common * jnp.where(rare, 1.0, slab / 2.0)))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
