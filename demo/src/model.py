@@ -56,9 +56,22 @@ def logistic_log_interval_prob(lo, hi, mu, scale):
 
 def model(X, lo=None, hi=None):
     p = X.shape[1]
-    alpha = numpyro.sample("alpha", dist.Normal(-4.0, 3.0))
-    # Logistic errors with the same variance as the baseline HalfNormal(2) errors: s = sigma sqrt(3/pi)
-    scale = numpyro.sample("scale", dist.HalfNormal(2.0 * jnp.sqrt(3.0 / jnp.pi)))
+    # The champion's intercept and error scale drifted to values the assay rules out: alpha = -11.6, i.e. a
+    # wild-type MIC of 0.0005 mg/L, sixteenfold below the bottom of the plate (0.008 mg/L) that the dilution
+    # series starts at, and scale = 6.8, a residual spread of twenty doublings between isolates whose genotype
+    # the model sees in full. Neither is a fit to the data - neither is constrained by the data, because every
+    # isolate is inside an interval and both parameters act mainly on differences *outside* the tested range.
+    # Bound them by what the measurement can mean (Gelman et al. BDA3 ch. 21, priors as regularisation of the
+    # quantities that matter; the half-Cauchy is their default for a scale):
+    #   alpha: the log2 MIC of a genotype with no listed determinant. A quinolone-susceptible E. coli is
+    #          0.015-0.03 mg/L = -6 to -5.5 log2, and the assay cannot produce a number below -7, so
+    #          Normal(-6, 1) is four doublings of room around the wild-type value and no prior mass above the
+    #          midpoint of the plate.
+    #   scale: repeat MICs of one isolate agree within one dilution, so a residual sd of more than about a
+    #          doubling is measurement noise the assay does not have. HalfCauchy(1) leaves the data free to
+    #          make it smaller - which is what they do - without a Hard funnel at 0.
+    alpha = numpyro.sample("alpha", dist.Normal(-6.0, 1.0))
+    scale = numpyro.sample("scale", dist.HalfCauchy(1.0))
     # The champion needs very large effects on a few QRDR alleles (gyrA D87N ~ +11, parC S80I ~ +9 log2
     # units) - the MIC really does leave the plate for those isolates - so width 2 is already close to the
     # posterior of the alleles that matter. A Student-t(4, 0, 2) prior has that width in the middle but
