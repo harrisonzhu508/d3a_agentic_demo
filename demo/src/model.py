@@ -75,7 +75,24 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Sixth variant of the rare-column slab, and the one the previous five point at. The gain is real
+    # (discarded/rare-allele-slab-prior: +9.75 +/- 5.81, coverage 88.0% against 82.6%) and so is the divergence
+    # problem - 245 divergences with the slab scale ~ HalfCauchy(0.5), 6 with the same marginal sampled by its
+    # quantile, 2 non-centred, and a half-Cauchy *shared* scale gives R-hat 1.42. The half-normal-scaled version
+    # is the first to sample cleanly (discarded/slab-halfnormal-scale: 0 divergences) and gained only 1.37 +/-
+    # 2.05, which localises the failure to the *width*: HalfNormal(1) shrinks a 15-carrier column's coefficient to
+    # about one doubling, whereas the diverging slab that gained 9.75 had a heavy-tailed scale whose typical draw
+    # is smaller still but whose tail lets an isolate's QRDR allele reach the top of the plate. A rare column can
+    # only ever be identified up to its leverage - sd 0.10-0.16 for the columns here, so a coefficient of 6 log2
+    # units moves mu by one doubling - so a wide, light-tailed scale is the version that both shrinks the columns
+    # with no signal and leaves the ones the MICs insist on alone. HalfNormal(6) on the raw coefficient is four
+    # doublings of effect on mu for a 1%-prevalence column and no pull at all for a common one, which is what the
+    # diverging slab's tail was doing without the funnel.
+    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    beta_rare_raw = numpyro.sample("beta_rare_raw", dist.Normal(jnp.zeros(p), 1.0))
+    rare_scale = numpyro.sample("rare_scale", dist.HalfNormal(6.0 * jnp.ones(p)))
+    beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare_raw * rare_scale, beta_common))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
