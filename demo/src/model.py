@@ -114,7 +114,31 @@ def model(X, lo=None, hi=None):
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
-    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
+    # Eighty-fifth experiment: the residual prior with its tail removed, which is the only statement about the
+    # assay's repeatability this model has ever been able to make and has never been tested. The loop has now run
+    # four shapes on this one parameter, all of them heavy-tailed, and every one of them ended in the same place:
+    # the posterior scale of the kept fit is 16.1 doublings with a 90% interval of [11.1, 23.0], against a broth
+    # microdilution reading whose QC range for E. coli with ciprofloxacin spans about two doublings and whose repeat
+    # measurements disagree by roughly half a doubling (EUCAST/CLSI, quoted against the same ±1-dilution tolerance
+    # the harness scores) - a residual three to eight times the assay's own noise, which the fit needs because 204
+    # isolates have MICs the plate only bounds from above and widening the residual is the cheapest way to be right
+    # about them in held-out density. Two attempts to make this prior say something narrower have been measured at
+    # the other end of the session's fits and both lost: half-normal and gamma forms costing 1-4 ELPD, and an
+    # inverse-gamma whose tail exponent was raised from 5 to 6.5 lost 1.21 with an R-hat of 1.036. What has not been
+    # tried is the other direction on the tail specifically. An InvGamma(a, b) has a survival that decays as s^-a
+    # beyond its mode, so the kept a = 2 is an s^-5 tail; a = 4 at the same mean (b = a(a-1)*128 = 1536, mean 512/3
+    # = 170.7 against the kept 128, mode of the precision a-1/b and so a scale mode of 3.3 doublings against 7.8) is
+    # an s^-9 tail: more prior mass than the kept fit in the two-to-eight-doubling region where the assay lives and
+    # a hundred times less beyond forty, where the kept fit's own posterior currently sits. It is a sharper statement
+    # than any earlier run made - not "the scale is probably large" but "the scale is not enormous" - and it is
+    # falsifiable by this harness in a way location was not: an experiment two runs ago showed the held-out density
+    # flat in this prior's location across a factor of 1.33 while the posterior answered 15.6 either way, which is a
+    # likelihood that has heard everything location has to say. A tail exponent is the remaining prior information
+    # about a parameter whose posterior sits an order of magnitude from any defensible reading of the assay, and if
+    # even that comes back inside its own noise then the residual scale of an interval-censored MIC regression is
+    # simply not identified by these data, and the report has to say that the model's apparent uncertainty about the
+    # plate is the analyst's choice, not the experiment's finding.
+    scale_raw = numpyro.sample("scale_raw", dist.Gamma(4.0, 1536.0))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
