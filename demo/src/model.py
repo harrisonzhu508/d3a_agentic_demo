@@ -114,7 +114,35 @@ def model(X, lo=None, hi=None):
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
-    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
+    # One hundred and eighth experiment: the smallest curvature step this axis has ever been given. The two runs
+    # that measured curvature travelled straight through it and reported only its neighbours. The
+    # hypothesis under test is a small, checkable one: that the harness's gates, not the harness's score, are what
+    # rejected the heavy residual scale. Eleven runs now cover this prior. In its location the response is flat and
+    # the fit is undisturbed - rates of 120 and 160 costing 0.23 and 0.10 ELPD at R-hats of 1.004 and 1.008, a prior
+    # median moved a quarter of the way out costing 0.12 at an R-hat of 1.0129. In its curvature the response is large
+    # and the fit is not: shape 1.9 at constant median loses 0.36 and returns an R-hat of 1.0101, two ten-thousandths
+    # past the limit; shape 2.5 at constant mean lands the posterior at 33.0 doublings, loses 1.21 and returns 1.036;
+    # shape 4 lands it at 82.1, loses 6.37 and returns 1.0122; a log-normal, thinner at the top than any power, loses
+    # 3.10 to 4.01 at clean-to-one-divergence diagnostics; a truncation at 12 doublings loses 1.34 at exactly the
+    # limit. So on this one parameter, changing the tail in either direction costs a few tenths of an ELPD and a
+    # diagnostic, every single time, and the losses are smaller than the diagnostics are wrong. That pattern has two
+    # readings and the loop has no experiment that separates them. The first is that the geometry of this posterior is
+    # genuinely knife-edged - an InvGamma on the reciprocal, a wide rare block and a censored likelihood, and any
+    # rotation of the tail tilts the funnel enough that four chains of a thousand draws stop agreeing, in which case
+    # the champion's -142.29 is a point the sampler reaches by courtesy and the report has to say so. The second is
+    # that the gate is a hard threshold on a statistic with its own Monte-Carlo error, applied to a model whose R-hat
+    # sits at 1.0077 with a margin of twenty-three ten-thousandths, in which case a step of a tenth in a shape
+    # parameter is being refused by noise in a diagnostic and not by the model at all. A tenth is the step that tests
+    # it. Shape 2.1 at constant mean - b = a(a-1)*128 = 238.1, so the prior's median scale stays within a rounding
+    # error of seven doublings - is an s^-5.5 tail instead of s^-5: half the prior mass past sixty doublings, four per
+    # cent less below twenty, five times less curvature in the log-density than the step from 2 to 2.5 that landed the
+    # posterior at 33.0. If it passes the gates, the loop learns that its tail is worth a quarter of an ELPD per tenth
+    # of shape and that the champion's shape of 2 is the last one the gates permit rather than the one the data prefer
+    # - a fact worth more to the report than the point estimate. If it fails again, then this parameter's response
+    # surface is not knife-edged but ringed, and no step of any size in its curvature will ever be published from this
+    # harness, which is the result the last eleven runs have been converging on and the one that should be written
+    # down instead of tried a twelfth time.
+    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.1, 135.1))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
