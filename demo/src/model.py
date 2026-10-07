@@ -112,10 +112,38 @@ def model(X, lo=None, hi=None):
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
-    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
+    # One hundred and fourteenth experiment: a penalty whose gradient at the champion's own fitted coefficients is
+    # exactly the one that has earned +9.19, and whose cost at every coefficient the fit has ever drawn is a third of
+    # it. Eleven runs have moved the rare-column knee along one axis of one term and have left its slope untouched;
+    # the twelfth halved the slope at the same knee and came back at +0.06 +/- 0.40 ELPD with one divergence, which is
+    # the flattest non-response this session has produced on an axis it believed was load-bearing. Read together, the
+    # two facts are awkward: the response in the knee's position is strongly non-flat - 12 doublings costs 3.66, no
+    # knee at all gains 1.99 and loses its gates - while the response in the knee's hardness is flat to a twentieth of
+    # an ELPD over a halving of it. A penalty that cares where it is but not how hard it pushes is not behaving like a
+    # prior, and the obvious suspect is the term's gradient at the values the chain actually visits, which for a
+    # softplus with its knee at 16 is sigmoid(|beta| - 16): essentially zero below 12, essentially one above 20, and in
+    # between a smooth ramp that spends most of the posterior's rare mass exactly where the push is happening.
+    # This run keeps that ramp and discards the wall above it. The factor becomes the sum of two softpluses, one with
+    # its knee at 12 and one with its knee at 24, each at a sixth of the current weight, so that at the values the
+    # champion's rare posterior occupies - the fitted coefficients run up to 23.6 doublings, with their bulk between 4
+    # and 16 - the slope is 0.5 * sigmoid(4) = 0.486, against the current 0.500, a three per cent difference in the
+    # only part of the term the chains sample, while the cost of a 32-doubling coefficient falls from 5.2 doublings of
+    # log density to 1.3 and the cost at 24 falls from 2.0 to 0.5. In other words: identical geometry where the fit
+    # lives, four times cheaper where it does not, and the flat 16-to-20 stretch, the 32-doubling gain of 1.05, and the
+    # no-knee gain of 1.99 all sit in the second region and predict that this run should land somewhere between the
+    # champion and the run at 32, at roughly +0.6, with the geometry the champion has rather than the geometry the
+    # uncut fit lost. If it does, then the +9.19 this term earned is being earned by its slope near the middle of the
+    # posterior, not by the height of the wall, and the loop's description of its champion should change from a
+    # truncated sparse prior to a prior with a fitted shoulder in it - which is also the reading under which the eleven
+    # knee positions become a measurement of where the shoulder belongs rather than of where the cut belongs. If it
+    # comes back flat again, then nothing about the far end of this term has ever mattered, the eleven points have been
+    # measuring the near end alone, and the run to try afterwards is a knee at 12 with the same total slope, which is
+    # the near-end hypothesis tested from the side that has never been touched.
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
+    numpyro.factor("rare_tail", -(jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 12.0))
+                                  + jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 24.0))) / 6.0)
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
