@@ -114,8 +114,30 @@ def model(X, lo=None, hi=None):
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
-    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
-    scale = numpyro.deterministic("scale", 1.0 / scale_raw)
+    # Eighty-sixth experiment: the residual prior the last four runs forced me to write. The loop has now measured
+    # this parameter's posterior under seven families and the response is not a curve, it is a run-away: half-normal
+    # and gamma priors put it at 6.9 and 9.2 doublings, the kept inverse-gamma at 16.1, a shape of 2.5 at the same
+    # mean at 34.0, and a shape of 4 - which cuts the far tail from s^-5 to s^-9, that is, which forbids enormous
+    # scales - at 84.6 with a 90% interval of [58.5, 119.6]. Read in order of tail weight the posterior scale is
+    # monotonically increasing in how hard the prior tries to stop it, which is not what a well-posed parameter
+    # looks like and is exactly what a likelihood does when a parameter is doing a job nothing else in the model can
+    # do. That job is identified: 204 isolates are right-censored above the plate and the held-out censored
+    # log-density of the interval, 1 - Phi((hi - mu)/s), rises without bound as s grows once mu is past the top, so
+    # the residual scale is being used to buy density on rows whose MIC was never measured, and it will buy as much
+    # as any prior lets it. What the tail of an inverse-gamma was doing was not expressing uncertainty about the
+    # assay's repeatability - a fit that ends at 16 doublings, against a microdilution reading repeatable to about
+    # half a doubling, is not uncertain about anything, it is exploiting a one-sided likelihood - but deciding how
+    # far the exploitation runs before the prior's density runs out, which is why pushing the tail inward pushed the
+    # answer outward. The fix the geometry asks for is a prior whose log density decays faster than any power of s,
+    # so that the reward of a larger s is eventually outrun: log s ~ Normal(log 9.2, 1), the geometric mean of the
+    # fit that preceded the inverse-gamma family and an interval that spans 3.4 to 25 doublings at 95%, meaning a
+    # statement as permissive as anything tried here, expressed on the log scale where a scale parameter actually
+    # lives. If the fit lands near 9 rather than 16 or 85, then this axis has one runaway direction and a
+    # light-tailed family is the correct statement of what the model does not know; if it lands at 16 again, then
+    # even a log-normal is too thin at the top and the loop must conclude that the residual scale on these data has
+    # no posterior at all, that the -142.29 on main is one point on a plateau whose far end is unmeasured, and that
+    # no metric the harness computes from held-out censored density will ever be the right way to choose it.
+    scale = numpyro.sample("scale", dist.LogNormal(jnp.log(9.2), 1.0))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
