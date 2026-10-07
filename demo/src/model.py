@@ -18,6 +18,10 @@ from jax.scipy.special import log_ndtr
 
 FEATURE_EFFECTS = "beta"
 
+# Column names of the design matrix, set by src/features.py in build() (only it sees them). The prior needs them:
+# the fluoroquinolone target-gene alleles are the one group of columns the dilution assay resolves.
+FEATURE_NAMES: list[str] = []
+
 
 def log_interval_prob(lo, hi, mu, sigma):
     """log P(lo < y <= hi) for y ~ Normal(mu, sigma); lo may be -inf and hi may be +inf.
@@ -75,7 +79,29 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Twenty-sixth experiment. The control (a prior identical to the champion's, assembled from two sites with an
+    # inactive cut) scored +1.90 +/- 2.25 and the same construction twice more gave +2.40 and +2.79, so about +2 of
+    # ELPD is the harness's own floor for any change to this model, and every gain in the +2 to +3.5 band on the
+    # rare-column axis has to be read against that floor - which closes it: nothing measured on that axis exceeds
+    # its own noise. What has *not* been done is to use the prior to say something about the assay's resolution,
+    # which is what the model needs. The likelihood here cannot see differences below the dilution step, so a
+    # determinant that changes the MIC by less than half a doubling is unmeasurable by construction: a twofold
+    # change in the MIC of the isolates carrying it moves them by 1 log2 unit, and the plate reports at
+    # half-doubling resolution, so its effect is buried in the rounding noise of the medium. That is the standard
+    # reason a MIC model shrinks small effects hard and lets the target-gene steps run free (the clinical breakpoint
+    # literature is explicit that a one-dilution MIC difference is not interpretable), and it is a constraint on
+    # *magnitude*, not on which columns are in the design. So: a Cauchy(0, 0.5) prior - half a doubling, the
+    # resolution of the test - on the 74 columns with no target-gene mechanism, and the champion's t(4, 0, 2) kept
+    # exactly on the three QRDR columns whose effects the plate does resolve (gyrA_D87N, gyrA_S83L, parC_S80I: the
+    # common alleles, 179-187 carriers, that carry the resistance steps). This is not shrinkage for its own sake -
+    # a beta-lactamase gene has no route to a fluoroquinolone MIC except by co-selection, which the mechanism
+    # reference treats as a confound to be removed rather than an effect to be fitted.
+    qrdr_common = jnp.array([j for j, n in enumerate(FEATURE_NAMES)
+                             if n in ("gyrA_D87N", "gyrA_S83L", "parC_S80I")], dtype=jnp.int32)
+    beta_rare = numpyro.sample("beta_rare", dist.Cauchy(jnp.zeros(p), 0.5))
+    beta_qrdr = numpyro.sample("beta_qrdr", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    in_qrdr = jnp.zeros(p, dtype=bool).at[qrdr_common].set(True)
+    beta = numpyro.deterministic("beta", jnp.where(in_qrdr, beta_qrdr, beta_rare))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
