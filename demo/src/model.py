@@ -110,9 +110,39 @@ def model(X, lo=None, hi=None):
     # session's conclusion is the single InvGamma, +6.43 +/- 3.56, ratio 1.81, which is as close to the harness's rule
     # as anything has come and is where this loop should stop.
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
+    # One hundred and fourth experiment: a ceiling on the effects the plate can see, which the last three runs
+    # jointly asked for and no run has tried. Four measurements now describe the prior on the 63 common columns, and
+    # read as one curve they are monotone in looseness: width 1 costs 0.49 +/- 1.69, the kept width 2 is main, width 4
+    # gains 1.24 +/- 1.95 for -141.05 - the best score any clean run has reached since the champion - and width 8,
+    # the rare columns' own prior, gains 2.68 +/- 3.66 for -139.61. Three ELPD across a fourfold widening, all of it
+    # in one direction, none of it clearing the harness's rule because the paired standard error grows with the width
+    # it is scoring: the disagreement between two fits across 558 isolates is what the SE measures, and a fit that
+    # lets gyrA_S83L claim twice as many doublings disagrees about more isolates. That pattern is worth naming
+    # precisely, because it is the same pattern the rare block produced twenty times over. The loop's censored
+    # likelihood rewards any slack it can push mu upward with, and rewards it most on the 204 rows above the plate;
+    # every widening on either block has therefore measured positive, and the SE has grown faster than the gain, so
+    # the harness has correctly refused each one as unproven. What has never been tried on either block is the
+    # opposite shape of slack - not a wider prior, which lets an effect run far and pays for it in uncertainty, but a
+    # prior of the same bulk with a hard-ish ceiling, which buys the upward mobility the censored rows want at the
+    # price of a discount only in the region the fitted coefficients do not occupy. So: the common columns keep their
+    # t(4, 0, 2) exactly as main has it, and take the same softplus penalty at the same knee of 16 doublings that the
+    # rare columns carry, added to the one log-density term that exists for this purpose. At the champion's fitted
+    # scale this costs nothing - the common coefficients have posterior medians within six doublings of zero and a
+    # softplus at 16 is flat to two decimal places below twelve - so this is not a change to the fit's centre and
+    # cannot be read as one. It is a statement about the two per cent of posterior draws in which a common coefficient
+    # wanders into the region the wide prior makes reachable, and the argument for making that statement is the loop's
+    # own strongest finding: the rare block's entire contribution, measured as an ablation, was worth less than a
+    # third of the residual scale's, which means the slack this champion is running on is not where the model's
+    # information is. If the common block's ceiling reproduces the rare block's - and the rare block's ceiling is
+    # worth three and a half ELPD relative to the same prior uncut - then the mechanism is a geometry that has
+    # nothing to do with prevalence and everything to do with a funnel, and the loop should stop describing its
+    # champion as a model with a sparse-prior design and start describing it as one with a bounded likelihood. If it
+    # comes back flat, the ceiling is specific to columns no fold can estimate, which is what the design assumes and
+    # no run had tested.
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
-    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
+    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0))
+                   - jnp.sum(jax.nn.softplus(jnp.abs(beta_common) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
