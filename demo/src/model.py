@@ -111,7 +111,28 @@ def model(X, lo=None, hi=None):
     # as anything has come and is where this loop should stop.
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
-    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
+    # Seventieth experiment: the rare-column prior as a proper tail that stops hurting at the width the data stop
+    # informing. Three measurements of that prior now exist on the kept residual scale and they trace the whole
+    # trade-off the harness can see: t(4, 0, 8) with a soft penalty past 16 doublings is the champion (+9.19 +/-
+    # 4.45); the same prior without the penalty reaches -140.30, two ELPD better than the champion and the best
+    # absolute fit this loop has produced, and was rejected by a single divergence and an ESS of 555; t(4, 0, 4) with
+    # the penalty costs -1.37 +/- 0.98. Read together, the gain on this axis is not in the prior's body - width 4
+    # loses - because it is in how far a coefficient for a determinant carried by three isolates is allowed to go:
+    # unbounded, the model likes it best and NUTS will not sample it; cut at 16, it samples and keeps most of the
+    # gain; halved, it loses. A Student-t(4) is the wrong shape for that statement anyway - its log density decays
+    # only as -5 log|beta|, so at 30 doublings it is still within a few log units of 20, which is why the chains
+    # wander there and why a linear penalty was needed to stop them. A Normal prior says the intended thing exactly:
+    # the density falls quadratically, so at some distance the prior is decisively against moving further, and the
+    # distance is where the assay's own resolution puts it. With mean 0 and scale 8 doublings the prior median of
+    # |beta| is 5.4 - close to what the t(4, 0, 8) puts there - while the mass beyond 16 doublings is 4.6% instead of
+    # the t's 11.6% before its penalty and 1.2% after, and beyond 24 it is 0.003% against the t's 0.4%. The penalty
+    # is kept, unchanged, because it is what makes the retained fit converge and because at this shape it bites on
+    # 0.05% of the draws instead of 1.2%: the same rule, applied to a prior that mostly obeys it. If the Normal is as
+    # good as the t and never diverges, the axis is closed with the statement the biology supports - no determinant
+    # is known to raise an MIC by more than the plate's width, and the model should not need a truncate() to believe
+    # that; if it is worse, the heavy tail is load-bearing and this session's rare-column result depends on the
+    # possibility of very large effects on very rare alleles, which is a claim worth making explicitly.
+    beta_rare = numpyro.sample("beta_rare", dist.Normal(jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
