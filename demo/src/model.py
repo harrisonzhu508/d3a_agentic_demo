@@ -111,8 +111,29 @@ def model(X, lo=None, hi=None):
     # as anything has come and is where this loop should stop.
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
-    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
-    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
+    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 12.0))
+    # Seventy-eighth experiment: the combination of the session's two best-characterised near-misses, which no run
+    # has yet put in the same model. Measured separately against this champion, each cost a fraction of an ELPD
+    # against an SE of the same size - the closest-to-zero response either axis has produced - and each is a
+    # one-parameter move outward on the same object, the prior for a determinant the plate cannot resolve. A knee at
+    # 24 doublings rather than 16 on the rare-column tail gained +0.49 +/- 0.65 with every gate clean, and the
+    # reason was measured rather than assumed: the kept fit's rare-column posterior has 1.2% of its mass past the
+    # current knee with its largest draw at 23.6 doublings, so a penalty at 16 is taxing exactly the draws the model
+    # has already decided about, and the whole loss decomposes to the censored rows (+1.37 in-sample log density on
+    # those, -0.11 on the 98 measured ones). A width of 12 rather than 8 on the same 14 columns cost -0.25 +/- 0.38,
+    # again clean, and the width is the prior's other half: at 8 the prior's median |beta| is 6.5 doublings and at 12
+    # it is 8.1, which moves mass into the same region the knee at 24 stops protecting. The two moves are not
+    # redundant - one sets how much density sits far out, the other sets where the discount starts - but they are
+    # not independent either, since widening the prior while loosening the bound pushes the same 1.2% further, and
+    # that joint region is the only place in this model where anything is being claimed about the eleven isolates
+    # whose MIC is above the plate and whose genotype says nothing. Nothing here clears two SEs and nothing is
+    # meant to; what the run buys, for sixteen seconds, is the shape of the response surface's top rather than its
+    # slopes. If the two costs add, the optimum is inside the box already explored and this loop's champion is the
+    # corner the harness could certify. If they partly cancel, or add to something positive with an SE under half an
+    # ELPD as both components had singly, then the surface is flatter than either run suggested and the report's
+    # statement about this prior should be that it was varied over a fivefold range in width and a 1.5-fold range in
+    # bound, always with a held-out density difference smaller than the noise it travelled with.
+    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 24.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
