@@ -93,8 +93,34 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
+    # Thirty-eighth experiment, on the pathology the last one made measurable. The fitted latent MIC is not in the
+    # range the assay can report: pooling the posterior, mu runs from -35 doublings (median of the 256 isolates at
+    # the plate bottom) to +33 (median of the 204 above the top), a spread of 68 log2 units across a plate that
+    # spans 12, and the just-kept scale-prior-gamma-ridge *increased* the spread (its s went 6.87 -> 9.18 and the
+    # median |mu - midpoint| for the on-grid isolates went 25 -> 32) while raising ELPD. That is what a saturated
+    # linear predictor looks like: for a left-censored row the likelihood is Phi((hi - mu)/s), which decreases
+    # strictly as mu falls, so every censored row pushes its mu further past the boundary for as long as the prior
+    # will pay, and the fit buys that push with effect coefficients of +38 and -14 - fifteen prior reshaping
+    # attempts, three column-dropping attempts and an interaction all measured inside noise, because none of them
+    # touched the mechanism. The mechanism is that the linear model asserts predictive density for MIC values no
+    # well ever measured, and the biology does not support it: MIC is bounded by the medium (a well cannot report
+    # below the lowest dilution because nothing grows, and cannot report above the highest because growth is
+    # unlimited - which is exactly what ">4" means) and the clinically meaningful differences between isolates are
+    # compressed near the breakpoints, not spread over sixty doublings. So replace the identity link with a soft
+    # saturating one: z = X beta, mu = alpha + 6 * tanh-into-6, implemented as
+    #     mu = alpha + L * softclip(z / L)  with softclip(u) = u - u^3/3 clipped to |u| <= 1.5, L = 6
+    # which is the identity for |z| up to 6 doublings (a single QRDR step, worth ~8-11 doublings, is barely
+    # affected: it enters the quadratic region) and compresses everything beyond, asymptotically at +-9 doublings
+    # from the intercept - the width of the plate on either side of the susceptible breakpoint. The effect prior
+    # stays the champion's t(4, 0, 2), so the coefficients are free to be large (the identified QRDR steps need
+    # them to be) while the latent MIC cannot be taken outside the range the assay can mean. Unlike per-isolate
+    # offsets or per-column caps this constrains no parameter and drops no column: it is a reparameterisation of
+    # the mean function, applied inside the likelihood and inside simulate() consistently.
     beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
-    mu = numpyro.deterministic("mu", alpha + X @ beta)
+    z = X @ beta
+    L = 6.0
+    q = jnp.abs(z) / L
+    mu = numpyro.deterministic("mu", alpha + jnp.sign(z) * jnp.minimum(jnp.abs(z), L * (1.0 - (1.0 + q) ** (-2.0))))
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
         numpyro.factor("censored_lik", ll.sum())
@@ -104,6 +130,9 @@ def model(X, lo=None, hi=None):
 def simulate(samples, X, key):
     """Latent log2 MIC draws (draws, n) for the rows of X (logistic errors, matching the likelihood)."""
     beta = samples["beta"]                                    # (draws, p)
-    mu = samples["alpha"][:, None] + beta @ jnp.asarray(X).T   # (draws, n)
+    z = beta @ jnp.asarray(X).T                                # (draws, n)
+    L = 6.0
+    q = jnp.abs(z) / L
+    mu = samples["alpha"][:, None] + jnp.sign(z) * jnp.minimum(jnp.abs(z), L * (1.0 - (1.0 + q) ** (-2.0)))
     u = jax.random.uniform(key, mu.shape, minval=jnp.finfo(jnp.float32).tiny)
     return mu + samples["scale"][:, None] * jnp.log(u / (1.0 - u))
