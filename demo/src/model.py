@@ -93,7 +93,25 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Forty-third experiment, on the effect prior, using the calibration this session finally earned. The prior on
+    # the 77 effects has been changed nineteen times, and nineteen times the answer was +2 to +3.5 ELPD with an SE of
+    # 2 to 5 - which this loop then measured directly and found to be its floor: a prior *identical* to the
+    # champion's, merely assembled from two sites with an inactive cut, scored +1.90, +2.40 and +2.79 on three
+    # separate branches. Two things have changed since those measurements, and they change what is worth trying.
+    # First, the error scale: the kept Gamma(2, 0.5) moved the posterior scale from 6.87 to 9.18 doublings, so a
+    # coefficient's prior width now means something different relative to the residual (width 2 was 0.29 s; the same
+    # prior at width 3 would be 0.33 s, and a re-test at the new scale gave +1.51 +/- 1.35, which is not nothing).
+    # Second, and more sharply: the effect prior and the scale prior are the same decision seen through two
+    # parameters, because what the censored rows compete over is the ratio mu/s - a right-censored row's term is
+    # 1 - Phi((hi - mu)/s), so making s larger and making the coefficients larger are two ways of moving the same
+    # quantity, and the inverse-gamma scale prior (mode 5.7 doublings, +6.55 +/- 3.63, the largest gain since the
+    # champion) shows how much ELPD sits in that ratio. So put the movement in the effects, where it is identified,
+    # rather than in the residual, where it is not: t(4, 0, 2.5) is the smallest step in that direction, one quarter
+    # of the residual scale in prior sd terms, and it is the point the re-test at width 3 brackets from above without
+    # reaching. At 2.5 the prior sd is 3.2 doublings - just above the 3.0 doublings that is one dilution step, so a
+    # determinant may plausibly move an MIC by one dilution and only exceptionally by two - with the t(4) body
+    # unchanged, so the QRDR steps keep their unrestricted freedom, which is what the width-2 champion bought.
+    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.5))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
