@@ -90,7 +90,12 @@ def model(X, lo=None, hi=None):
     rare = n_carriers <= 15.0                       # at most ~12 isolates per cross-validation fold
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 2.0))
-    lam = numpyro.sample("lambda", dist.HalfCauchy(0.5 * jnp.ones(p)))
+    # Non-centred: lambda = |z| / u with u ~ HalfCauchy is the same half-Cauchy marginal but written without the
+    # funnel at lambda = 0 (the funnel is exactly what made the earlier horseshoe attempts diverge; see
+    # discarded/horseshoe-effects and discarded/centered-horseshoe).
+    lam = numpyro.deterministic(
+        "lambda", 0.5 * numpyro.sample("lambda_z", dist.HalfNormal(1.0))
+        / jnp.maximum(numpyro.sample("lambda_u", dist.Uniform(1e-6, 1.0)), 1e-6))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare * lam, beta_common))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
