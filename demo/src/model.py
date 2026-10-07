@@ -112,7 +112,28 @@ def model(X, lo=None, hi=None):
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
-    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
+    # Eightieth experiment: the last point of a curve this loop has measured at three places and never at the
+    # middle. The rare-column penalty - one log unit per softplus of |beta| beyond a knee, on the 14 columns carried
+    # by at most 15 isolates - has been run with the knee at 12, where it costs 3.66 ELPD of the +9.19 this champion
+    # earns; at 16, which is main; at 24, where it gains +0.49 +/- 0.65 with every gate clean; and nowhere at all,
+    # which reaches the best absolute held-out density the loop has produced (ELPD -140.30, +1.99 +/- 1.66) and is
+    # refused by one divergence and an ESS of 555. Four points on a response that rises monotonically as the bound
+    # loosens and then falls when the bound is removed, with the maximum therefore inside the range between sixteen
+    # and infinity and every measurement inside it landing positive but small. The reason to run the middle rather
+    # than conclude is arithmetic specific to this harness: a change is kept when its gain exceeds twice its paired
+    # SE, and the paired SE on this axis is not fixed - it was 5.11 for the unbounded width-8 prior at the narrow
+    # residual scale, 3.09 for the same prior cut at 12, 4.45 for the kept combination, 0.65 for the cut at 24, 1.66
+    # for no cut at all. The SE is sqrt(n) times the across-isolate sd of the held-out density change, so it measures
+    # how much the two fits disagree about individual isolates, and the bound's whole job is to stop a coefficient on
+    # a three-carrier column from moving an isolate's mu by more than the plate: tightening it makes the two fits
+    # agree more and buys less, loosening it buys more and costs more in disagreement. Somewhere in that trade-off is
+    # the point of maximum gain-per-disagreement, and since the two measured interiors of the range came back at
+    # +0.49 and +1.99 with SEs of 0.65 and 1.66 - ratios of 0.75 and 1.20 - the best guess from the curve's shape is
+    # that the ratio keeps climbing as the bound loosens and that the failure at infinity is the sampler's, not the
+    # score's. A knee at 20 doublings, halfway between what is kept and where the posterior's own mass ends (the
+    # largest rare-column draw in the kept fit is 23.6 doublings), is the smallest loosening that the curve predicts
+    # will be positive and the largest one that has never produced a divergence.
+    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 20.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
