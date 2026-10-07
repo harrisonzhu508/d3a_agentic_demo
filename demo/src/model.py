@@ -109,12 +109,39 @@ def model(X, lo=None, hi=None):
     # degree of freedom expressed twice - which the 84% additivity of the last pair had already hinted at - and the
     # session's conclusion is the single InvGamma, +6.43 +/- 3.56, ratio 1.81, which is as close to the harness's rule
     # as anything has come and is where this loop should stop.
+    # One hundred and eighteenth experiment: the combination the loop's own procedure asks for at the third attempt,
+    # built from the two changes whose errors are the smallest and whose mechanism is the one the whole session has
+    # been circling. Six runs now measure the prior width on the 63 columns the plate can resolve, and they are
+    # monotone in width with errors that never once fell below half the gain they bracketed: width 1 costs 0.49 +/-
+    # 1.69, the kept width 2 is main, width 2.5 gains 0.26 +/- 0.70 - the point a quarter-step was predicted to be
+    # worth, arriving within two hundredths of the half-an-ELPD-per-doubling line - width 4 gains 1.24 +/- 1.95 for
+    # -141.05, and width 8 gains 2.68 +/- 3.66 for -139.61. Eleven runs measure the residual scale and conclude that
+    # the parameter is not identified: location steps of twenty per cent move the score by a tenth of an ELPD, a
+    # half-step in the prior's median reaches -142.17 and loses only its R-hat, and the posterior median of the scale
+    # itself answers 6.9, 9.2, 11.2, 15.6, 33.0 or 82.1 doublings depending on which prior is asked. Both curves are
+    # real and both are below the harness's resolution one step at a time, which is the sentence the report has to
+    # carry; what has not been tried is what the procedure says to do when two hypotheses each gain more than half
+    # their error and neither clears twice it, which is to combine them. The combination is not a sum of slacks and
+    # that is the point of running it. Widening the effect prior buys density on the 204 right-censored rows by moving
+    # their mu above the top well; loosening the residual buys the same density by admitting the intervals are wide.
+    # Measured separately they are the same trade, and the champion's keep of +9.19 for two priors loosened together
+    # against +6.4 for either alone said so at the time. Measured together they are a fit that does not need either
+    # lever to be extreme, which is what a posterior whose geometry is a funnel looks like from the outside: the two
+    # parameters trade along a ridge and the sampler's error grows along it, so the paired standard error - the
+    # disagreement between two fits over 558 isolates - grows faster than the gain. A width of 3 on the resolved block
+    # is half of the step that reached -141.05, a scale rate of 200 is the largest loosening of the residual that this
+    # session has seen keep its divergences at zero and put its prior median at nineteen doublings rather than seven
+    # and a half, and the pair should land near the best single runs of either axis, around +1, at an error that a
+    # single lever at the same distance cannot reach because the two of them disagree about different isolates. If it
+    # keeps, the loop's fifty-refused streak is a statement about single steps in a two-parameter trade and the
+    # report says that. If it comes back flat with clean gates, then the ridge is not a trade but a plateau, and the
+    # conclusion the last thirty runs have been walking towards is the one to write down.
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
-    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 3.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
-    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
+    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 200.0))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
