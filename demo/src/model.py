@@ -86,7 +86,34 @@ def model(X, lo=None, hi=None):
     # door open. If the gain survives, what the censored rows wanted was room around the mode and the axis is done;
     # if it collapses, they wanted the upper tail, and a proper heavy-tailed family (a scale-mixture t, or an
     # inverse-gamma) is where the remaining density is.
-    scale = numpyro.sample("scale", dist.Gamma(2.0, 0.5))
+    # Forty-fourth experiment. The effect-prior axis is closed and the loss is still on the scale, so measure the
+    # scale prior's tail properly. Six points are now on the record against this champion, all with clean gates and
+    # identical agreement and coverage, differing only in ELPD and, as one number, in how much pressure they put on a
+    # large residual scale (nats lost going from the mode up to s = 20 doublings):
+    #     HalfNormal(2)             champion by construction                  0
+    #     Gamma(3, 0.75)   mode 2.7   firm above 16                          -0.22 +/- 0.40   (R-hat 1.013)
+    #     Gamma(0.5, 0.125) mode 0    flat-ish above the mode                +0.89 +/- 0.50
+    #     Gamma(2, 0.5)    mode 2     as above, more mass low                +3.98 +/- 1.97   (kept)
+    #     HalfCauchy(2)    no mode    -1.4 nats at 20                         +4.06 +/- 2.28
+    #     HalfCauchy(4)    no mode    -1.4 nats at 20                         +4.55 +/- 2.41
+    #     InvGamma(2,128)  mode 5.7   -6.0 nats at 20, power-law below        +6.55 +/- 3.63
+    # The ordering is monotone in how cheap the prior makes a large s, and it is monotone across two different
+    # families, which is what makes it a measurement rather than a coincidence: the further the prior's mode sits
+    # from zero, the better the fit, because the 204 right-censored rows - 56% of the cross-validated loss, with a
+    # likelihood term 1 - Phi((hi - mu)/s) that is flat in mu past the boundary - are arguing for a wide residual and
+    # are the only rows that argue for it at all. The posterior under the kept fit says s = 9.18 doublings with a
+    # 97.5% point of 13.1, and the inverse-gamma is the best prior yet at 84% of its mass below the posterior mean
+    # (against 96% for the half-normal, which loses four). InvGamma(2, 32) is the same inverse-gamma family - it is
+    # Gamma(2, 32) on the reciprocal, since numpyro has no inverse-gamma - with mode 4.3 doublings and median 5.8,
+    # i.e. mass placed *inside* the range the plate can resolve (0.008 to 4 mg/L is 9 doublings wide, so a residual
+    # of 4-6 doublings means the genotype explains the phenotype to within a dilution or two for a typical isolate)
+    # while leaving the tail where the censored rows need it: still a s^-5 tail, still 1.5x the kept gamma's density
+    # at s = 9.2. If the sequence is a genuine monotone in upper-tail cheapness, this sits between the gamma's +4.0
+    # and the inverse-gamma at 128's +6.6 - which would make it the best-scoring change of the session and, at an SE
+    # near 3, close to the harness's bar. If instead the peak is the mode position and 5.7 was it, this loses, and
+    # the scale prior is tuned.
+    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 32.0))
+    scale = numpyro.deterministic("scale", 1.0 / scale_raw)
     # The champion needs very large effects on a few QRDR alleles (gyrA D87N ~ +11, parC S80I ~ +9 log2
     # units) - the MIC really does leave the plate for those isolates - so width 2 is already close to the
     # posterior of the alleles that matter. A Student-t(4, 0, 2) prior has that width in the middle but
