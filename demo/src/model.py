@@ -86,14 +86,34 @@ def model(X, lo=None, hi=None):
     # door open. If the gain survives, what the censored rows wanted was room around the mode and the axis is done;
     # if it collapses, they wanted the upper tail, and a proper heavy-tailed family (a scale-mixture t, or an
     # inverse-gamma) is where the remaining density is.
-    scale = numpyro.sample("scale", dist.Gamma(2.0, 0.5))
+    # Sixty-third experiment: the two largest measured gains of this loop, on one fit. The prior on the residual
+    # scale and the prior on the rare-column effects are two hypotheses about one trade-off, and the record shows it.
+    # Widening the residual with InvGamma(2, 128) - mode 5.7 doublings, median 7.7, an s^-5 tail, written on the
+    # reciprocal because numpyro has no inverse-gamma - has gained +6.55, +6.09, +6.55 and +6.43 on four runs
+    # (default sampler, target_accept 0.98, four times the draws, a dense mass matrix), each with clean gates and the
+    # same agreement and coverage, and each discarded by a paired SE pinned between 3.56 and 3.64 against a rule that
+    # needs 3.27. Widening the prior on the 14 columns carried by at most 15 isolates from t(4, 0, 2) to t(4, 0, 3)
+    # gained +2.79 +/- 2.72 on the old fit and +2.72 +/- 2.23 on the kept one: the best-resolved number on that axis
+    # (ratio 1.22) and too small for the rule on its own. Both pay for the same thing - held-out density on the 204
+    # isolates whose MIC the plate only bounds from above, whose term 1 - Phi((hi - mu)/s) is flat in mu past the
+    # boundary and which carry 55% of the cross-validated loss - one by letting the residual absorb what the genotype
+    # cannot say, the other by letting a determinant carried by three isolates move its carriers. If they are
+    # substitutes, as that shared mechanism implies, the combination gains less than the sum and it becomes known that
+    # this axis has one degree of freedom; if they are complementary - which the fact that they act through different
+    # parameters on different rows suggests - the sum is near +9 against a paired SE never once observed above 3.7 for
+    # either component, and +9 clears two SEs where neither half has ever cleared one.
+    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
+    scale = numpyro.deterministic("scale", 1.0 / scale_raw)
     # The champion needs very large effects on a few QRDR alleles (gyrA D87N ~ +11, parC S80I ~ +9 log2
     # units) - the MIC really does leave the plate for those isolates - so width 2 is already close to the
     # posterior of the alleles that matter. A Student-t(4, 0, 2) prior has that width in the middle but
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 3.0))
+    beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
