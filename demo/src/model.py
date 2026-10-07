@@ -93,9 +93,12 @@ def model(X, lo=None, hi=None):
     # Non-centred: lambda = |z| / u with u ~ HalfCauchy is the same half-Cauchy marginal but written without the
     # funnel at lambda = 0 (the funnel is exactly what made the earlier horseshoe attempts diverge; see
     # discarded/horseshoe-effects and discarded/centered-horseshoe).
-    lam = numpyro.deterministic(
-        "lambda", 0.5 * numpyro.sample("lambda_z", dist.HalfNormal(1.0))
-        / jnp.maximum(numpyro.sample("lambda_u", dist.Uniform(1e-6, 1.0)), 1e-6))
+    # Reparameterised half-Cauchy slab scale, u ~ Uniform(0,1) with lambda = 0.5 * tan(pi/2 * u): the same
+    # marginal distribution, but the sampler's own coordinates are the quantile u (uniform on the unit
+    # interval, no funnel, no singularity at lambda = 0) rather than lambda itself - which is the version that
+    # sampled at all (discarded/rare-allele-slab-prior, same marginal written directly, 245 divergences).
+    lam_u = numpyro.sample("lambda_u", dist.Uniform(1e-4, 1.0 - 1e-4))
+    lam = numpyro.deterministic("lambda", 0.5 * jnp.tan(0.5 * jnp.pi * lam_u))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare * lam, beta_common))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
