@@ -56,7 +56,33 @@ def logistic_log_interval_prob(lo, hi, mu, scale):
 
 def model(X, lo=None, hi=None):
     p = X.shape[1]
-    alpha = numpyro.sample("alpha", dist.Normal(-4.0, 3.0))
+    # Ninety-first experiment: the only two numbers in this model that the harness has measured twice each, put
+    # together after four runs established that neither moves on its own. The intercept's prior is the last untested
+    # object in the model: Normal(-4, 3) centres the population's MIC mode at 0.0625 mg/L, the middle of a fourteen-
+    # doubling plate of which 256 isolates - very nearly half - read below the bottom, and moving that centre to the
+    # plate's own floor of -7.06 gained +0.63 ELPD with an SE of 0.51 and every gate clean; loosening the same prior
+    # to Normal(0, 10), a prior that claims nothing, gained +3.56 +/- 3.13, also clean, the third-best absolute score
+    # the loop has produced against a champion at -142.29. The scale's prior has been measured eight times and its
+    # behaviour is not a curve but a run-away: the posterior answers 6.9, 8.9, 10.8, 15.6, 33.0 and 82.1 doublings
+    # according to which family is asked, and it rises monotonically with the effort a prior makes to hold it down -
+    # the signature of a one-sided censored likelihood, since 1 - Phi((hi - mu)/s) climbs without limit as s grows
+    # once mu passes the plate's top. Both axes are flat in their own measurement and both are positive, which is
+    # the arithmetic situation this loop has been unable to reach for forty experiments: two moves of +0.6 and +3.6
+    # whose SEs are 0.5 and 3.1, whose mechanisms are on opposite sides of the same ridge, and which have never been
+    # run in the same model. The ridge itself is the reason to try the pair rather than conclude from either: the
+    # censored rows are content with a high mu and a narrow residual or a middling mu and a wide one, and the
+    # champion resolves that trade with the intercept pinned below where half the data sit and the residual inflated
+    # eight-fold past the assay's repeatability - one side paid for the other. Moving the intercept to the plate's
+    # floor while leaving the inverse-gamma scale exactly as main has it lets the loop see whether the two flat
+    # directions are one direction written twice. Two readings, both reportable. If the gain is near the sum of its
+    # parts and the SE stays under the 2.1 that would beat it, then this loop's champion has been trading intercept
+    # against residual, the harness can see a prior on a censored model's location after all, and the third
+    # experiment of this shape should be attempted at once. If it comes back flat, then the two flat directions are
+    # the same flat direction - the censored rows' density is bought with whatever slack the fit finds anywhere, and
+    # the report should say that on this data the plateau of the censored likelihood has been walked to its edge in
+    # three independent coordinates and the only thing the harness has ever been scoring is how far along the plateau
+    # each prior is willing to let the chains go.
+    alpha = numpyro.sample("alpha", dist.Normal(-7.06, 3.0))
     # Logistic errors with the same variance as the baseline HalfNormal(2) errors: s = sigma sqrt(3/pi)
     # The error scale of the interval-censored likelihood is the parameter the censored rows identify least
     # well - a right-censored isolate is happy with almost any mu once mu is past the top of the plate, so what
