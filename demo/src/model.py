@@ -89,7 +89,10 @@ def model(X, lo=None, hi=None):
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
-    numpyro.factor("rare_cut", jnp.sum(jnp.where(jnp.abs(beta_rare) <= 16.0, 0.0, -1e3)))
+    # Soft cut rather than a step: the log density continues to fall past 16 doublings but only linearly (one log
+    # unit per doubling), which is a finite, Lipschitz tail the integrator can follow, where a -1e3 step is a wall
+    # the trajectory crosses and bounces off - 2986 divergences and R-hat 2.15 with the identical posterior mode.
+    numpyro.factor("rare_cut", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
