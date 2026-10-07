@@ -1,6 +1,6 @@
 """Small helpers shared by the github-workflow scripts (standard library only).
 
-Branches, remote and experiment come from config/autoresearch.toml (see checks/settings.py).
+Branches, repository, remote and experiment come from config/autoresearch.toml (see checks/settings.py).
 """
 
 import json
@@ -69,9 +69,33 @@ def secret(key: str) -> str | None:
     return None
 
 
+def repo_of(remote: str) -> str | None:
+    """owner/name of the GitHub repository a git remote points at (None if it is not a GitHub remote)."""
+    m = re.search(r"github\.com[:/]([^/]+/[^/]+?)(?:\.git)?/?$", git("remote", "get-url", remote, check=False))
+    return m.group(1) if m else None
+
+
+def github_repo() -> str:
+    """owner/name of the repository the agents push to and open pull requests in ([git] repository or remote)."""
+    s = settings()
+    repo = s["repository"] or repo_of(s["remote"])
+    if not repo:
+        sys.exit(f"git remote '{s['remote']}' is not a GitHub repository: set [git] repository in config/autoresearch.toml")
+    return repo
+
+
+def push_remote() -> str:
+    """The git remote for github_repo(): [git] remote if it points there, else "autoresearch-repo" (added here)."""
+    s = settings()
+    if not s["repository"] or repo_of(s["remote"]) == s["repository"]:
+        return s["remote"]
+    url = f"git@github.com:{s['repository']}.git"
+    if git("remote", "get-url", "autoresearch-repo", check=False) != url:
+        git("remote", "remove", "autoresearch-repo", check=False)
+        git("remote", "add", "autoresearch-repo", url)
+    return "autoresearch-repo"
+
+
 def owner_repo() -> tuple[str, str]:
-    url = git("remote", "get-url", settings()["remote"])
-    m = re.search(r"github\.com[:/](.+?)/(.+?)(?:\.git)?$", url)
-    if not m:
-        sys.exit(f"{settings()['remote']} is not a GitHub remote: {url}")
-    return m.group(1), m.group(2)
+    owner, repo = github_repo().split("/", 1)
+    return owner, repo

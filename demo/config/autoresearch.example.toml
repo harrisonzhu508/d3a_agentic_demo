@@ -19,6 +19,13 @@ branch_prefix = "autoresearch"
 # Where each experiment branch starts. Agents never commit to or push it.
 base_branch = "main"
 
+# The GitHub repository the agents push their branches to and open pull requests in, as "owner/name" (a GitHub
+# URL works too). Empty: the repository of the git remote below, i.e. the one you cloned (your fork). The token in
+# config/secrets.env and your SSH key need access to it.
+repository = ""
+
+# The git remote for that repository. If repository names another one, the scripts add a remote
+# "autoresearch-repo" for it and push there instead.
 remote = "origin"
 
 # false keeps everything local: kept experiments are not pushed and no pull requests are opened.

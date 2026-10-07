@@ -5,8 +5,8 @@
 
 - the agent's model ([agent] in config/endpoint.toml): if it is an OpenAI-compatible endpoint (local vLLM,
   dide2), one chat request that must return a tool call (an api_key "$NAME" is read from config/secrets.env);
-- GITHUB_TOKEN: can read the repository of your git remote (your fork) and open pull requests there (probed
-  without creating anything);
+- GITHUB_TOKEN: can read the GitHub repository of [git] repository in config/autoresearch.toml (default: the one
+  you cloned) and open pull requests there (probed without creating anything);
 - OPENAI_API_KEY, DEEPSEEK_API_KEY: list the models; WANDB_API_KEY: who it belongs to and where runs go.
 """
 
@@ -22,7 +22,9 @@ from pathlib import Path
 DEMO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(DEMO / "scripts"))
 sys.path.insert(0, str(DEMO))
+sys.path.insert(0, str(DEMO / "skills" / "github-workflow" / "scripts"))
 from checks.settings import settings  # noqa: E402
+from gitlib import github_repo  # noqa: E402
 from render_configs import endpoints, load  # noqa: E402
 
 
@@ -59,12 +61,11 @@ def endpoint(spec: str, keys: dict) -> str:
 
 
 def github(token: str) -> str:
-    url = subprocess.run(["git", "remote", "get-url", settings()["remote"]], cwd=DEMO, capture_output=True, text=True).stdout
-    name = re.search(r"github\.com[:/](.+?)(?:\.git)?$", url.strip()).group(1)
+    name = github_repo()
     repo = "https://api.github.com/repos/" + name
     if call(repo + "/branches?per_page=1", f"Bearer {token}")[0] != 200:
-        return (f"FAIL: the token cannot read {name} (is that your fork? give the token access to it, "
-                "with Contents: Read-only)")
+        return (f"FAIL: the token cannot read {name} (the repository in [git] repository, or the one you cloned: "
+                "give the token access to it, with Contents: Read-only)")
     s, _ = call(repo + "/pulls", f"Bearer {token}", {"title": "probe", "head": "no-such-branch",
                                                       "base": settings()["base_branch"]})
     return (f"ok: can open pull requests in {name}" if s == 422 else

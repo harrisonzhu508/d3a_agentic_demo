@@ -25,17 +25,17 @@ bash scripts/run_pi.sh --experiment demo1 --experiments 5
 
 | File | What |
 |---|---|
-| `config/autoresearch.toml` | experiment name and budget; `branch_prefix` (the only branches agents may push), `base_branch`, `push`, `auto_merge` (agent merges its own kept PRs into the experiment branch); `[evaluation] budget_seconds` (time limit per evaluation, 0 = none); `[tracking] wandb_project` (`d3a_demo` = your own W&B account, or `<entity>/<project>`) |
+| `config/autoresearch.toml` | experiment name and budget; `repository` (the GitHub repository for branches and PRs, `owner/name`; empty = the one you cloned), `branch_prefix` (the only branches agents may push), `base_branch`, `push`, `auto_merge` (agent merges its own kept PRs into the experiment branch); `[evaluation] budget_seconds` (time limit per evaluation, 0 = none); `[tracking] wandb_project` (`d3a_demo` = your own W&B account, or `<entity>/<project>`) |
 | `config/endpoint.toml` | the agent's model, e.g. `local/qwen3.8-27b`, `dide2/qwen3.8-27b`, `openai/gpt-6-sol`, `deepseek/deepseek-v4-pro`; other OpenAI-compatible endpoints as `[endpoints.<name>]` |
 | `config/vllm.toml` | the local vLLM server: model, GPU, port, context length |
-| `config/secrets.env` | `GITHUB_TOKEN` (fine-grained, your fork only: Contents read, Pull requests + Issues read/write), `OPENAI_API_KEY`, `DEEPSEEK_API_KEY`, `WANDB_API_KEY` |
+| `config/secrets.env` | `GITHUB_TOKEN` (fine-grained, for that repository only: Contents read, Pull requests + Issues read/write), `OPENAI_API_KEY`, `DEEPSEEK_API_KEY`, `WANDB_API_KEY` |
 
 After editing `endpoint.toml` or `vllm.toml`: `bash scripts/setup.sh --configs`.
 
 ## Your own fork
 
-Nothing in the code names a GitHub repository or a W&B account: pull requests go to the repository of your git
-remote and runs to your W&B account, so a fork works as it is.
+Nothing in the code names a GitHub repository or a W&B account: pull requests go to the repository you cloned (or
+the one in `[git] repository`) and runs to your W&B account, so a fork works as it is.
 
 1. Fork the repository on GitHub (copying `main` only is enough) and clone your fork over SSH. The agents push
    their branches with your SSH key, so it must be on your GitHub account.
@@ -43,7 +43,8 @@ remote and runs to your W&B account, so a fork works as it is.
    Read and write; Issues: Read and write for the labels, which needs Issues enabled in the fork's settings).
    Pull requests open in your fork, never in the original repository.
 3. `config/autoresearch.toml`: your experiment name and `branch_prefix`; `[tracking] wandb_project = "d3a_demo"`
-   logs to your own W&B account (or set `"<team>/<project>"`).
+   logs to your own W&B account (or set `"<team>/<project>"`). To use another GitHub repository than the one you
+   cloned, set `[git] repository = "<owner>/<name>"` (your token and SSH key need access to it).
 4. `uv run python scripts/check.py` names the repository the pull requests go to and the W&B project.
 5. To pick up later changes: `git remote add upstream https://github.com/harrisonzhu508/d3a_agentic_demo.git`
    once, then `git pull upstream main`.

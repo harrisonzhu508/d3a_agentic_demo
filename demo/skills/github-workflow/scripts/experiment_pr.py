@@ -16,7 +16,8 @@ import urllib.request
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from gitlib import DEMO, experiment_branch, experiment_dir, git, owner_repo, run_dir, secret, settings  # noqa: E402
+from gitlib import (DEMO, experiment_branch, experiment_dir, git, owner_repo, push_remote, run_dir,  # noqa: E402
+                    secret, settings)
 from publish import API, request  # noqa: E402
 
 
@@ -60,11 +61,12 @@ def body(exp: str) -> tuple[str, int]:
 
 def main() -> None:
     s = settings()
-    exp_branch, base, remote = experiment_branch(), s["base_branch"], s["remote"]
+    exp_branch, base = experiment_branch(), s["base_branch"]
     token = secret("GITHUB_TOKEN")
     if not s["push"] or not token:
         print("experiment PR: skipped (git.push is off or no GITHUB_TOKEN)")
         return
+    remote = push_remote()
     git("fetch", "-q", remote, base, check=False)
     if not git("ls-remote", "--heads", remote, exp_branch, check=False):
         print(f"experiment PR: {exp_branch} is not on GitHub yet (no hypothesis published)")

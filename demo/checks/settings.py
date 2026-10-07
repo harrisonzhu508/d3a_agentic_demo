@@ -37,6 +37,9 @@ def settings() -> dict:
         "max_experiments": int(os.environ.get("D3A_MAX_EXPERIMENTS") or exp.get("max_experiments", 3)),
         "branch_prefix": git["branch_prefix"].strip("/"),
         "base_branch": git["base_branch"],
+        # "owner/name" of the GitHub repository for branches and pull requests ("" = the remote's), URLs accepted
+        "repository": re.sub(r"^(?:https://github\.com/|git@github\.com:)|(?:\.git)?/?$", "",
+                             git.get("repository", "").strip()),
         "remote": git.get("remote", "origin"),
         "push": bool(git.get("push", True)) and os.environ.get("D3A_NO_PUSH") != "1",
         "auto_merge": bool(git.get("auto_merge", False)),

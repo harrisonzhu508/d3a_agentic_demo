@@ -13,7 +13,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from gitlib import (branch_namespace, champion_branch, current_branch, experiment_branch, git,  # noqa: E402
-                    is_agent_branch, metrics, settings)
+                    is_agent_branch, metrics, push_remote, settings)
 
 
 def main() -> None:
@@ -39,7 +39,7 @@ def main() -> None:
             archived = ns + "discarded/" + branch.removeprefix(ns)
             git("branch", "-M", branch, archived)
             if settings()["push"]:   # keep the record on GitHub; a network problem must not block the discard
-                git("push", "-q", settings()["remote"], f"{archived}:refs/heads/{archived}", check=False)
+                git("push", "-q", push_remote(), f"{archived}:refs/heads/{archived}", check=False)
             m["archived_branch"] = archived
             note = f"; branch kept as {archived}"
         else:
