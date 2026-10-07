@@ -110,7 +110,31 @@ def model(X, lo=None, hi=None):
     # session's conclusion is the single InvGamma, +6.43 +/- 3.56, ratio 1.81, which is as close to the harness's rule
     # as anything has come and is where this loop should stop.
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
-    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # One hundred and thirty-sixth experiment: the far end of the only response on this fit that has ever been measured
+    # as both large and reproducible, at the sampler setting that has now removed every divergence it was ever asked
+    # to remove. Five runs sit on the prior width of the 63 columns a held-out fold can estimate, and read in order of
+    # width they are a straight line rising: 1 doubling costs 0.49 +/- 1.69 ELPD, the champion's 2 is main, 2.5 gains
+    # 0.26 +/- 0.70, 3 gains 1.24 by the pair's own arithmetic, 4 gains 1.24 +/- 1.95 for -141.05, and 8 - the rare
+    # block's slab, applied to the whole matrix - gains 2.68 +/- 3.66 for -139.61, which is the best score this loop
+    # has ever obtained from a fit that kept its gates. Nothing has been measured between 4 and 8, and the whole of the
+    # loop's account of that curve has been inferred from its endpoints: a gain of 1.4 ELPD across a doubling of width,
+    # an error that grows with the width rather than with the gain, and a keep rule that asks one step to beat twice its
+    # own error, which on this axis no step can do because the error at the far end is 3.66 and the whole remaining
+    # headroom of the axis is smaller than that. That last observation is the reason to take the step anyway, and to
+    # take it at the halfway point in log-width rather than at the end: six doublings is the geometric mean of the two
+    # measured ends of the gap, it is the width at which a t with four degrees of freedom has a prior median coefficient
+    # of four doublings - the exact step from a wild-type Escherichia coli to a fluoroquinolone-resistant one in this
+    # assay, which is the number the loop's own skill says a first-step target mutation is worth and which the
+    # champion's width of 2 puts at one and a half - and it is small enough that the disagreement it causes with the
+    # champion is confined to the handful of isolates whose latent MIC sits under a slope rather than under the level.
+    # The acceptance target goes to 0.97 with it for a reason the log has established twice rather than as a lever in
+    # its own right: the setting reproduces every score it has been given to within two hundredths of an ELPD, once at
+    # 3.48 against the 3.56 a single prior change had already delivered at 0.95, and it has never itself introduced a
+    # divergence, whereas the same region of this design at 0.95 has lost fourteen runs to single transitions. The
+    # prediction is a point on a measured line, 1.9 ELPD with an error between the 1.95 of the width-4 run and the 3.66
+    # of the width-8 one, which is the least confident useful number this loop has ever produced and the reason the
+    # report should stop describing this axis as flat.
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 6.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
