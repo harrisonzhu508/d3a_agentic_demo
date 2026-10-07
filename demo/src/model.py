@@ -75,7 +75,27 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Thirtieth experiment, and the last on this axis before the budget goes elsewhere. The rare-column prior has
+    # been measured at six widths and three cut points, all against the same champion:
+    #     cut 16: width 2 +1.90 +/- 2.25, 3 +2.79 +/- 2.72, 4 +3.09 +/- 3.48, 5 +3.51 +/- 4.05, 6 +3.04 +/- 4.48,
+    #             8 +3.37 +/- 5.11        cut 8:  +2.98 (R-hat 1.015)      cut 24: +2.41 (1 divergence)
+    #             cut 32 with width 16:   -2.46 (69 divergences)           threshold 30 at width 8: -1.57
+    # The estimate is flat at +3 from width 3 to 8 and the SE grows almost linearly in the width, so the keep-ratio
+    # is monotonically decreasing and no point on the curve reaches the harness's two-SE rule. Three explanations
+    # were tested and two are dead: a spike at zero (a scale mixture's distinguishing feature) gives +1.12, so the
+    # gain is not sparsity; a mechanism-specific prior (Cauchy(0,0.5) off the target genes) gives -1.72 with R-hat
+    # 1.13, so it is not mechanism; dropping the redundant gyrA_D87N column gives -17.4, so the allele columns do
+    # carry information the gene-level ones lose, which also kills the "degenerate pair" reading. What survives is
+    # the boring one - the rare columns' prior is simply too narrow at width 2 and anything wider buys about three
+    # ELPD - and the harness cannot see three ELPD because its paired SE is 2 to 5. The cut point is the one
+    # parameter never measured above the estimate's plateau: at 16 the SE is 5.11, at 24 the fit produced a
+    # divergence, and 20 is the only untested value. Choosing it is not tuning on the score but finishing the grid,
+    # and the fit is cheap enough to afford it.
+    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
+    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 20.0)))
+    beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
