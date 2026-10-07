@@ -105,7 +105,8 @@ def model(X, lo=None, hi=None):
     # half-Cauchy in the upper tail (where the censored rows live) and an inverse power below (where no row can
     # inform s, since a scale near zero is excluded by the 98 on-grid isolates anyway). If the +4 came from removing
     # upward pressure, this keeps it and should exceed it; if it came from having mass near 2, it loses.
-    scale = numpyro.sample("scale", dist.InvGamma(2.0, 128.0))
+    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
+    scale = numpyro.deterministic("scale", 1.0 / scale_raw)
     # The champion needs very large effects on a few QRDR alleles (gyrA D87N ~ +11, parC S80I ~ +9 log2
     # units) - the MIC really does leave the plate for those isolates - so width 2 is already close to the
     # posterior of the alleles that matter. A Student-t(4, 0, 2) prior has that width in the middle but
