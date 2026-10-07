@@ -75,7 +75,23 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Thirteenth variant, combining the two halves of the diagnosis. Writing the rare columns' prior as a factor
+    # allowed the two ingredients to be varied separately, and each was clean on its own:
+    #   t(3,0,2) hard-cut at 8 doublings:  0 divergences, +1.12 +/- 2.08   (discarded/rare-slab-trunc-t3)
+    #   t(4,0,8) soft-cut at 16 doublings: 0 divergences, +3.52 +/- 5.10   (discarded/rare-slab-trunc-wide)
+    #   t(2,0,2), unbounded tail:          9 divergences, +4.54            (discarded/rare-slab-t3-n10)
+    # The wide reach is what earns the gain (a 3-carrier column has to be allowed to move an isolate the whole
+    # width of the plate, and a coefficient's leverage there is sd 0.10-0.16, so 8 log2 units of coefficient is one
+    # doubling of MIC) and the *unbounded* tail is what diverges. So take the t(3, 0, 2) shrinkage - which pulls a
+    # no-signal rare column towards zero harder than t(4) does, the part that fixed coverage - and give it the same
+    # soft, linear past 16 doublings cut. Both ends of the prior are then set by the assay rather than by the
+    # sampler's convenience: shrinkage inside the plate's range, a bounded cost outside it. 63 common columns and
+    # every sampler setting are the champion's.
+    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    beta_rare = numpyro.sample("beta_rare", dist.StudentT(3.0, jnp.zeros(p), 2.0))
+    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
+    beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
