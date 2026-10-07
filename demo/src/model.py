@@ -55,11 +55,20 @@ def logistic_log_interval_prob(lo, hi, mu, scale):
 
 
 def model(X, lo=None, hi=None):
-    p = X.shape[1]
+    n, p = X.shape
     alpha = numpyro.sample("alpha", dist.Normal(-4.0, 3.0))
     # Logistic errors with the same variance as the baseline HalfNormal(2) errors: s = sigma sqrt(3/pi)
     scale = numpyro.sample("scale", dist.HalfNormal(2.0 * jnp.sqrt(3.0 / jnp.pi)))
-    beta = numpyro.sample("beta", dist.Normal(jnp.zeros(p), 2.0))
+    # Regularised horseshoe, CENTRED (beta_j ~ Normal(0, tau^2 lam_tilde_j^2)) with a half-normal global
+    # scale: the non-centred z-form was divergent here because the binary columns are near-collinear, so
+    # tau and lambda are far better identified than 77 independent z_j (see discarded/hs-strong-tau).
+    p0 = 8.0                                        # prior guess: ~8 determinants matter for ciprofloxacin
+    tau0 = p0 / (p - p0) * scale / jnp.sqrt(n)       # variance-explained scaling of the global shrinkage
+    tau = numpyro.sample("tau", dist.HalfNormal(jnp.abs(tau0) + 1e-6))
+    lam = numpyro.sample("lambda", dist.HalfCauchy(jnp.ones(p)))
+    c2 = numpyro.sample("c2", dist.InverseGamma(2.0, 2.0 * 3.0 ** 2))   # slab: effects up to ~3 doublings
+    lam_tilde = jnp.sqrt(c2 * lam ** 2 / (c2 + tau ** 2 * lam ** 2))
+    beta = numpyro.sample("beta", dist.Normal(jnp.zeros(p), tau * lam_tilde))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
