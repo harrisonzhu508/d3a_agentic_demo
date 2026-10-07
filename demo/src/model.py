@@ -114,8 +114,31 @@ def model(X, lo=None, hi=None):
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
-    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
-    scale = numpyro.deterministic("scale", 1.0 / scale_raw)
+    # Eighty-eighth experiment: the prior on the residual scale written as a sentence about the assay instead of as
+    # a distribution family. Nine runs have now probed this parameter and the pattern is monotone in one direction
+    # and flat in the other: the posterior answers 6.9, 8.9, 10.8, 15.6, 33.0 and 82.1 doublings depending on which
+    # family is asked, moving further from the assay's own repeatability the harder a power-law tail tries to hold
+    # it down, while varying a heavy tail's location across a factor of 1.33 changes the held-out score by a fifth of
+    # an ELPD. Every one of those priors was chosen from a table of conjugate families. None was chosen from the
+    # experiment that produced the data. A broth microdilution series in two-fold steps is scored by this harness to
+    # a tolerance of one doubling, the QC range for E. coli with ciprofloxacin is about two doublings wide, and two
+    # competent operators reading the same plate disagree by roughly half a doubling: a residual of half a doubling
+    # is what the assay's own noise would justify, and it is the value a statistician would put in the prior if the
+    # question were "how well can this test repeat itself" rather than "how much density can a censored row be made
+    # to yield". I pick one doubling rather than half because the model's residual is not only the assay: it also
+    # carries isolate-to-isolate biological scatter that no genotype of 77 binary determinants explains, and one
+    # doubling is the smallest value that is still a defensible statement about both - it is the harness's own
+    # agreement tolerance, it is the width of one dilution step, and it is a promise a reader of a MIC table would
+    # recognise. So: the log of the residual at Normal(0, 0.8), a median of one doubling and a 95% range of 0.45 to
+    # 4.9, thin in the log-density's right tail, with every other term in the model left exactly as main has it. The
+    # prediction I would defend before seeing the run is that the score falls by a great deal and the posterior lands
+    # well above the prior it was given - a censored likelihood rewards a wide residual without limit, and this
+    # session's log-normal runs at 9.2 and 15.6 already lost 4.01 and 3.49 ELPD while landing near where they were
+    # centred, which says the reward is real but finite. If instead the score comes back near main's, the reward for
+    # a wide residual is bounded by something other than the prior, and a model built on the assay's own repeatability
+    # is worth as much out of sample as one built on a tail - the most useful result this axis could produce, because
+    # it would be a statement about the data rather than about which distribution I wrote down.
+    scale = numpyro.sample("scale", dist.LogNormal(0.0, 0.8))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
