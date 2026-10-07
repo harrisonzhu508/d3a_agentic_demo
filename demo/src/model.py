@@ -75,7 +75,20 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Sixth variant of the rare-column slab (see discarded/rare-allele-slab-prior, which gained 9.75 +/- 5.81 and
+    # diverged 245 times, and discarded/rare-slab-halfnormal-wide, which gains 4-5 ELPD and raises coverage from
+    # 82.6% to 87.5% with 4-7 divergences in three different parameterisations). What is left diverging is not the
+    # scale's tail but the correlation the slab creates: a rare column's coefficient and its own scale move
+    # together (beta_j = raw_j x scale_j is a product, so the sampler sees a ridge along raw_j x scale_j = const), and a
+    # diagonal mass matrix cannot follow such a ridge while a dense one can. dense_mass was tried alone on the
+    # champion (discarded/dense-mass-metric, +0.31 +/- 0.16, no change in divergences) - there was nothing to gain
+    # there because the champion has no product geometry; here it is the fix for one, at the cost of a dense
+    # adaptation over 79 dimensions, well inside the time budget.
+    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    beta_rare_raw = numpyro.sample("beta_rare_raw", dist.Normal(jnp.zeros(p), 1.0))
+    rare_scale = numpyro.sample("rare_scale", dist.HalfNormal(6.0 * jnp.ones(p)))
+    beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare_raw * rare_scale, beta_common))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)

@@ -7,5 +7,5 @@ SETTINGS = {
     "num_chains": 4,
     "target_accept_prob": 0.95,
     "max_tree_depth": 10,
-    "dense_mass": False,
+    "dense_mass": True,
 }
