@@ -114,7 +114,28 @@ def model(X, lo=None, hi=None):
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
-    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
+    # Seventy-fourth experiment: the second parameter of the prior that has now been measured twice in each
+    # direction. The kept fit's residual scale carries an inverse-gamma with shape 2 and rate 128 - mode 5.7
+    # doublings, median 7.7, a tail that falls as s^-5 - and both sides of its location have just been varied by a
+    # quarter-step with the same result: rate 120 cost 0.23 +/- 0.39 and rate 160 cost 0.10 +/- 0.62, both with every
+    # gate clean. The held-out density is therefore flat in this prior's location over a factor of 1.33 around the
+    # kept value, which is a sharper statement than it looks: the location is the parameter the censored rows argue
+    # about, yet the prior's own median moves from 7.2 to 9.7 doublings across those two runs while the posterior
+    # answers 15.6 either way, so the likelihood has stopped listening to location. What a likelihood can still hear
+    # once it has heard everything the location has to say is curvature - the second derivative of the log prior at
+    # the posterior's mode, the only prior information left when the mode is pinned. An InvGamma(a, b) has log
+    # density -(a+1) log s - b/s, so a = 2 gives curvature -3/s^2 at the posterior's 15.6 doublings and a = 3 gives
+    # -4/s^2, a third more of it. Shape 3 at rate 288 changes the curvature and nothing else: its mean is 288/2 = 144
+    # against the kept 128/1 = 128, meaningless for an inverse-gamma either way, and its mode on the scale itself is
+    # 4.6 doublings against the kept 7.7 - a prior whose own centre sits where the posterior refuses to go, which is
+    # not the thing either of these priors is speaking about. What differs is how fast the log density steepens as s
+    # falls towards the assay's own noise: exactly where the 98 on-grid rows want the fit and exactly the direction
+    # the 204 censored rows refuse, the two groups whose disagreement an earlier experiment located as the whole of
+    # the paired SE on this axis. If the fit is as insensitive to curvature as it is to location, this comes back
+    # flat inside half an ELPD, the axis is a plateau and not a trade-off, and the model's stated uncertainty about
+    # the assay is a choice the findings do not constrain - a fact the report has to carry rather than average away.
+    # If it moves, then a prior does bite here and the next thing to vary is the tail's exponent itself.
+    scale_raw = numpyro.sample("scale_raw", dist.Gamma(3.0, 288.0))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
