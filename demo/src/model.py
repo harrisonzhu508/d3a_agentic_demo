@@ -75,7 +75,22 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Fifth attempt at the slab on the rare determinants, which is worth ~10 ELPD (discarded/rare-allele-slab-prior:
+    # +9.75 +/- 5.81 and coverage 88.0% against the champion's 82.6%) but diverged in every form tried so far,
+    # because a heavy-tailed slab scale has a funnel at zero: with the scale HalfCauchy(0.5) directly, 245
+    # divergences; inverse-CDF reparameterised, 6; non-centred half-normal over uniform, 2; a single half-Cauchy
+    # shared scale, R-hat 1.42. The failure is the *scale's* tail, not the slab's: a half-Cauchy scale spends most
+    # of its mass within a tenth of zero and its tail at tens of doublings, exactly the geometry NUTS cannot
+    # follow on a column carried by three isolates. HalfNormal(1.0) as the scale keeps the spike (density vanishing
+    # at zero, which is what shrinks a no-signal rare column) and the slab (width 1 doubling, enough for the
+    # 15-carrier QRDR alleles to reach the top of the plate) but has no heavy tail to chase. The 63 common columns
+    # keep the champion's t(4, 0, 2) exactly.
+    n_carriers = jnp.asarray(X, dtype=jnp.float32).sum(axis=0)
+    rare = n_carriers <= 15.0                                   # at most ~12 carriers per CV fold
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    beta_rare_raw = numpyro.sample("beta_rare_raw", dist.Normal(jnp.zeros(p), 2.0))
+    rare_scale = numpyro.sample("rare_scale", dist.HalfNormal(1.0 * jnp.ones(p)))
+    beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare_raw * rare_scale, beta_common))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
