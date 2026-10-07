@@ -56,7 +56,29 @@ def logistic_log_interval_prob(lo, hi, mu, scale):
 
 def model(X, lo=None, hi=None):
     p = X.shape[1]
-    alpha = numpyro.sample("alpha", dist.Normal(-4.0, 3.0))
+    # Eighty-first experiment: the intercept, which shares the funnel that has rejected more of this session's
+    # candidates than any other object in the model. The intercept and the residual scale are the two parameters
+    # whose posterior is nearly one-dimensional in combination - the 204 right-censored rows are happy with a high
+    # mu and a narrow residual or a middling mu and a wide one, and the kept fit resolves the trade in favour of the
+    # scale, ending at 16.1 doublings of residual against an assay whose repeatability is nearer two - and every
+    # time this loop has attacked that funnel from the scale side with a heavier sampler it has been punished: the
+    # dense mass matrix turned an R-hat of 1.012 into 1.554 with an ESS of 18, four times the draws produced two
+    # divergences where the default produced none, and target_accept 0.98 has bought back exactly one divergence in
+    # six attempts. The prior on the intercept has not been looked at once. Its current form, Normal(-4, 3), is
+    # inherited from the baseline's units: -4 doublings is 0.0625 mg/L, halfway up the plate, with enough width to
+    # reach the plate's ends - the bottom at -7.06 and the top at +2 - at two prior standard deviations. That is a
+    # real statement about a susceptible population's MIC mode and it has been right often enough to keep the fit
+    # upright, but it does interact with the one funnel that matters: the censored rows want the whole mu
+    # distribution shifted upward, and how much of that shift the intercept is allowed to absorb, as opposed to the
+    # scale, is decided in part by how much room its prior gives. A Normal(0, 10) says what the plate says - the mode
+    # of an MIC distribution in a mixed population of commensals and resistant isolates could sit anywhere on a
+    # fourteen-doubling plate, and the model should be no more confident than that - and it removes a term that
+    # quadratic in mu from the same joint density whose other factor is the wide inverse-gamma. If the intercept's
+    # confinement has been quietly doing the work that a heavier sampler kept failing to do - holding the funnel
+    # closed from the other side - then loosening it moves the posterior toward the censored rows at a cost the
+    # measured rows will show, and the direction of that single number will tell the report which side of the
+    # intercept-scale ridge this model's uncertainty has actually been living on.
+    alpha = numpyro.sample("alpha", dist.Normal(0.0, 10.0))
     # Logistic errors with the same variance as the baseline HalfNormal(2) errors: s = sigma sqrt(3/pi)
     # The error scale of the interval-censored likelihood is the parameter the censored rows identify least
     # well - a right-censored isolate is happy with almost any mu once mu is past the top of the plate, so what
