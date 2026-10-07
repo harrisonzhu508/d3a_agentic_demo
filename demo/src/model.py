@@ -109,10 +109,38 @@ def model(X, lo=None, hi=None):
     # degree of freedom expressed twice - which the 84% additivity of the last pair had already hinted at - and the
     # session's conclusion is the single InvGamma, +6.43 +/- 3.56, ratio 1.81, which is as close to the harness's rule
     # as anything has come and is where this loop should stop.
+    # Ninety-eighth experiment: the mid-point of a segment whose endpoints this loop has already measured to within
+    # half an ELPD, run because the endpoints disagree about what the curve between them must look like. Six runs
+    # have moved the rare-column knee and nothing else. At 12 doublings the fit gives up 3.66 of the +9.19 the
+    # champion earns. At 14 it loses 0.42 +/- 0.44 and one divergence. At 16 it is main, ELPD -142.29, every gate
+    # clean. At 20 it is main to a hundredth of an ELPD, with the tightest standard error this session has produced,
+    # 0.38, and zero divergences. At 24 it gains 0.49 +/- 0.65. Past that, with no knee at all, the fit reaches
+    # -140.30, the best absolute score the loop has produced, and is refused for one divergence and an ESS of 555.
+    # Draw the six points and two things are true at once, which is the whole reason to spend a run on the middle of
+    # this line rather than conclude from its ends. The first is that the response is monotone non-decreasing in the
+    # looseness of the bound up to the point where the bound disappears: the harness likes a rare determinant that is
+    # allowed to be large, and the penalty's only measured effect is to cost density. The second is that between 16
+    # and 20 the response is flat to within a hundredth of an ELPD with an SE forty times smaller than the champion's
+    # own keep, which is not monotone increase but a plateau - and a plateau that begins exactly at the champion and
+    # lasts one doubling-step is the signature of a knot, a corner in the response where two regimes meet rather than
+    # a maximum. The mechanism that would put a corner there is the geometry the last experiment tested from the
+    # sampler's side and the sampler refused: the rare coefficients enter mu additively, their t(4, 0, 8) prior is
+    # nearly flat over the band the likelihood cares about, and the residual scale multiplies everything, so past
+    # some |beta| the model has two ways to say the same thing about a censored isolate and the posterior of one
+    # depends on where the other has got to. Below the knot the discount is what keeps the chains inside the funnel;
+    # above it the discount has stopped touching the coefficients that matter and the fit drifts freely, gaining the
+    # censored rows' density at the cost of a divergence. A knee at 18 doublings is the quarter-point of that
+    # transition, between the corner at 16 and the plateau at 20, and it is the only measurement on this line that can
+    # tell the two readings apart. If the corner is real, 18 will sit between 16 and 20 in score and in SE, and the
+    # champion's knee is the exact place where the fit's geometry changes, which makes it a quantity worth reporting
+    # as estimated rather than chosen. If the response is a step - 16 and 18 identical, then a jump at 20 - then the
+    # knot is not in the prior at all but in the fitted coefficients that happen to sit just past 16, and the honest
+    # description of this penalty is that it is a switch on four named determinants and nothing else, which the
+    # report should say in those words.
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
-    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
+    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 18.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
