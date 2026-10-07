@@ -114,7 +114,35 @@ def model(X, lo=None, hi=None):
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
-    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
+    # One hundred and seventh experiment: the same prior, one per cent looser, on the parameter whose every large
+    # move this loop has now watched break. The residual scale has been fitted under ten families and its posterior
+    # answers 6.9, 9.2, 10.8, 10.8, 11.2, 15.6, 33.0 and 82.1 doublings depending on which one is asked, ordered by
+    # how hard the prior tries to stop it rather than by anything about the isolates. Every attempt to move it
+    # deliberately has failed in one of two ways. Attempts to shift its location report flat - rates of 120 and 160
+    # costing 0.23 and 0.10 ELPD, a median moved from 7.8 to 9.9 doublings worth 0.12 +/- 0.67 and an R-hat of 1.0129
+    # - which is the likelihood answering before the prior has been heard. Attempts to change its curvature report
+    # damage: shape 2.5 at constant mean lands the posterior at 33.0 doublings and loses 1.21 with an R-hat of 1.036;
+    # shape 4 lands it at 82.1 and loses 6.37; a log-normal, whose density dies faster than any power of s, loses 3.10
+    # to 4.01 however it is centred and costs its divergences on the way; and truncating the kept inverse-gamma at 12
+    # doublings, changing nothing below the cut, loses 1.34 and reaches an R-hat of exactly the limit. Ten
+    # experiments, two signatures, and the second one is the interesting one: a Gamma on the reciprocal has its tail
+    # exponent fixed by its shape, so every attempt to thin the tail has also pushed the prior's mass down toward the
+    # assay's own noise, and the runs measured both changes and reported one. The reverse move has never been made -
+    # thinning nothing, pushing nothing, and loosening the far end by an amount small enough that the fit cannot
+    # notice and the chains cannot trip over. An InvGamma(a, b) has a survival that falls as s^-a beyond its mode, so
+    # the kept shape of 2 is a tail of s^-5 on the scale itself; a shape of 1.9 at the same mean - b = a(a-1)*128 =
+    # 121.6, chosen so the prior median of the scale stays at seven doublings - is s^-4.5, which is
+    # twenty-five per cent more prior mass everywhere past thirty doublings, three times more past a hundred, and
+    # under two per cent different below fifteen, where the champion's posterior actually sits. The harness has told
+    # me what it thinks of a residual that runs away: it charges about half an ELPD per doubling of this parameter's
+    # posterior median, and the three unconstrained fits in this session's log ran to 16.6, 33.0 and 82.1 while losing
+    # 1.2, 2.0 and 6.4, so the price of the far tail is real and gentle. A prior that sells a quarter more of it, for
+    # a fit that has never drawn above forty, is the smallest unit of trade this axis has left, and the only one whose
+    # outcome is not already predictable from a previous run: if the score holds with clean gates, the loop learns that
+    # the tail is free over a quarter of its mass at fifteen doublings and that the champion's fifteen and a half is
+    # the likelihood's own answer rather than a prior's permission - which is the difference between reporting this
+    # fit as one that estimates a wide residual and reporting it as one that was granted one.
+    scale_raw = numpyro.sample("scale_raw", dist.Gamma(1.9, 121.6))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
