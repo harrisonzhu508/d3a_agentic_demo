@@ -86,7 +86,27 @@ def model(X, lo=None, hi=None):
     # door open. If the gain survives, what the censored rows wanted was room around the mode and the axis is done;
     # if it collapses, they wanted the upper tail, and a proper heavy-tailed family (a scale-mixture t, or an
     # inverse-gamma) is where the remaining density is.
-    scale = numpyro.sample("scale", dist.Gamma(2.0, 0.5))
+    # Fifty-third experiment: the best-measured gain of the session, with the sampler geometry fixed so that it can
+    # be kept. InvGamma(2, 128) on the residual scale (mode 5.7 doublings, median 7.7, an s^-5 tail; numpyro has no
+    # inverse-gamma, so it is written as Gamma(2, 128) on the reciprocal) has scored +6.55, +6.09 and +6.55 on three
+    # runs against this champion - the largest gain since the error distribution - with clean gates every time and
+    # the same agreement (78.3%) and coverage (81-82%), and it has been thrown away three times for one number: a
+    # paired SE of 3.63, where the rule needs under 3.27. That SE is not noise in the comparison, and I can say where
+    # it comes from. The paired difference is sqrt(n) times the sd, across isolates, of the held-out log-density
+    # change, and decomposing that change by censoring state puts almost all of it on the 204 right-censored rows,
+    # whose term 1 - Phi((hi - mu)/s) is flat in mu past the boundary: for those rows the change in fitted mu is
+    # essentially s times a logistic quantile, and s has posterior mean 9.2 with a 97.5% point past 13. The variance
+    # of the difference is thus the posterior variance of s translated through 204 flat rows, so reducing it means
+    # sampling s better rather than waiting for the data to say more. Four times the draws was tried (minimum ESS
+    # 922 -> 4016) and the SE came back at 3.63 to two decimal places, which the same run's R-hat of 1.0017 had
+    # already explained: the sampler is at its own limit under a diagonal mass matrix. What a diagonal matrix cannot
+    # follow is the ridge that the reciprocal parameterisation creates - the intercept and the scale trade off against
+    # each other on the 256 rows at the plate bottom, and the just-kept Gamma(2, 0.5) shows exactly that (its s rose
+    # from 6.9 to 9.2 while the spread of mu rose with it) - and a step size tuned for 77 near-zero coefficients is a
+    # step size that wanders freely along that ridge. A dense mass matrix adapts the covariance across all of it, and
+    # the full fit takes 14 s of the 600 s available, so this is a lever I can pull without borrowing from anything.
+    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
+    scale = numpyro.deterministic("scale", 1.0 / scale_raw)
     # The champion needs very large effects on a few QRDR alleles (gyrA D87N ~ +11, parC S80I ~ +9 log2
     # units) - the MIC really does leave the plate for those isolates - so width 2 is already close to the
     # posterior of the alleles that matter. A Student-t(4, 0, 2) prior has that width in the middle but
