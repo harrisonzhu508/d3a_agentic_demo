@@ -110,9 +110,38 @@ def model(X, lo=None, hi=None):
     # session's conclusion is the single InvGamma, +6.43 +/- 3.56, ratio 1.81, which is as close to the harness's rule
     # as anything has come and is where this loop should stop.
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
-    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # One hundred and forty-first experiment: the loop's most-refused gain, put back inside the mechanism that earned
+    # the champion, which is the one combination of this design that has never been tried. Six campaigns ago this
+    # branch kept its champion by +9.19 ELPD for a change that was not a wider prior and not a ceiling but the pair of
+    # them on the same block of columns: the 34 low-prevalence determinants were given a Student t four times as wide as
+    # the rest of the design's, and then discounted by a softplus past sixteen doublings, and the two together were
+    # worth more than the sum of the parts by roughly a fifth. That fifth is the whole content of the design's claim -
+    # that room and a bound are complements, not opposites, and that a sparse prior on columns no held-out fold can
+    # estimate needs both because a wide prior alone lets a three-carrier allele run away with an isolate while a bound
+    # alone merely tightens what was already too tight. Twelve measurements since have walked the bound from twelve
+    # doublings to none at all, four have walked the slab from eight to sixteen, and the score has risen at every step
+    # of both, always by less than the harness will accept: +0.00, +0.01, +0.49, +1.05, +1.99 along the bound; +0.16,
+    # +0.98, +0.36 along the slab. Every one of those was measured under a slab or a bound that had itself been left at
+    # the champion's, which is the correct way to measure a single axis and the wrong way to move along a surface whose
+    # gradient points diagonally. Meanwhile the resolved block has its own one-axis walk - widths 1, 2, 2.5, 3, 4, 6 and
+    # 8, worth -0.49, main, +0.26, +1.24, +1.24, +2.27 and +2.68 - and that walk has been run with the ceiling on the
+    # rare columns fixed, never once widened with it, even though widening the slopes of the columns the plate can
+    # resolve is exactly the intervention the ceiling was built to make safe. So: the resolved columns go to four
+    # doublings, the widest single step on that axis this branch has measured as a gain and the width whose prior median
+    # coefficient of three doublings is nearest the fluoroquinolone step, and the discount moves from the rare block on
+    # to both blocks, at the same knee of sixteen doublings and the same unit weight the champion carries. The
+    # prediction the champion's own arithmetic makes is not the sum of the runs: the width alone is worth +1.24 and a
+    # ceiling on the resolved columns alone, at sixteen doublings, cost 19.11 - the largest loss in this log - which is
+    # the number that has kept the loop away from this combination, and the reason to run it once anyway is that the two
+    # measurements were never independent. A ceiling on a slope is binding only if the slope's prior puts mass above it,
+    # and the 19.11 was paid by a t(4, 0, 2) prior whose mass past sixteen doublings is a quarter of one per cent, so
+    # the loss cannot have come from the ceiling's cost at the fitted coefficients, where it is 0.13 per column, and
+    # must instead have come from its gradient along the ridge a wide prior fills. Give the prior the room the ceiling
+    # is a statement about, and the pair is the transaction; withhold it, and the ceiling is a wall in an empty field.
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 4.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
-    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
+    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0))
+                   - jnp.sum(jax.nn.softplus(jnp.abs(beta_common) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
