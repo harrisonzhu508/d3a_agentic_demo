@@ -86,7 +86,28 @@ def model(X, lo=None, hi=None):
     # door open. If the gain survives, what the censored rows wanted was room around the mode and the axis is done;
     # if it collapses, they wanted the upper tail, and a proper heavy-tailed family (a scale-mixture t, or an
     # inverse-gamma) is where the remaining density is.
-    scale = numpyro.sample("scale", dist.Gamma(2.0, 0.5))
+    # Fifty-second experiment: the best-measured gain of the session, delivered with the noise removed. Eight priors
+    # on the residual scale are on the record against this champion, all with clean gates and agreement 78-78.3% and
+    # coverage 81-83% - the tell that nothing in the mean function moves, only how far the 204 right-censored rows
+    # are allowed to take the residual - and they order by one property, how cheap the prior makes a large s:
+    # HalfNormal(2) 0; HalfCauchy(8) +0.97; Gamma(0.5,0.125) +0.89; Gamma(3,0.75) -0.22; Gamma(2,0.5) +3.98 (kept);
+    # HalfCauchy(2) +4.06; HalfCauchy(4) +4.55; InvGamma(2,128) +6.55, +6.09, +6.09 on three separate runs. That
+    # last figure has the largest gain of any change since the error distribution and the smallest keep ratio of the
+    # session, because its paired SE is 3.6 against the ~1.2 this model shows for small changes - and the reason is
+    # measurable, not mysterious. Decomposing the champion's pointwise held-out log density by censoring state: the
+    # 98 on-grid isolates contribute -25.3 with sd 0.84, the 256 left-censored -35.5 with sd 0.57, the 204
+    # right-censored -74.1 with sd 1.01, so 55% of the loss and the widest pointwise spread in the data sit on rows
+    # whose likelihood term, 1 - Phi((hi - mu)/s), is flat in mu past the boundary. The paired difference between a
+    # fit that lets those rows widen s and one that does not is therefore concentrated in 204 numbers each of which
+    # is small in mean and unit in scale, and a Monte-Carlo error in the held-out mean compounds it: each fold's
+    # held-out density is log mean over 4 chains x 500 draws of a long-tailed logistic interval probability, and the
+    # quantity that varies across draws is exactly s, whose posterior under this prior has mean 9.2 and a 97.5% point
+    # past 13. Four times the draws halves that component while leaving the posterior, the prior and the folds exactly
+    # as the three runs above measured them - so if the +6.1 is the model, it survives at a smaller SE and gets kept,
+    # and if a part of it was Monte-Carlo error in a reciprocal-parameterised scale, the estimate itself moves and
+    # this axis closes on evidence rather than on a gate.
+    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
+    scale = numpyro.deterministic("scale", 1.0 / scale_raw)
     # The champion needs very large effects on a few QRDR alleles (gyrA D87N ~ +11, parC S80I ~ +9 log2
     # units) - the MIC really does leave the plate for those isolates - so width 2 is already close to the
     # posterior of the alleles that matter. A Student-t(4, 0, 2) prior has that width in the middle but
