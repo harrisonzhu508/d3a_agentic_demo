@@ -112,7 +112,26 @@ def model(X, lo=None, hi=None):
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
-    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
+    # One hundred and eleventh experiment: the point immediately below the champion on the curve whose every other
+    # interval this loop has already measured, left unvisited by three runs that each sampled a different pair of its
+    # neighbours. The rare-column knee has the densest evidence base of any axis here: 12 doublings costs 3.66 ELPD of
+    # the +9.19 the keep earned; 14 costs 0.42 +/- 0.44 and one divergence; 16 is main; 18 is main to a hundredth of an
+    # ELPD with the tightest standard error the session has produced, 0.34; 20 is main to a hundredth again; 24 gains
+    # 0.49 +/- 0.65; 32 gains 1.05 +/- 0.92 and lands at -141.24, the best score any clean run has reached since the
+    # champion; and no knee at all reaches -140.30, worth +1.99 +/- 1.66, refused by one divergence and an effective
+    # sample size of 555. Plot the seven and the response is monotone non-decreasing in looseness with one plateau,
+    # 16 to 20, exactly at the champion - which is why three runs have called it a knot and none has been able to say
+    # what kind. A knot at 16 means the discount is touching the coefficients that matter and the fit's geometry
+    # changes there; a plateau means the region between 16 and 20 is empty of fitted mass, which the kept posterior
+    # says it is not, since 1.2 per cent of the rare draws and every one of the largest rare coefficients sit between
+    # those numbers. The two are told apart below the champion, not above it: if the discount is load-bearing at 16,
+    # then moving it one doubling earlier should cost a roughly equal amount going the other way, in the same way the
+    # step to 14 costs a little and the step to 12 costs a great deal; if the plateau's cause is empty region, the
+    # response near 16 is flat in both directions and the champion's knee is one of a continuum of values that do not
+    # touch the fit. Fifteen is the whole of that experiment - one doubling below main, above the run that failed its
+    # acceptance gate, where the fitted posterior's own density is highest and where the loop's two readings make
+    # opposite predictions of opposite sign. It is also the last interval on this curve that has not been sampled.
+    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 15.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
