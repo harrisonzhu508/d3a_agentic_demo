@@ -62,7 +62,7 @@ def model(X, lo=None, hi=None):
     # Regularised horseshoe on the effects (Piironen & Vehtari 2017), non-centred.
     p0 = 8.0                                        # prior guess: ~8 determinants matter for ciprofloxacin
     tau0 = p0 / (p - p0) * scale / jnp.sqrt(n)       # variance-explained scaling of the global shrinkage
-    tau = numpyro.sample("tau", dist.HalfCauchy(tau0))
+    tau = numpyro.sample("tau", dist.HalfNormal(tau0))       # short-tailed global scale: no funnel at tau -> 0
     lam = numpyro.sample("lambda", dist.HalfCauchy(jnp.ones(p)))
     c2 = numpyro.sample("c2", dist.InverseGamma(2.0, 2.0 * 3.0 ** 2))   # slab: effects up to ~3 doublings
     lam_tilde = jnp.sqrt(c2 * lam ** 2 / (c2 + tau ** 2 * lam ** 2))
