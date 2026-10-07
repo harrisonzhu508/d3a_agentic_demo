@@ -54,18 +54,34 @@ def logistic_log_interval_prob(lo, hi, mu, scale):
     return jnp.where(jnp.isposinf(hi), log_surv, jnp.where(jnp.isneginf(lo), log_upper, interval))
 
 
+GENE_ATTR = "gene_groups"                        # set on X by src/features.py; see contract signature below
+
+
+def gene_groups(X):
+    """Gene index per column of X, as attached by src/features.py (allele names share one gene), or None."""
+    return getattr(X, GENE_ATTR, None)
+
+
 def model(X, lo=None, hi=None):
     p = X.shape[1]
+    gene = gene_groups(X)
+    n_gene = p if gene is None else len(set(gene))     # static: no traced values in the model structure
     alpha = numpyro.sample("alpha", dist.Normal(-4.0, 3.0))
     # Logistic errors with the same variance as the baseline HalfNormal(2) errors: s = sigma sqrt(3/pi)
     scale = numpyro.sample("scale", dist.HalfNormal(2.0 * jnp.sqrt(3.0 / jnp.pi)))
-    # The champion needs very large effects on a few QRDR alleles (gyrA D87N ~ +11, parC S80I ~ +9 log2
-    # units) - the MIC really does leave the plate for those isolates - so width 2 is already close to the
-    # posterior of the alleles that matter. A Student-t(4, 0, 2) prior has that width in the middle but
-    # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
-    # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
-    # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # The champion's per-allele priors let the four gyrA columns take a combined effect of +41 log2 units (four
+    # alternative mutations at two codons of one gene, so the mechanism can supply at most one step), which is
+    # then cancelled by glpT_E448K at -14. Put a hierarchical prior on the *gene*: one effect per gene/locus,
+    # theta_g = tau * Normal(0,1) with tau ~ HalfNormal(4) - four doublings for the effect of a gene, wide
+    # enough for gyrA to be the dominant term - and give each allele the same gene effect plus a small allele-level
+    # deviation (HalfNormal(1), one doubling), so alleles share their gene's effect instead of adding up (cf. the
+    # partial pooling recommended for grouped predictors in Gelman et al., BDA3 ch. 21).
+    g = jnp.arange(p) if gene is None else jnp.asarray(gene, dtype=jnp.int32)
+    tau = numpyro.sample("tau", dist.HalfNormal(4.0))
+    theta = tau * numpyro.sample("theta_z", dist.Normal(jnp.zeros(n_gene), 1.0))   # non-centred
+    dev_scale = numpyro.sample("dev_scale", dist.HalfNormal(1.0))
+    dev = dev_scale * numpyro.sample("dev_z", dist.Normal(jnp.zeros(p), 1.0))
+    beta = numpyro.deterministic("beta", theta[g] + dev)
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
