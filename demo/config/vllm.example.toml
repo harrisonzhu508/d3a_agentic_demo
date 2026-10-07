@@ -28,7 +28,7 @@ api_key = ""
 # Context length in tokens (the model supports 262144; 131072 fits one 48 GB GPU next to the weights).
 max_model_len = 131072
 # Longest reply pi asks for.
-max_tokens = 16384
+max_output_tokens = 16384
 # Concurrent requests; one agent needs one or two.
 max_num_seqs = 8
 

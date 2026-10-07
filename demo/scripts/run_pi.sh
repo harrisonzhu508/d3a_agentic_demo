@@ -37,7 +37,7 @@ done
 PI=.tools/node_modules/.bin/pi
 export PI_CODING_AGENT_DIR="${PI_CODING_AGENT_DIR:-$PWD/.pi-agent}" D3A_HARNESS=pi
 # only the model keys reach pi (and so the agent); the GitHub and W&B tokens stay in the file
-eval "$(grep -E '^(OPENAI|DEEPSEEK)_API_KEY=.' config/secrets.env | sed 's/^/export /' || true)"
+eval "$(grep -E '^(OPENAI|DEEPSEEK|MYSERVER)_API_KEY=.' config/secrets.env | sed 's/^/export /' || true)"
 [ "$LIST" = 1 ] && exec "$PI" --list-models
 MODEL=${MODEL:-$(python3 -c 'import json, os; s = json.load(open(os.environ["PI_CODING_AGENT_DIR"] + "/settings.json")); print(s["defaultProvider"] + "/" + s["defaultModel"])')}
 

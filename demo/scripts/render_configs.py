@@ -27,12 +27,12 @@ def load(name: str) -> tuple[dict, Path]:
 
 
 def endpoints() -> dict[str, dict]:
-    """name -> {base_url, model, api_key, context_window, max_tokens} for every OpenAI-compatible endpoint."""
+    """name -> {base_url, model, api_key, context_window, max_output_tokens} for every OpenAI-compatible endpoint."""
     s = load("vllm")[0]["server"]
     host = "127.0.0.1" if s["host"] == "0.0.0.0" else s["host"]
     out = {"local": {"base_url": f"http://{host}:{s['port']}/v1", "model": s["served_name"],
                      "api_key": s.get("api_key") or "EMPTY", "context_window": s["max_model_len"],
-                     "max_tokens": s["max_tokens"]}}
+                     "max_output_tokens": s["max_output_tokens"]}}
     cfg = load("endpoint")[0]
     out.update(cfg.get("endpoints", {}))
     if "endpoint" in cfg:                                   # older single-endpoint layout
@@ -56,7 +56,7 @@ def main() -> None:
         "name": f"{name} ({e['model']})", "baseUrl": e["base_url"], "api": "openai-completions",
         "apiKey": e.get("api_key", "EMPTY"), "compat": QWEN_COMPAT,
         "models": [{"id": e["model"], "name": e["model"], "reasoning": True, "input": ["text"],
-                    "contextWindow": int(e["context_window"]), "maxTokens": int(e["max_tokens"]),
+                    "contextWindow": int(e["context_window"]), "maxTokens": int(e["max_output_tokens"]),
                     "cost": {"input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0}}],
     } for name, e in eps.items()}}
     settings = {
