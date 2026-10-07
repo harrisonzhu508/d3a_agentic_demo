@@ -112,7 +112,34 @@ def model(X, lo=None, hi=None):
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
-    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
+    # One hundred and twenty-ninth experiment: the term that bought the champion its +9.19, applied to the columns the
+    # design has always left unb bound, at a height four doublings below the one that cost nineteen ELPD. The evidence
+    # for a ceiling on the resolved block is a single measurement and it is enormous: put the same softplus penalty on
+    # the 63 columns a fold can estimate, at the same knee of sixteen doublings where the rare block carries it, and the
+    # fit loses 19.11 +/- 9.09 ELPD, the largest self-inflicted damage in this log, with coverage climbing to 93%
+    # because the model has stopped trying to reach the censored rows. Twice more the loop tried a ceiling on those same
+    # columns further out - at 32 doublings, where the penalty is flat to four decimal places over every draw the
+    # champion produces - and got 2 divergences, -4.56 ELPD and an R-hat of 1.0084, and before that nothing at all
+    # except refusals. What those runs say is not that ceilings are bad but that a ceiling a fit can feel on a column
+    # the plate can resolve is a lie about an effect the data have measured, and the further the lie is pushed out, the
+    # more the penalty term costs the chain in gradient noise while buying nothing. What has never been tried is a
+    # ceiling between those two heights. Fourteen doublings is seven dilution steps, which is the whole of the
+    # fluoroquinolone step from a wild-type Escherichia coli to a resistant one in this assay, and the champion's
+    # resolved coefficients do not go near it: gyrA_S83L, the largest effect on the plate, sits at about five doublings
+    # in the kept fit, parC_S80I near three, and the 63-column block's largest posterior median is under nine. So at the
+    # values this fit occupies the softplus contributes log(1 + e^-2) = 0.127 per column and a gradient of 0.119 - not
+    # the nothing of the 32-doubling version, which is what made that run's chains lose their way without moving the
+    # score, but a quarter of the push the 16-doubling version delivered at the same coordinates. The prediction the
+    # nineteen-ELPD run makes is therefore a scaled version of itself, and this is the one direction on this branch
+    # where the loop has a measurement large enough to extrapolate from rather than a slope to interpolate: if the cost
+    # of binding the resolved slopes is roughly proportional to how far above the fitted coefficients the bound sits,
+    # fourteen doublings should cost a fifth to a tenth of nineteen, one to four ELPD, and should do it with the
+    # divergences the 32-doubling version grew. If instead it comes back flat, then the 19.11 of the 16-doubling run
+    # was not a bound on the fit but a bound on the funnel, and the term's whole destructive power lives in a region
+    # narrower than two doublings, which would be the clearest evidence this session has produced that what the
+    # champion is really modelling is not a resistance architecture but a geometry.
+    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0))
+                   - jnp.sum(jax.nn.softplus(jnp.abs(beta_common) - 14.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
