@@ -110,12 +110,38 @@ def model(X, lo=None, hi=None):
     # session's conclusion is the single InvGamma, +6.43 +/- 3.56, ratio 1.81, which is as close to the harness's rule
     # as anything has come and is where this loop should stop.
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
-    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
-    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
-    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
-    beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0)) * scale
+    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0)) * scale
+    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
+    beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
+    # One hundred and thirty-seventh experiment: the structural change this session has mentioned in thirty reports
+    # and never once made, taken in the direction that removes a multiplication rather than adding a parameter. The
+    # loop's account of its own champion has been the same sentence for fifty runs: the residual scale is not
+    # identified, its posterior median answers 6.9, 9.2, 11.2, 15.6, 33.0 or 82.1 doublings depending on which prior it
+    # is asked, and the reason is a funnel between that scale and the coefficients, because an interval-censored
+    # likelihood compares every isolate against an interval of the plate divided by the scale, so a draw that doubles
+    # the scale can be undone by a draw that halves every slope. Eleven measurements of the scale's prior have confirmed
+    # the first half of that sentence - the score moves by a tenth of an ELPD for a fifth of the prior - and one of its
+    # consequences has stayed unfalsified: that the chains spend their time traversing the funnel rather than the
+    # posterior, which is what the session's odd pattern of diagnostics means, fourteen runs refused by a single
+    # divergence whose R-hat and effective sample size were otherwise better than the champion's, and a dense mass
+    # matrix that made an R-hat of 1.007 into 1.2564. A funnel that is a true property of the parameterisation is
+    # treated by sampling the ratio and not the product; a funnel that is only a property of where the prior happens to
+    # put the mass is treated by moving the prior, which has been tried eleven times and always reports flat. So write
+    # the same model with the coefficient vector expressed as a scale times a standardised vector, and leave every
+    # distribution exactly where the champion has it: the two blocks of slopes stay t(4, 0, 2) and t(4, 0, 8) with their
+    # ceiling at sixteen doublings, the residual keeps Gamma(2, 128) on the reciprocal - which is the identical prior
+    # density on the identical parameter as the run before it - and the two deterministic sites the harness reads are
+    # produced from the same product they were produced from before. What changes is what the sampler sees: the funnel's
+    # two coordinates, log-scale and the slope vector's magnitude, go from being the same random variable twice to being
+    # the sample site and a fixed scaling of a site, and the eight hundred dimensions of slope vectors that the champion
+    # draws as a single group move with the scale instead of having to be renegotiated against it at every leap. If the
+    # loop has been right about the funnel, this is the one change that should reduce divergences and raise effective
+    # sample size at the same score rather than trading one for the other, and every subsequent experiment in this log
+    # should then be re-run on this parameterisation. If it changes nothing, the funnel was never the obstacle and the
+    # single divergences were what the harness says they are, and this loop can stop saying it.
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
