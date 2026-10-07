@@ -93,7 +93,21 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Thirty-sixth experiment, on the interaction the last one exposed. The effect prior and the error scale are not
+    # separate choices: what a prior width of 2 doublings *means* is set by s, and this model's s is 6.8 doublings -
+    # wider than the prior on every coefficient. That is why the champion's effects run to +38 and -14 while the fit
+    # stays well-calibrated inside the tested range, and why fifteen attempts to reshape that prior (horseshoe,
+    # spike-and-slab at nine widths and five shapes, gene-hierarchical offsets, within-gene ridges, a mechanism
+    # spike, prevalence-scaled widths) all landed in the same +/-2 ELPD band: with s that large, a coefficient's
+    # prior width is nearly irrelevant to the likelihood, which is exactly what "flat +2 to +3.5 across a fourfold
+    # change in width, with SEs growing from 2.3 to 5.1" measures. scale-prior-gamma-ridge moved s (Gamma(2, 0.5)
+    # instead of HalfNormal(2), +3.98 +/- 1.97, kept), and with it the meaning of every effect prior - so the one
+    # legitimate re-test is the width itself, against the new fit rather than the old. Width 3 (t(4, 0, 3)) is the
+    # test: on the old scale it was worth about +2.8, inside noise; if the retained gain in s was partly the model
+    # paying for a prior too narrow relative to the residual, widening it now pays again, and if the two are
+    # substitutes - which is what the s-vs-beta argument predicts - the gain should now be near zero or negative,
+    # because s has already absorbed it.
+    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 3.0))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
