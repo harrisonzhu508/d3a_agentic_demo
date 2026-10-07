@@ -23,7 +23,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from gitlib import (DEMO, current_branch, ensure_experiment_branch, experiment_dir, git, git_ok,  # noqa: E402
-                    is_agent_branch, metrics, owner_repo, run_dir, secret, settings)
+                    is_agent_branch, metrics, owner_repo, push_remote, run_dir, secret, settings)
 
 API = "https://api.github.com"
 
@@ -75,11 +75,10 @@ def main() -> None:
         sys.exit(f"No committed report for '{args.name}': run "
                  f"uv run python skills/mic-eval-harness/scripts/write_report.py --name {args.name}")
     base = ensure_experiment_branch()
-    remote = settings()["remote"]
-
     if not settings()["push"]:
         m["pr_url"] = f"local-only (git.push = false; would open {m['branch']} -> {base})"
     else:
+        remote = push_remote()
         if not git("ls-remote", "--heads", remote, base, check=False):
             git("push", remote, f"{base}:refs/heads/{base}")
         git("push", "-u", remote, m["branch"])
@@ -117,7 +116,7 @@ def merge(m: dict, base: str) -> bool:
         print(f"not merged: {base} is checked out in another worktree (merge the PR by hand)")
         return False
     if settings()["push"]:
-        git("push", settings()["remote"], f"{base}:refs/heads/{base}")   # GitHub marks the PR as merged
+        git("push", push_remote(), f"{base}:refs/heads/{base}")   # GitHub marks the PR as merged
     ch = experiment_dir() / "champion.json"
     if ch.exists():                        # new hypotheses now start from the experiment branch itself
         c = json.loads(ch.read_text())
