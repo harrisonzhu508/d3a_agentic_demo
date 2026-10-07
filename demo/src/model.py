@@ -134,7 +134,6 @@ def model(X, lo=None, hi=None):
     # discards have made, and the claim the report needs, because it is what licenses saying that the champion was not
     # found by search but inherited from a design, and that the search on this branch has measured the derivative of
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 10.0))
-    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
