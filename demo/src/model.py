@@ -56,7 +56,7 @@ def logistic_log_interval_prob(lo, hi, mu, scale):
 
 def model(X, lo=None, hi=None):
     p = X.shape[1]
-    alpha = numpyro.sample("alpha", dist.Normal(-4.0, 3.0))
+    alpha = numpyro.sample("alpha", dist.Normal(0.0, 10.0))
     # Logistic errors with the same variance as the baseline HalfNormal(2) errors: s = sigma sqrt(3/pi)
     # The error scale of the interval-censored likelihood is the parameter the censored rows identify least
     # well - a right-censored isolate is happy with almost any mu once mu is past the top of the plate, so what
@@ -109,10 +109,35 @@ def model(X, lo=None, hi=None):
     # degree of freedom expressed twice - which the 84% additivity of the last pair had already hinted at - and the
     # session's conclusion is the single InvGamma, +6.43 +/- 3.56, ratio 1.81, which is as close to the harness's rule
     # as anything has come and is where this loop should stop.
+    # One hundred and twenty-sixth experiment: a ceiling on the parameter the last five runs proved is carrying the
+    # gain, which costs this fit nothing where it lives and is the only shape of slack this likelihood cannot use. The
+    # loop's three biggest measurements now all point at one quantity. The intercept prior, taken from Normal(-4, 3) to
+    # Normal(0, 10), gains 3.56 ELPD and reproduces to the hundredth when run a second time from a different parent -
+    # 3.56 +/- 3.13 both times, the most reproducible number this harness has ever given. Pushed to a standard deviation
+    # of fifteen doublings, one and a half times the plate's entire observed span, it gains 4.91 and the paired error
+    # blows out to 4.16, which is what a fit does when its level is no longer pinned by anything the folds agree on.
+    # Taken past that, to a nearly improper thousand, it loses its gates outright with an R-hat of 1.0143 and three
+    # divergences. Meanwhile the residual scale - the other place a censored likelihood can hide - has been measured
+    # eleven times and is flat to a tenth of an ELPD, and moving 29 of the 34 rare columns onto a fourfold tighter prior
+    # costs 1.61. So the mechanism this model runs on is not the error distribution, not the ceiling, and not the block:
+    # it is the free parameter every isolate's latent MIC is measured from, and loosening it buys density on the 204
+    # rows whose susceptibility the plate never read by letting the whole surface float upward without any single
+    # coefficient having to justify the move. Every lever on this fit that has ever measured positive did so by adding
+    # room; the one intervention that has ever measured large and negative, the ceiling the loop tried on the resolved
+    # slopes at sixteen doublings, cost 19.11 ELPD, because it bound coefficients that need to be where they are. A
+    # ceiling on the intercept at the same height is a different object entirely: the champion's fitted intercept sits
+    # near -3.5 log2 units, four doublings above the plate's bottom well and eleven below its top, so a softplus knee at
+    # 16 contributes a log density of 1e-6 and a gradient of 1e-7 over the entire region the chains visit, and this run
+    # therefore cannot be read as a change to the fit. It is a change to the far tail of one parameter - the same far
+    # tail that four runs have now walked into at 10, 15 and 1000 doublings of prior width, gaining three and a half,
+    # four and a half, and nothing respectively - and the question it answers is whether the loop's five-ELPD ridge is
+    # a room-need or a room-need-with-a-wall, which is the distinction between writing up this fit as one whose level is
+    # weakly identified and writing it up as one whose level is unidentified and merely bounded.
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
-    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
+    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0))
+                   - jax.nn.softplus(jnp.abs(alpha + 4.0) - 16.0))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
