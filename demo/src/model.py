@@ -56,7 +56,31 @@ def logistic_log_interval_prob(lo, hi, mu, scale):
 
 def model(X, lo=None, hi=None):
     p = X.shape[1]
-    alpha = numpyro.sample("alpha", dist.Normal(-4.0, 3.0))
+    # Ninety-ninth experiment: the intercept with no prior at all, which is the only honest way left to ask the
+    # question three runs have been asking sideways. The loop has now measured this one parameter's prior four times
+    # and the four answers describe a curve with a maximum inside the range of what has been tried, not a plateau:
+    # Normal(-4, 3) is main at -142.29; Normal(-7.06, 3), the plate's own floor, gains +0.63 +/- 0.51 with every gate
+    # clean, the tightest standard error of the session; Normal(-2, 3), the upper end of the susceptible range, costs
+    # -0.78 +/- 0.43, also clean; and Normal(0, 10), a prior wide enough to be called agnostic, gains +3.56 +/- 3.13
+    # for the third-best absolute score the loop has produced. Read as a function of the centre the score rises as
+    # the centre moves down and falls as it moves up, and read as a function of the width it rises as the prior gets
+    # vaguer - so both measured improvements are the same improvement, and the thing they are improving toward is the
+    # fit that knows nothing about where a ciprofloxacin MIC distribution sits. That is a suspicious limit. A flat
+    # prior on an intercept is improper, and an improper prior on a location parameter inside a censored likelihood is
+    # not merely unprincipled, it is a model whose evidence can fail to exist: the 204 right-censored rows contribute
+    # a term that stops falling as mu rises, so the only thing keeping the posterior proper is the 354 rows that were
+    # measured, and whether that is enough is an empirical question about this data rather than a theorem. It is also
+    # the one question this loop can answer about its own champion, because a run either converges or it does not, and
+    # the harness publishes the answer either way. Hence: Normal(0, 1000), which differs from a flat prior by less
+    # than anything in this model over the range mu can take - the fit's own intercept, per the kept posterior, sits
+    # within a few doublings of zero, and a thousand doublings of prior width is a constant over that range to eleven
+    # significant figures - while staying proper, so that if the score comes back at main's level or above with clean
+    # gates, the loop learns that the likelihood alone pins the location down and every prior this session has put on
+    # the intercept has been an uninvited guest. If it diverges or the R-hat breaks, then the location is held by the
+    # measured rows only barely, and the +3.56 of the wide prior was the beginning of a drift toward a posterior that
+    # does not exist - the single most important thing this loop could find out about a champion it has been quoting
+    # for thirty experiments.
+    alpha = numpyro.sample("alpha", dist.Normal(0.0, 1000.0))
     # Logistic errors with the same variance as the baseline HalfNormal(2) errors: s = sigma sqrt(3/pi)
     # The error scale of the interval-censored likelihood is the parameter the censored rows identify least
     # well - a right-censored isolate is happy with almost any mu once mu is past the top of the plate, so what
