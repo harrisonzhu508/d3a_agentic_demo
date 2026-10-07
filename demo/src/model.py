@@ -86,7 +86,23 @@ def model(X, lo=None, hi=None):
     # door open. If the gain survives, what the censored rows wanted was room around the mode and the axis is done;
     # if it collapses, they wanted the upper tail, and a proper heavy-tailed family (a scale-mixture t, or an
     # inverse-gamma) is where the remaining density is.
-    scale = numpyro.sample("scale", dist.Gamma(2.0, 0.5))
+    # Thirty-seventh experiment: the same axis, one step further, chosen against a null I can compute. The Gamma(2,
+    # 0.5) that was just kept (mean 4 doublings, mode 2, rate 0.5) gains +3.98 +/- 1.97, and the reading is that the
+    # prior was taxing the 204 right-censored rows - the rows whose likelihood 1 - Phi((hi - mu)/s) is flat in mu and
+    # therefore informative only about s. The same family has exactly one more degree of freedom, and it is the one
+    # that says what the prior does *near the mode*: with the mean pinned at 4 doublings (shape = rate x 4), the shape
+    # controls the curvature. Gamma(2, 0.5) has log density (a-1) log s - s/2, so relative to the mode at 2 it
+    # penalises a move to 6.8 by 1.0 - ln(3.4) = 0.05 nats: essentially flat over the posterior's own 95% interval of
+    # 5.2-8.7. Gamma(1, 1) - exponential with mean 1 - and Gamma(0.5, 0.125) - mean 4, mode 0, a half-improper spike
+    # at zero - push further in the same direction, and the latter is the limit of "no prior information about the
+    # scale at all, only the constraint that it is positive". If the retained gain was the model escaping a
+    # curvature, the near-flat version keeps or beats it; if the gain was the location (mass centred at 4 rather than
+    # pulled toward 0), the flat version loses most of it - and, importantly, the direction of that difference tells
+    # us whether the censored rows want a big scale for its own sake or only want not to be punished for one. Note
+    # the null against which this is judged: on this model an inert change scores about +2 ELPD against main (the
+    # three replicates of the champion's own prior measured +1.90, +2.40, +2.79), which is why scale-prior-gamma-ridge
+    # only cleared the bar by 0.04 and why this experiment has to beat about +2 to mean anything.
+    scale = numpyro.sample("scale", dist.Gamma(0.5, 0.125))
     # The champion needs very large effects on a few QRDR alleles (gyrA D87N ~ +11, parC S80I ~ +9 log2
     # units) - the MIC really does leave the plate for those isolates - so width 2 is already close to the
     # posterior of the alleles that matter. A Student-t(4, 0, 2) prior has that width in the middle but
