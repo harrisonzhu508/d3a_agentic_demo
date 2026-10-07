@@ -111,8 +111,33 @@ def model(X, lo=None, hi=None):
     # as anything has come and is where this loop should stop.
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
-    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
-    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
+    # One hundred and twenty-eighth experiment: two points already in the log, joined, in a pair small enough for the
+    # harness to see. The champion's keep rule refused fifty-four campaigns with the same arithmetic - a gain of one or
+    # two tenths against an error of half or a whole - and the four runs that broke that pattern all broke it by being
+    # worth more than any single lever on this fit: loosening the intercept prior gained 3.56, then 4.91 at half again
+    # the looseness, and pairs built on it gained 4.72 and 4.99 while their errors stayed pinned near 2.7 and the rule
+    # still refused them by a whisker. The lesson the loop has drawn from those four is narrower than "combine your
+    # hypotheses": the pairs that grew the gain grew it in a parameter the censored rows can move freely, and the pairs
+    # that only added error were the ones that bought slack in the slopes, where every additional doubling of prior
+    # width makes two fits disagree about which isolates sit above the top well. That leaves one region of this design
+    # where slack is cheap in both columns of the ledger, and the previous run measured it: a slab widened from 8 to 10
+    # gained 0.16 +/- 0.33, the smallest error of any loosening run this session and the fourth point on a curve that is
+    # monotone across five widths, -1.69 at 2, main at 8, +0.16 at 10, +0.98 at 12 with the knee at 24, +2.68 at 12
+    # everywhere. The knee is the same kind of cheapness in the other coordinate - twelve points on it, flat from 16 to
+    # 20 to a hundredth of an ELPD, with errors of 0.34 and 0.38 the tightest the harness has produced. So: the slab at
+    # ten and the knee at eighteen, each of them individually measured at a fraction of an ELPD with an error smaller
+    # than any other loosening on this branch, and neither of them touching the intercept, the resolved slopes or the
+    # residual, whose contributions the log has already settled at four and a half ELPD, 1.2 and nil. The prediction is
+    # not that the gains add - the two levers are the same lever seen from different ends, since a wider slab puts more
+    # posterior mass past the knee and a higher knee releases exactly that mass, and their product is where the
+    # interaction lives - but that adding them costs nothing: the sum of the two measured parts is six hundredths of an
+    # ELPD against a joint error that should sit near the quadrature sum of their own, half a tenth. If it lands there,
+    # the loop has bounded the interaction term of its own design, which is the last quantity needed before the report
+    # can say what the champion's +9.19 is and is not. If it lands near a whole ELPD, then the two are complements
+    # rather than substitutes and the direction worth the next five campaigns is the rare block's joint prior, not its
+    # marginals.
+    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 10.0))
+    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 18.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
