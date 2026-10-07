@@ -93,7 +93,27 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Fifty-eighth experiment: a replication, at the point where this session's two readings of the effect prior
+    # disagree. Widening it to t(4, 0, 3) on the current champion scored +1.51 +/- 1.35 with every gate clean, and
+    # +1.41 +/- 1.42 at four times the draws with five divergences - a reproducible +1.5. On the champion before it,
+    # the same width applied to nothing at all (the champion's own prior reassembled from two sample sites with an
+    # inert soft cut, so the posterior is by construction unchanged) scored +1.90, +2.40 and +2.79 on three separate
+    # branches, which is how this loop established its floor: the paired comparison charges about two ELPD for any
+    # change whatever, and the effect prior's whole +2 to +3.5 band sits at or under it. The floor, though, was
+    # measured against a fit whose residual scale was 6.87 doublings, and a paired difference's variance scales with
+    # the posterior spread that generates it - the kept fit has s = 9.18, a third wider. So either the floor grew with
+    # s, in which case the +1.5 for width 3 was never a gain and the axis has been closed since the third attempt; or
+    # the floor is a property of the folds and not of the fit, in which case +1.5 against a +2 floor is still not a
+    # gain but the interpretation of every prior number in this session's report is different, and the next loop
+    # should read those bands as noise rather than as near-misses. This run is the null, not the change: every one of
+    # the 77 columns keeps exactly the prior width that measured +1.51 (t(4, 0, 3)), and it is assembled from two
+    # sample sites and a where() over the carrier count exactly as the three floor measurements were, so the model is
+    # the +1.51 model and the only question is what the harness reports for it twice. Fourteen seconds, no
+    # consequence either way for the champion, and the one number that makes the last twenty experiments readable.
+    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
+    beta_a = numpyro.sample("beta_a", dist.StudentT(4.0, jnp.zeros(p), 3.0))
+    beta_b = numpyro.sample("beta_b", dist.StudentT(4.0, jnp.zeros(p), 3.0))
+    beta = numpyro.deterministic("beta", jnp.where(rare, beta_a, beta_b))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
