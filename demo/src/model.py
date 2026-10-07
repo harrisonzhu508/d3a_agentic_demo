@@ -68,7 +68,23 @@ def model(X, lo=None, hi=None):
     # the censored rows cannot speak to. The champion's own error *distribution* change (logistic errors) was
     # worth +340 ELPD, so getting the residual right is where the loss still lives: coverage is 82.6% against a
     # nominal 90%.
-    scale = numpyro.sample("scale", dist.HalfNormal(2.0))
+    # Thirty-fourth experiment: the same one-line change as the last, because it is the best-scoring thing this
+    # session has produced and it has not been tested against anything except the champion's HalfNormal(2). Measured
+    # against that champion (5 folds, 558 isolates, paired), HalfCauchy with a 4-doubling scale - half the width of
+    # the dilution series - gains +4.55 +/- 2.41 ELPD with 0 divergences, R-hat 1.0067, ESS 894 and 13.5 s, a keep
+    # ratio of 1.89, the best since the champion's own 1.98 and better than anything else this session has produced
+    # in thirty experiments; agreement is unchanged (78.1%) and coverage unchanged (82.6%). The argument that
+    # produced it stands on the censoring: a right-censored row's likelihood is 1 - Phi((hi - mu)/s), flat in mu once
+    # mu is past hi + 3s, so those rows (204 of 558, carrying 56% of the cross-validated loss) say almost nothing
+    # about mu and a great deal about s - and HalfNormal(2) puts 79% of its mass below the posterior mode of 6.8
+    # doublings, so the likelihood spends its strength fighting the prior in the one region where the censored rows
+    # are the only evidence there is. A half-Cauchy at 4 has unit density through that mode and declines only outside
+    # the range the assay can resolve. Two things are still unknown and this experiment measures the first of them:
+    # whether the gain is the *shape* (no exponential truncation above the mode, which is what the censored rows want)
+    # or the *location* (a prior centred further out). Half-Cauchy at 2 doublings has the champion's scale and the
+    # half-normal's width but the Cauchy's tail, so if the gain survives at the original scale it is the tail; if it
+    # halves, it is where the prior sits - and then the scale, not the family, is what to tune next.
+    scale = numpyro.sample("scale", dist.HalfCauchy(2.0))
     # The champion needs very large effects on a few QRDR alleles (gyrA D87N ~ +11, parC S80I ~ +9 log2
     # units) - the MIC really does leave the plate for those isolates - so width 2 is already close to the
     # posterior of the alleles that matter. A Student-t(4, 0, 2) prior has that width in the middle but
