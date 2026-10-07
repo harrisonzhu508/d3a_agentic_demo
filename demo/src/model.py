@@ -59,7 +59,13 @@ def model(X, lo=None, hi=None):
     alpha = numpyro.sample("alpha", dist.Normal(-4.0, 3.0))
     # Logistic errors with the same variance as the baseline HalfNormal(2) errors: s = sigma sqrt(3/pi)
     scale = numpyro.sample("scale", dist.HalfNormal(2.0 * jnp.sqrt(3.0 / jnp.pi)))
-    beta = numpyro.sample("beta", dist.Normal(jnp.zeros(p), 2.0))
+    # The champion needs very large effects on a few QRDR alleles (gyrA D87N ~ +11, parC S80I ~ +9 log2
+    # units) - the MIC really does leave the plate for those isolates - so width 2 is already close to the
+    # posterior of the alleles that matter. A Student-t(4, 0, 2) prior has that width in the middle but
+    # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
+    # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
+    # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
+    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
