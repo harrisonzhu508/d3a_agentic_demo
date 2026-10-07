@@ -75,7 +75,25 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Twenty-ninth experiment on the rare columns, testing the one structural difference that separates the two
+    # families this loop has produced. Every wide-prior variant that left divergences or an unconvincing gain used a
+    # discontinuous rule - a hard <=15-carriers mask, or a spike factor - and the one that did not, the prevalence-
+    # weighted width, was measured exactly once, at its widest setting (2 + 8 exp(-n/15)), where it gained only
+    # +0.42 +/- 2.54 and left 37 divergences. The champion's own pathology argues for the continuous form: its fit
+    # puts gyrA_D87N at +38 log2 units, and that column has 181 carriers, so the runaway is not a rare-column
+    # artefact at all but something the wide prior does to the *near-saturated* QRDR pair - which means a rule that
+    # treats 15 carriers and 16 carriers differently is fitting the wrong boundary. A smooth function of the
+    # carrier count with the same functional form but a width matched to what the split model measures as its optimum
+    # (8 doublings for a zero-carrier column, falling to the champion's 2 by 60 carriers, so a common QRDR allele
+    # also gets a modestly wider allowance than the champion gives it, which is where the +38 actually lives) puts a
+    # prior whose log density is differentiable in every coefficient and involves no design-dependent discontinuity
+    # at all: width_j = 2 + 6 exp(-n_j / 30), the exponential rate set by the number of carriers a cross-validation
+    # fold needs before it can speak (30 carriers is 24 per fold). Soft cut at 16 doublings as usual.
+    n_carry = jnp.asarray(X, dtype=jnp.float32).sum(axis=0)
+    width = 2.0 + 6.0 * jnp.exp(-n_carry / 30.0)
+    beta_raw = numpyro.sample("beta_raw", dist.StudentT(4.0, jnp.zeros(p), 1.0))
+    beta = numpyro.deterministic("beta", beta_raw * width)
+    numpyro.factor("plate_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta) - 16.0)))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
