@@ -54,6 +54,14 @@ def logistic_log_interval_prob(lo, hi, mu, scale):
     return jnp.where(jnp.isposinf(hi), log_surv, jnp.where(jnp.isneginf(lo), log_upper, interval))
 
 
+def qrdr_wild_type(X):
+    """1 for isolates whose genotype carries no QRDR (gyrA/gyrB/parC/parE) mutation, 0 otherwise.
+
+    Uses the gene grouping from src/features.py, falling back to the column names is not possible here (the
+    model only sees the matrix), so features.py attaches it the same way it attaches `gene_groups`."""
+    return getattr(X, "qrdr_wild_type", jnp.zeros(X.shape[0]))
+
+
 def model(X, lo=None, hi=None):
     p = X.shape[1]
     alpha = numpyro.sample("alpha", dist.Normal(-4.0, 3.0))
@@ -63,10 +71,19 @@ def model(X, lo=None, hi=None):
     # units) - the MIC really does leave the plate for those isolates - so width 2 is already close to the
     # posterior of the alleles that matter. A Student-t(4, 0, 2) prior has that width in the middle but
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
-    # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
-    # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
+    # fluoroquinolone mechanism stay shrunk.
     beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
+    # Anchor the susceptible group on the scale the mechanism and the assay agree on. 44% of the isolates carry
+    # no QRDR mutation at all and 83% of those are at the bottom of the plate, so the latent log2 MIC of a
+    # QRDR-wild-type isolate is the best-identified quantity in the data - yet the champion puts it near +11
+    # (a 2000-fold MIC for a strain with no target mutation) and cancels it with glpT_E448K at -14. A prior of
+    # Normal(-4.5, 1) on that mean - a quinolone-susceptible E. coli is 0.015-0.06 mg/L, and +2 log2 above that
+    # is already resistant - constrains a linear combination the likelihood alone leaves free, and, unlike a
+    # prior on the coefficients, it cannot be paid for by a cancelling pair of alleles.
+    wt = jnp.asarray(qrdr_wild_type(X), dtype=jnp.float32)
+    wt_mean = numpyro.deterministic("wt_mean", (mu * wt).sum() / jnp.maximum(wt.sum(), 1.0))
+    numpyro.factor("wt_anchor", -0.5 * ((wt_mean + 4.5) / 1.0) ** 2)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
         numpyro.factor("censored_lik", ll.sum())
