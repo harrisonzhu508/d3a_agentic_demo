@@ -56,6 +56,26 @@ def logistic_log_interval_prob(lo, hi, mu, scale):
 
 def model(X, lo=None, hi=None):
     p = X.shape[1]
+    # Eighty-second experiment, and it changes nothing about the model. The champion has been measured at ELPD
+    # -142.29 once, on a run whose pointwise differences against its own reference produced a paired SE of 4.45 -
+    # the largest SE of any kept change this session, and larger than the SE of every wide-scale variant the loop
+    # discarded. That matters for a reason the harness's rule does not capture: the SE in the keep rule is sqrt(n)
+    # times the across-isolate sd of the pointwise held-out difference, and both of its ingredients are sampled -
+    # the point estimate of a difference is the sum of those same pointwise terms, so a run whose fit happened to
+    # disagree with its reference sharply on a few isolates scores a big gain and a big SE together. The +9.19 of
+    # the kept pair sits at the top of exactly that distribution: the components measured +6.43 +/- 3.56 and, in the
+    # ablation, a complement worth -2.61, and the only other time the same two priors were run together with the
+    # rare-column knee at 12 the gain was +8.28 with an R-hat of 1.0122. This run repeats the retained fit exactly -
+    # the same priors, the same likelihood, the same folds, the same seed - with four times the warmup and draws, and
+    # nothing else, for one number: the point estimate of a fit's cross-validated ELPD is a functional of its
+    # posterior, and if the posterior is converged, quadrupling the draws should move it by much less than the 1.2
+    # ELPD that separates the champion from the second-best fit the loop produced (the same priors, no penalty,
+    # -140.30 but refused by a single divergence). If the point estimate holds near -142.3 with more draws, then
+    # this fit's score is a property of its priors and the session can report it as a measured quantity with a
+    # reproducible value; if it moves a long way toward -140.3, the -142.29 that main carries is one draw from a wide
+    # posterior, the gates certify the mean of chains rather than their spread, and the honest statement about this
+    # model is the interval the runs make rather than the number on the branch. A longer run is also the cheapest
+    # thing left: the budget is uncapped, and the fit costs 15 s at a thousand draws.
     alpha = numpyro.sample("alpha", dist.Normal(-4.0, 3.0))
     # Logistic errors with the same variance as the baseline HalfNormal(2) errors: s = sigma sqrt(3/pi)
     # The error scale of the interval-censored likelihood is the parameter the censored rows identify least
