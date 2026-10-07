@@ -114,7 +114,35 @@ def model(X, lo=None, hi=None):
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
-    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
+    # One hundred and twelfth experiment: the second of the two intervals the eleven measurements on this parameter
+    # failed to sample, and the largest of them. Eleven runs have moved the residual prior and the loop has drawn one
+    # conclusion from them which its own numbers do not support. In its location, the response reads flat: a rate of
+    # 120 costs 0.23 +/- 0.39 ELPD, a rate of 160 costs 0.10 +/- 0.62, a prior median pushed a quarter of the way out
+    # costs 0.12 +/- 0.67 and an R-hat of 1.0129, all three with the tail exponent of the kept inverse-gamma intact.
+    # In its curvature the response is large: a tenth of shape either side of 2 costs a tenth to four tenths of an
+    # ELPD, a half costs 1.21 and lands the posterior at 33.0 doublings, two costs 6.37 and lands it at 82.1. So the
+    # loop has written that this prior's location is not identified by these data and that its tail is everything -
+    # and the two statements are inconsistent, because the eleven rates that produced the flat reading differ in their
+    # mass past forty doublings by a factor of two and a half, which is where the censored rows do their work. Read
+    # properly, the location measurements are not flat, they are coarse: the four rates tried, 120, 128, 160 and a
+    # median-matched 163.7, are spaced at intervals of twenty per cent, and a response that is smooth and small over
+    # that range says only that the derivative there is small, not that it is zero. The interval this loop has never
+    # entered is the eleven per cent one - 128 to 142.2, the point at which the prior's mean reciprocal-precision stops
+    # being an exact power of two and starts being fourteen and a half doublings instead of seven and a half, with the
+    # same shape, the same s^-5 tail, the same median to three significant figures and two and a half per cent less
+    # prior mass beyond thirty doublings. Eleven per cent is a fifth of the smallest step the loop has been willing to
+    # pay for on any other parameter, and on the two parameters where it has paid for fine steps the response has been
+    # smooth and interpretable: the rare knee gives a monotone curve over seven points a half-doubling apart, the
+    # common width gives one over four points a doubling apart. Nothing on this axis has ever been tried at that
+    # resolution, and the reason shows in the diagnostics rather than the score - the eleven runs above the champion
+    # have returned R-hats scattered from 1.004 to 1.036 at steps whose ELPD cost was below a fifth, which is what a
+    # funnel does when the sampler's own error and the prior's effect are the same size. A prior whose mean is fourteen
+    # doublings of residual is a prior that expects a dilution series to miss by nearly two wells rather than by half
+    # a well, an assumption a microbiologist would question and a fit with 204 right-censored rows should be glad of.
+    # If it moves the score by more than its noise, this parameter is weakly identified and worth measuring properly;
+    # if it comes back at zero, the flatness is real and finally demonstrated at the resolution at which the other
+    # conclusions of this session were drawn.
+    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 142.2))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
