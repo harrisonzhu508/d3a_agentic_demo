@@ -75,7 +75,22 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Twenty-second and final experiment on the rare-column axis, testing the one assumption every previous variant
+    # shared: that "rare" means "carried by at most 15 isolates". The gain has been the same +3.4 +/- 4 to +3.5 +/-
+    # 5 at width 2, 5 and 8, which is either a flat response or a threshold effect - and a threshold effect is what
+    # the mechanism says to expect, since 15 carriers is ~12 per cross-validation fold, i.e. the point below which
+    # a fold's fit cannot see the determinant at all and the coefficient it learns is pure prior. Move the
+    # threshold to 30 carriers (25 of the 77 columns, which brings in uhpT_E350Q, ptsI_V25I, marR_S3N, aac(3)-IId,
+    # blaOXA-1 and the rest of the moderate-frequency housekeeping and efflux columns whose apparent effects the
+    # stratified check showed to be QRDR background noise: uhpT_E350Q sits at -1.5 log2 units inside the
+    # one-mutation stratum against a marginal correlation that is not significant) and keep the prior shape that
+    # measured best, t(4, 0, 8) soft-cut at 16 doublings. If the +3.5 is the threshold doing the work it grows; if
+    # it was the width, it stays where it is and the axis is closed either way.
+    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 30.0
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
+    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
+    beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
