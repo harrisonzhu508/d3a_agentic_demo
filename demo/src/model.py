@@ -56,9 +56,20 @@ def logistic_log_interval_prob(lo, hi, mu, scale):
 
 def model(X, lo=None, hi=None):
     p = X.shape[1]
-    alpha = numpyro.sample("alpha", dist.Normal(-4.0, 3.0))
-    # Logistic errors with the same variance as the baseline HalfNormal(2) errors: s = sigma sqrt(3/pi)
-    scale = numpyro.sample("scale", dist.HalfNormal(2.0 * jnp.sqrt(3.0 / jnp.pi)))
+    # The priors are set on the scale of the twofold dilution series, which is the scale of everything the
+    # harness scores (an effect per determinant, a dilution-level prediction, agreement within one dilution):
+    # 1 log2 unit = one doubling.
+    #
+    # alpha is the log2 MIC of a genotype carrying no listed determinant. The wild-type ciprofloxacin MIC of
+    # E. coli is 0.008-0.03 mg/L (-7 to -5 log2) and the bottom of the plate is -7, so Normal(-4, 1.5) keeps
+    # eight doublings of room; Normal(-4, 3) additionally allowed a wild-type isolate above the plate midpoint.
+    alpha = numpyro.sample("alpha", dist.Normal(-4.0, 1.5))
+    # Logistic error scale s in log2 units, HalfCauchy(1) - the weakly informative default for a scale (Gelman
+    # et al., BDA3 ch. 21). This is the parameter the champion inflates to buy predictive width: it fits
+    # s = 6.8, a residual spread of twenty doublings between isolates whose genotype the model sees in full,
+    # which drags its latent mu to +/-40 doublings and its 90% coverage down to 82.6%. Repeat MICs of one
+    # isolate agree within a dilution, so one doubling is the honest prior scale for the residual.
+    scale = numpyro.sample("scale", dist.HalfCauchy(1.0))
     # The champion needs very large effects on a few QRDR alleles (gyrA D87N ~ +11, parC S80I ~ +9 log2
     # units) - the MIC really does leave the plate for those isolates - so width 2 is already close to the
     # posterior of the alleles that matter. A Student-t(4, 0, 2) prior has that width in the middle but
