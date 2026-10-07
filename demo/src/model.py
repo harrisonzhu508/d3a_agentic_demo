@@ -75,7 +75,26 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Twenty-third experiment, and the one the curve actually calls for. With the threshold fixed at 15 carriers and
+    # the soft cut at 16 doublings, the prior width on the 14 rare columns has been measured at three points:
+    #     width 2 (the champion's own prior, on a split site): +2.40 +/- 2.26, coverage 83.0%
+    #     width 5:                                              +3.51 +/- 4.05, coverage 86.9%
+    #     width 8:                                              +3.37 +/- 5.11, coverage 89.1%
+    # and at both ends beyond that it turns over: a spike factor instead of the t's own body gives +1.12, a
+    # narrower-but-heavier t(2) or t(3) gives +1.1 to +2.6, and moving 25 columns instead of 14 (threshold 30)
+    # gives -1.57. The maximum is therefore interior and flat between 5 and 8 - so the ELPD is not what separates
+    # these points any more, the paired SE is, and SE grows with how far the fit strays: 2.26 at width 2, 4.05 at
+    # width 5, 5.11 at width 8, with R-hat drifting the same way (1.0066, 1.0071, 1.0031 - R-hat is fine everywhere,
+    # but the number of isolates whose mu is set by a coefficient no fold can see grows with the width). Take the
+    # largest gain whose diagnostics are the champion's own: width 4, two doublings, which is the smallest prior
+    # that still lets a determinant carried by three isolates move an isolate by the whole width of the dilution
+    # series (leverage sd 0.10-0.16, so four log2 units is one doubling of MIC at the bottom of the plate and nearly
+    # two at the top) - the mechanism floor, with nothing above it.
+    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 4.0))
+    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
+    beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
