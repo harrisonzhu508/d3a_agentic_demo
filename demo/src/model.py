@@ -56,7 +56,16 @@ def logistic_log_interval_prob(lo, hi, mu, scale):
 
 def model(X, lo=None, hi=None):
     p = X.shape[1]
-    alpha = numpyro.sample("alpha", dist.Normal(-4.0, 3.0))
+    # alpha is the latent log2 MIC of a genotype carrying none of the 77 listed determinants; the champion's
+    # Normal(-4, 3) lets that sit anywhere from -13 to +2 log2 (0.0001 to 4 mg/L), which matters because the
+    # QRDR allele coefficients are only weakly identified and trade against the intercept: the champion's fit
+    # puts alpha at -11.6 with gyrA_D87N at +38, whereas the same fit re-run at a narrower intercept prior moves
+    # alpha towards the wild-type value and the allele coefficients with it. Width 2 halves the range the
+    # intercept can absorb without touching the region the 246 QRDR-wild-type isolates occupy (they sit at
+    # -6 to -5 log2, and -4 +/- 2 covers them), and unlike the earlier attempts on this line it changes no
+    # coefficient prior, which is what repeatedly cost ELPD (see discarded/prior-width-1 and
+    # discarded/assay-bounded-priors, the latter of which moved the intercept mean as well as its width).
+    alpha = numpyro.sample("alpha", dist.Normal(-4.0, 2.0))
     # Logistic errors with the same variance as the baseline HalfNormal(2) errors: s = sigma sqrt(3/pi)
     # The error scale of the interval-censored likelihood is the parameter the censored rows identify least
     # well - a right-censored isolate is happy with almost any mu once mu is past the top of the plate, so what
