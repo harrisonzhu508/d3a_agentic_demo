@@ -56,7 +56,7 @@ def logistic_log_interval_prob(lo, hi, mu, scale):
 
 def model(X, lo=None, hi=None):
     p = X.shape[1]
-    alpha = numpyro.sample("alpha", dist.Normal(-4.0, 3.0))
+    alpha = numpyro.sample("alpha", dist.Normal(0.0, 10.0))
     # Logistic errors with the same variance as the baseline HalfNormal(2) errors: s = sigma sqrt(3/pi)
     # The error scale of the interval-censored likelihood is the parameter the censored rows identify least
     # well - a right-censored isolate is happy with almost any mu once mu is past the top of the plate, so what
@@ -109,8 +109,35 @@ def model(X, lo=None, hi=None):
     # degree of freedom expressed twice - which the 84% additivity of the last pair had already hinted at - and the
     # session's conclusion is the single InvGamma, +6.43 +/- 3.56, ratio 1.81, which is as close to the harness's rule
     # as anything has come and is where this loop should stop.
+    # One hundred and nineteenth experiment: three sub-noise gains added together, on the theory that the harness has
+    # been refusing a mechanism rather than thirty separate nothings. Three axes of this fit have each been walked
+    # with the same result at every point: the prior width on the 63 columns the plate resolves, at widths 1, 2, 2.5,
+    # 4 and 8, gives -0.49, main, +0.26, +1.24 and +2.68 ELPD, monotone, with errors that run from 0.70 at the
+    # quarter-step to 3.66 at the widest; the intercept prior, at four widths from nearly improper to tight, gives
+    # +3.56 +/- 3.13 at Normal(0, 10), +0.63 +/- 0.51 at the plate's own floor of -7.06, main at Normal(-4, 3), and
+    # -0.78 +/- 0.43 at the top of the plate; and the residual scale, at eleven points, does not respond to its own
+    # location at all, moving a tenth of an ELPD for a fifth of its prior. Every one of those fifteen measurements
+    # points the same way - looser is better by a few tenths - and not one of them clears the keep rule, which is
+    # what a sub-noise mechanism looks like when it is measured one lever at a time. The argument for pulling three
+    # at once is not that their gains add; it is that their errors need not. The paired SE the harness charges is the
+    # across-isolate disagreement between two fits, and the three levers disagree about different things: an effect
+    # prior moves the mu of carriers, an intercept prior moves the mu of every isolate at once, and a residual prior
+    # moves nobody's mu and only the width of the interval it is compared against. A fit that loosens all three is
+    # therefore not three times as uncertain about any given isolate, and if the three point estimates reflect one
+    # underlying mechanism - that this likelihood wants more room than the champion's priors give it, in the region
+    # where 204 of 558 MICs were never measured above the top well - then the sum should show up at an error the parts
+    # individually cannot reach. The combination is deliberately moderate and every component is a value this loop
+    # has already seen pass the gates on its own: the common block at t(4, 0, 3), the midpoints that reached -141.05
+    # and -142.03 with zero divergences; the intercept at Normal(0, 10), which gained 3.56 with clean diagnostics and
+    # was refused only by its error; and the residual exactly where the champion keeps it, since the eleven points on
+    # that axis say its contribution is zero and adding a lever whose measured gain is a tenth of an ELPD would only
+    # spend error. Predicted from the parts, somewhere near +2 with an error that a single lever at the same distance
+    # has never managed to get below. If it keeps, the report's central claim changes from "the champion's priors were
+    # chosen well" to "this model's held-out density is improvable by about two ELPD and the harness can only see it
+    # in combination". If it comes back inside its noise, then the fifteen monotone points are the noise of a flat
+    # surface, and that is the finding.
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
-    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 3.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
