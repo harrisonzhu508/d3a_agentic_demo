@@ -114,8 +114,27 @@ def model(X, lo=None, hi=None):
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
-    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
+    # Seventy-second experiment: the residual scale one step further out. The scale prior has been measured at nine
+    # settings on this likelihood - half-normals at 2 and 4, half-Cauchys at 2, 4 and 8, Gammas with shapes 0.5, 2
+    # and 3, inverse-gammas with the rate at 128, 192 and 256 - and every one of them raised both the gain and the
+    # cost, with no interior maximum found. The inverse-gamma at 256 was rejected by R-hat 1.019 and an ESS of 343,
+    # the 192 scored +7.17 with an SE of 4.70 and the kept 128 gave +6.43 with an SE of 3.56, the tightest gates of the
+    # session. What has never been varied is where this prior stops helping. An InvGamma(a, b) has mean b/(a-1) for
+    # a > 1, so the kept InvGamma(2, 128) sits at a posterior scale of 15.6 doublings - twice the width of the dilution
+    # series - with a shape of a = 2, whose log density falls as -3 log s, which is what lets it put mass out there at
+    # all. Raising the rate to 160 leaves that tail slope, which is what the censored rows are arguing about, exactly as
+    # it is, and moves the prior's own mass in by a quarter: mode 7.1 doublings against the kept 5.7, median 9.7
+    # against 7.7. It is the smallest move on this axis ever proposed, since every earlier one multiplied the scale by
+    # two or more, and it is below what a single run can resolve - the paired SE here has never been under 3.5 and a
+    # full step scores near +6.5, so a quarter-step should score near +1.6. It is worth fourteen seconds for the shape
+    # of the curve it completes. If the gain comes back proportional to the step, the axis is a straight line over the
+    # range explored and the point now on main is wherever the sampler happened to stop rather than where the findings
+    # put it; if a quarter-step returns nothing while half-steps returned six and seven, there is a knee between 128
+    # and 160, the kept fit sits on it, and this axis closes with a documented optimum instead of a lucky stopping
+    # point.
+    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 160.0))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
+    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
