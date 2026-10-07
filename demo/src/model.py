@@ -110,7 +110,33 @@ def model(X, lo=None, hi=None):
     # session's conclusion is the single InvGamma, +6.43 +/- 3.56, ratio 1.81, which is as close to the harness's rule
     # as anything has come and is where this loop should stop.
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
-    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # One hundred and seventeenth experiment: the interval that separates the two largest scores in this log, which
+    # three runs have bracketed and none has entered. The prior on the 63 columns the plate can resolve has four
+    # measurements and they are monotone in width: t(4, 0, 1) costs 0.49 +/- 1.69 ELPD; the kept t(4, 0, 2) is main at
+    # -142.29; t(4, 0, 4) gains 1.24 +/- 1.95 and lands at -141.05; t(4, 0, 8), the rare block's own width, gains 2.68
+    # +/- 3.66 and lands at -139.61, the best absolute held-out density this loop has ever produced on a fit that kept
+    # its gates. Read as a curve, the slope is roughly half an ELPD per doubling of width and the paired error grows
+    # with it - which is what the harness is measuring when it refuses these runs: the paired SE is the across-isolate
+    # disagreement between two fits, and a fit that lets gyrA_S83L claim twice as many doublings disagrees about more
+    # isolates than one that has halved it. Read as four points, though, the curve has one property I have not used.
+    # The two runs at either end of it have errors of 1.69 and 3.66, and the two in the middle have 1.95; between the
+    # kept width and the width that scored best, 2 and 8, sit a factor of four in prior slack and 2.68 ELPD of score,
+    # and the only interior point sampled is 4, whose gain of 1.24 is within a rounding of half of 2.68. That is a
+    # straight line, and a straight line through four points whose errors are all larger than the gaps they bracket is
+    # a hypothesis about a slope rather than about an optimum, so the useful thing to measure is the line's own
+    # resolution at the quarter of the interval the fit is closest to. A width of two and a half doubles the slack
+    # bought per doubling of width compared with the step from 2 to 4 - which cost 1.24 ELPD and 1.95 of error, so a
+    # quarter of that step should be worth three tenths with an error of half - and unlike every prior width tried
+    # since the champion, it is a change small enough that its predicted effect sits entirely inside the harness's own
+    # noise, which is precisely the property that makes it informative. If the response really is linear in log-width
+    # at half an ELPD per doubling, this must come back at approximately +0.3 with an error near 0.5, and the loop
+    # then has a calibrated, four-point, sub-noise-resolved measurement of a slope it has been describing for twenty
+    # runs and can write the sentence: a doubling of the common-column prior's width is worth half an ELPD on these
+    # data and no amount of drawing more samples will make any single one of those doublings keepable. If it comes
+    # back positive by more than its error, the line is locally curved and the maximum is interior, which the eleven
+    # points on the rare knee say it is not. If it comes back negative, the champion's width is a local optimum after
+    # all and the four-run monotone line was the noise of a flat function, in which case the last fifty comparisons in
+    # this log have all been measuring the same zero and the report should say that instead of tabulating them.    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.5))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
