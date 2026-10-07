@@ -58,7 +58,17 @@ def model(X, lo=None, hi=None):
     p = X.shape[1]
     alpha = numpyro.sample("alpha", dist.Normal(-4.0, 3.0))
     # Logistic errors with the same variance as the baseline HalfNormal(2) errors: s = sigma sqrt(3/pi)
-    scale = numpyro.sample("scale", dist.HalfNormal(2.0 * jnp.sqrt(3.0 / jnp.pi)))
+    # The error scale of the interval-censored likelihood is the parameter the censored rows identify least
+    # well - a right-censored isolate is happy with almost any mu once mu is past the top of the plate, so what
+    # pins s down is only the shape of the intervals, and its posterior is long-right-tailed (champion:
+    # posterior mean 6.8 with a 95% interval of 5.2-8.7, which is the whole width of a ten-doubling grid). A
+    # half-normal prior truncates that tail gently rather than hard: it is the weakly informative default for a
+    # scale (Gelman et al., BDA3 ch. 21), and its log density is quadratic in s, so it leaves the bulk of the
+    # posterior - where the 354 on-grid isolates do constrain s - untouched while removing the part of the tail
+    # the censored rows cannot speak to. The champion's own error *distribution* change (logistic errors) was
+    # worth +340 ELPD, so getting the residual right is where the loss still lives: coverage is 82.6% against a
+    # nominal 90%.
+    scale = numpyro.sample("scale", dist.HalfNormal(2.0))
     # The champion needs very large effects on a few QRDR alleles (gyrA D87N ~ +11, parC S80I ~ +9 log2
     # units) - the MIC really does leave the plate for those isolates - so width 2 is already close to the
     # posterior of the alleles that matter. A Student-t(4, 0, 2) prior has that width in the middle but
