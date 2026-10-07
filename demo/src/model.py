@@ -114,7 +114,39 @@ def model(X, lo=None, hi=None):
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
-    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
+    # One hundred and first experiment: the residual prior with its far end stopped, which three runs have now been
+    # asking for without any one of them saying it. This parameter has been fitted under nine priors and its
+    # posterior does not behave like something the data determine: 6.9 and 9.2 doublings under half-normal and gamma
+    # families, 10.8, 10.8 and 11.2 under three log-normals differing only in centre and width, 15.6 under the kept
+    # inverse-gamma, 33.0 when that inverse-gamma's tail is made heavier, and 82.1 - with an interval of [58.5,
+    # 119.6], more than ten times the width of the dilution series - when the tail is cut hardest. Ordered by the
+    # effort a prior makes to hold the scale down, the posterior rises monotonically with the effort, and the reason
+    # is structural rather than numerical: for a right-censored isolate the scored term 1 - Phi((hi - mu)/s) climbs
+    # without limit toward its ceiling as s grows once mu is past the top of the plate, so the 204 rows whose MIC was
+    # never measured buy held-out density from a wide residual, and the only thing that ever stops them is the last
+    # term of the prior. Every attempt to supply that term with a power law has either moved the answer the wrong way
+    # or broken the sampler: shape 2.5 cost 1.21 and gave an R-hat of 1.036, shape 4 cost 6.37 and an R-hat of 1.0122,
+    # and the reason both did damage while nothing else this session has touched does is that a Gamma on the
+    # reciprocal has a mode that travels with its shape - pushing the prior's mass down toward the assay's own noise
+    # at the same time as it thins the tail, so the run measured two changes and reported one. This run changes the
+    # tail alone. Keep the Gamma(2, 128) on the reciprocal exactly as main has it - same mode at 0.018 of the
+    # precision, hence the same scale mode at 7.8 doublings, same median of 7.7, same density everywhere below 40
+    # doublings to three decimal places - and multiply it by the indicator that the scale is under 12 doublings,
+    # implemented on the precision as the indicator that scale_raw exceeds 1/12, which is a truncation with one edge
+    # and no shape parameter. Twelve is not chosen at random: it is where the three log-normal fits land when left
+    # alone (10.8, 10.8, 11.2), which is the value this likelihood reaches when its right side is bounded gently
+    # rather than by a power law, and it is a number a reader of a MIC table can appraise - six dilution steps of
+    # residual scatter, already four times what a microdilution reading repeats itself to. Three outcomes and each is
+    # a different report. At or near main's score, the censored rows' demand for spread is satisfiable at twelve
+    # doublings and the champion's fifteen-and-a-half is a prior's indulgence rather than the data's need, which
+    # makes the truncation the model to keep and the far tail of the inverse-gamma the thing this loop was never
+    # entitled to. At a loss of several, the demand is genuine and unbounded, and then the loop must say plainly that
+    # the residual scale on interval-censored MICs is not identified by these isolates, that its posterior is the
+    # prior's tail read back, and that the -142.29 on main is what a censored likelihood scores when allowed a wide
+    # error and told nothing about how wide. At a broken gate, the truncation itself is the funnel and the only
+    # priors on this parameter that NUTS will accept are the smooth ones - the most restrictive statement of the
+    # three, and the one that would make every number in the report conditional on a shape nobody chose.
+    scale_raw = numpyro.sample("scale_raw", dist.LeftTruncatedGamma(dist.Gamma(2.0, 128.0), low=1.0 / 12.0))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
