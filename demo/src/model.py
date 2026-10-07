@@ -88,14 +88,20 @@ def model(X, lo=None, hi=None):
     # with no signal and leaves the ones the MICs insist on alone. HalfNormal(6) on the raw coefficient is four
     # doublings of effect on mu for a 1%-prevalence column and no pull at all for a common one, which is what the
     # diverging slab's tail was doing without the funnel.
+    sd_j = jnp.asarray(X, dtype=jnp.float32).std(axis=0)
+    # Slab width set on the isolate-scale effect, not on the raw coefficient: prior sd_j = 4 doublings x
+    # sqrt(0.25 / sd_j), i.e. the effect on mu of a coefficient drawn from this prior is four doublings for a
+    # column carrying 25% of isolates and the same four doublings for a 1% column, because a 1% column needs a
+    # coefficient four times larger to move mu at all. Same reason the diverging slab needed a wide raw tail.
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
+    slab_w = 4.0 * jnp.sqrt(0.25 / jnp.maximum(sd_j, 1e-3))
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
     # Non-centred reparameterisation of the same prior: instead of sampling the scale and multiplying, sample
     # u ~ Uniform(0,1) and set the scale to its quantile. Same marginal, and the divergences were confined to
     # draws where the scale sat near zero, which this coordinate flattens.
     beta_rare_raw = numpyro.sample("beta_rare_raw", dist.Normal(jnp.zeros(p), 1.0))
     rare_u = numpyro.sample("rare_u", dist.Uniform(jnp.zeros(p), jnp.ones(p)))
-    rare_scale = numpyro.deterministic("rare_scale", 6.0 * jnp.sqrt(-2.0 * jnp.log1p(-rare_u)))
+    rare_scale = numpyro.deterministic("rare_scale", slab_w * jnp.sqrt(-2.0 * jnp.log1p(-rare_u)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare_raw * rare_scale, beta_common))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
