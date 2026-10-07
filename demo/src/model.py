@@ -112,7 +112,24 @@ def model(X, lo=None, hi=None):
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
-    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
+    # Sixty-ninth experiment: the kept fit with the prior the ablation says is doing the work, and without the part
+    # of it that the last four runs needed only to keep NUTS upright. The ablation of this champion - the
+    # inverse-gamma residual scale with the older t(4, 0, 2) on all 77 columns - cost -2.61 +/- 1.84 against it, so
+    # the rare-column prior is worth about a quarter of the +9.19; and the prior's own width is tuned - t(4, 0, 4)
+    # with the same penalty costs -1.37 +/- 0.98, t(4, 0, 8) is what is kept. What has never been measured is the
+    # soft penalty itself, one log unit per softplus of |beta| beyond 16 doublings, which entered this model as a
+    # sampler patch (at widths 8 and above the chains walked the near-flat ridge of a three-carrier coefficient and
+    # diverged: seven divergences at the old residual scale uncut, two with the penalty at 12) and has been carried
+    # ever since as though it were part of the model. It is not nothing. At the kept fit 1.2% of the rare-column
+    # posterior mass sits past the knee, the penalty is worth up to 7.6 log units there, and its gradient is what
+    # stops the chains - so the prior that is actually in force is not t(4, 0, 8), it is t(4, 0, 8) truncated past
+    # the plate's width, and the difference between those two statements has never been scored. Dropping it is the
+    # test: if the penalty is a sampler patch wearing a prior's clothes, the fit loses nothing, or gains, since a
+    # 3-carrier determinant's coefficient is identified by three isolates and no amount of density beyond 16
+    # doublings changes what those three say - while a truncated prior shrinks the very largest effects that the
+    # QRDR alleles with a handful of carriers are claiming. If instead the fit gets worse, the penalty is a prior
+    # after all - a statement that no determinant can raise an MIC by more than twice the plate - and it should be
+    # written as one, with the truncation stated, rather than left where it was found.
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
