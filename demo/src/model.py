@@ -75,7 +75,26 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Sixteenth variant. The best gain the loop has seen is +9.75 +/- 5.81 with coverage 88.0% (against the
+    # champion's 82.6%), from a slab on the rare columns whose scale had a heavy left-hand mass near zero
+    # (discarded/rare-allele-slab-prior) - it cost 245 divergent transitions. Every cheap reparameterisation of
+    # that scale has now been tried and the ranking is informative: the *bounded* forms of the same prior lose the
+    # gain (spike as a factor +1.12, t(3) +2.21, t(4,0,2) on a split site +2.40, t(3,0,2) soft-cut +2.63), and the
+    # forms that keep it diverge (half-Cauchy scale 245; half-normal(6) scale 4; its quantile form 6; its
+    # effect-scaled form 7; a dense mass matrix made it worse, R-hat 1.07). So the gain and the divergences are the
+    # same feature - a scale that can sit near zero - and the question is whether the divergence is intrinsic to
+    # the spike or only to the heavy tail of the half-Cauchy. HalfNormal(6) as the scale isolates that: same
+    # spike at zero (a normal scale's density is flat there, so beta's density vanishes linearly rather than
+    # diverging, which is halfway between the two), no tail beyond three scale units, and it samples. If the
+    # half-normal scale recovers the ~10, the tail was the problem and this is a champion; if it recovers ~1.4 as
+    # discarded/slab-halfnormal-scale did at width 1, then the gain genuinely needs the funnel, and the honest
+    # conclusion is that this model's best posterior is one NUTS cannot draw here. Width 6 rather than 1 because
+    # that is where the diverging variant sat (discarded/rare-slab-halfnormal-wide, +5.12 at width 6).
+    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    beta_rare_raw = numpyro.sample("beta_rare_raw", dist.Cauchy(jnp.zeros(p), 1.0))
+    rare_scale = numpyro.sample("rare_scale", dist.HalfNormal(6.0 * jnp.ones(p)))
+    beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare_raw * rare_scale, beta_common))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
