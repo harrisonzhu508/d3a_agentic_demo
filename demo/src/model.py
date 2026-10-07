@@ -93,7 +93,30 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Sixty-second experiment: the rare-column prior at the point the two failure modes agree on. Width 8 on the 14
+    # columns carried by at most 15 isolates, on the wider-residual fit, has now been run three ways and each run
+    # localises a different defect: no bound at 1000 draws gained +6.75 with 7 divergences; the soft cut at 16
+    # doublings at 4000 draws and target_accept 0.98 lost a third of the gain (+4.24) and still diverged twice, which
+    # says the cut is doing model work, not sampler work, and that the trajectories are escaping before the cut is
+    # reached; and the neighbouring width 3, which needs no machinery at all, gained +2.72 +/- 2.23 with zero
+    # divergences, R-hat 1.0067 and ESS 1116 - the best-resolved measurement on the axis (ratio 1.22) and the
+    # smallest prize. Divergences in this prior are not a step-size problem, since the settings that fixed every
+    # earlier variant (0.98, four times the draws, a dense mass matrix) made this one worse; they are the near-
+    # unidentified ridge of a coefficient whose determinant four fifths of a fold cannot see, and a t(4) body at
+    # width 8 lets a chain walk that ridge for tens of doublings before the density turns around. The fix is the one
+    # the harness's own geometry suggests rather than one more knob: keep the wide prior where the data are silent
+    # and shorten the part that the silent columns do not need, namely the far tail, with the cut at 12 doublings
+    # instead of 16. Twelve is the plate's own width - a coefficient past it changes an MIC by more than the whole
+    # dilution series, which for a determinant carried by three isolates is a claim the assay cannot support - and it
+    # is a soft penalty (one log unit per softplus of |beta| beyond it), so a chain that reaches it is slowed, not
+    # stopped, and the posterior is continuous. At the previous champion the analogous cut at 8 doublings cost
+    # R-hat 1.015 and the cut at 24 produced a divergence, so 12 sits between the two measured failure points and
+    # has not been tried.
+    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
+    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 12.0)))
+    beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
