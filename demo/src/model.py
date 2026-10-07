@@ -110,7 +110,7 @@ def model(X, lo=None, hi=None):
     # session's conclusion is the single InvGamma, +6.43 +/- 3.56, ratio 1.81, which is as close to the harness's rule
     # as anything has come and is where this loop should stop.
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
-    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 4.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
