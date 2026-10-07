@@ -109,7 +109,34 @@ def model(X, lo=None, hi=None):
     # degree of freedom expressed twice - which the 84% additivity of the last pair had already hinted at - and the
     # session's conclusion is the single InvGamma, +6.43 +/- 3.56, ratio 1.81, which is as close to the harness's rule
     # as anything has come and is where this loop should stop.
-    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
+    # One hundred and twenty-fifth experiment: the boundary between the two priors, measured from above after the run
+    # below it answered. The champion's keep split these 77 columns at fifteen carriers and gave the smaller group a
+    # prior four times wider and a ceiling at sixteen doublings; that split is worth +9.19, the largest single effect
+    # in fifty-five campaigns, and no run until yesterday asked whether the number fifteen has anything to do with it.
+    # Two have now, and they bracket the answer from opposite sides. Moving the boundary up by one isolate - a single
+    # column, ampC_T-32A, crosses it - gains 0.21 +/- 0.49: a rounding error, as one column ought to be. Moving it down
+    # to three carriers, which pulls 29 of the 34 rare columns up into the tight prior and leaves the wide discounted
+    # block holding five alleles with no plausible claim on a ciprofloxacin MIC, costs 1.61 +/- 1.33 and an R-hat of
+    # 1.0167. Both directions, then, agree that the boundary is doing real work and that the work is not in the
+    # nineteen columns it straddles but in the block as a whole, since the difference between thirty-four discounted
+    # columns and five is worth a third of the champion's entire gain while the difference between thirty-four and
+    # thirty-five is worth nothing at all. That fixes the shape of the response: flat immediately around the cut, and
+    # falling as the block shrinks, which is what a prior does when the columns it binds are the ones the plate cannot
+    # resolve individually but whose combined count the censored rows can feel. The untested side is the other one, and
+    # it is the side that matters for what the loop writes down. Grow the block from fifteen carriers to twenty-five and
+    # the columns that cross the boundary are of a particular kind: gyrA_D87G at five, parE_L416F at fourteen and
+    # blaCTX-M-9 at nine are already inside it, so what crosses are the mid-prevalence determinants - the ones carried
+    # by between sixteen and twenty-five isolates, four or five per cent of the plate, each of which a held-out fold
+    # still cannot estimate, and each of which the champion currently shrinks to a median of one and a half doublings
+    # with no ceiling. Put them in the wide block and they get four times the room and a bound at sixteen; that is the
+    # same transaction, column by column, that bought the +9.19, applied to a group the design has been excluding by an
+    # arbitrary count rather than by any property. The prediction the last two runs make jointly is a mild continuation
+    # of the curve's upper side - up one isolate gains two tenths, and a boundary that moves fourfold in the other
+    # direction gains nothing per column crossed - so expect a few tenths, and expect them inside the error, because
+    # the per-column effect of this design has now been measured at under a tenth of an ELPD. If instead it comes back
+    # at a whole ELPD or more, the response in the boundary is not flat near the cut at all but has a maximum well above
+    # it, and the design the loop has been defending for fifty runs is one number too tight.
+    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 25.0
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
