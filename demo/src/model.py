@@ -109,14 +109,42 @@ def model(X, lo=None, hi=None):
     # degree of freedom expressed twice - which the 84% additivity of the last pair had already hinted at - and the
     # session's conclusion is the single InvGamma, +6.43 +/- 3.56, ratio 1.81, which is as close to the harness's rule
     # as anything has come and is where this loop should stop.
-    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
+    # Ninety-fourth experiment: the last untried idea in this model, written as a matrix, after twenty experiments
+    # on the prior for the columns it concerns. The champion splits the 77 determinants at a carrier count of 15 and
+    # gives the 14 rare ones a t(4, 0, 8) with a soft knee at 16 doublings. That choice of cut has been defended as
+    # the prevalence below which an allele carries too little information to be trusted, and every measurement of
+    # the block since has been a measurement of how far its coefficients may run: knee at 12 costs 3.66 ELPD, at 14
+    # it fails on one divergence for -0.42 +/- 0.44, at 16 it is main, at 20 it is main to a hundredth of an ELPD
+    # with an SE of 0.38, at 24 it gains +0.49 +/- 0.65, and with no knee the fit reaches the best score the loop has
+    # seen and is refused for a single divergence. Width has been tried at 3, 4, 6, 8, 12 and 16; the shape at t(4)
+    # and Normal; the penalty as a softplus, a hinge and absent. What has never been varied is the thing the split
+    # is actually for, which is not how far a rare coefficient may go but how much a rare column is allowed to say
+    # at all. An allele carried by three isolates out of 558 appears in the training folds roughly twice; whatever
+    # its fitted coefficient, the fold that holds all three carriers is scored on a prediction no training fold
+    # contains any evidence for, and the cross-validated density the harness rewards is being bought with a
+    # parameter that cannot generalise by construction. The mechanism reference makes the same point from the bench
+    # side: a single isolate carrying qnrA1 or fosA is a sequencing and a phenotype as much as a genotype, and
+    # AMRFinderPlus calls at that frequency are the calls a lab confirms before reporting. So: multiply every rare
+    # column by the square root of its prevalence, sqrt(k/15), which is 0.45 for a carrier count of three and 0.82
+    # at fourteen, and leave its wide prior exactly where the keep put it. The scaling is the standard variance-
+    # stabilising choice for a coefficient estimated from k observations - it makes the prior's implied statement
+    # about an isolate's MIC the same for a rare allele and a common one, so that t(4, 0, 8) means "eight doublings
+    # for a determinant this dataset can resolve" rather than "eight doublings whatever the evidence" - and it is
+    # applied to the design matrix alone, so the model, its priors and the likelihood are main's to the character.
+    # Under this parameterisation the rare coefficient's fitted value must grow by a factor between 1.2 and 2.2 to
+    # move an isolate as much as it does on main, which is the same loosening the knee at 24 bought in the prior,
+    # bought instead in the design where the prevalence is a fact about the data rather than a number I chose.
+    Xc = jnp.asarray(X, dtype=jnp.float32)
+    k = Xc.sum(axis=0)
+    rare = k <= 15.0
+    Xd = jnp.where(rare, Xc * jnp.sqrt(jnp.clip(k, 1.0, 15.0) / 15.0), Xc)
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
-    mu = numpyro.deterministic("mu", alpha + X @ beta)
+    mu = numpyro.deterministic("mu", alpha + Xd @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
         numpyro.factor("censored_lik", ll.sum())
