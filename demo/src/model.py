@@ -86,35 +86,35 @@ def model(X, lo=None, hi=None):
     # door open. If the gain survives, what the censored rows wanted was room around the mode and the axis is done;
     # if it collapses, they wanted the upper tail, and a proper heavy-tailed family (a scale-mixture t, or an
     # inverse-gamma) is where the remaining density is.
-    # Sixty-sixth experiment: the combination, with the prior settings the combination's own diagnostics asked for,
-    # and nothing else. An InvGamma(2, 128) residual scale (mode 5.7 doublings, median 7.7, an s^-5 tail, written on
-    # the reciprocal since numpyro has no inverse-gamma) with t(4, 0, 8) on the 14 rare columns produced the largest
-    # gain of the session twice over - +8.28 at default settings (R-hat 1.0122, zero divergences, ESS 1351) and, when
-    # I gave it the sampler that R-hat seemed to call for, +3.28 with R-hat 1.5541, ESS 18 and a 221 s run. Reading
-    # those two runs together is the whole of this experiment. A pair of near-flat directions in the posterior is
-    # either a ridge, where the chains diffuse and more steps help, or a funnel, where the density pinches and more
-    # steps make it worse: the signature of the second is that a tighter step and a mass matrix that mixes all
-    # parameters together turn a 1.012 into a 1.55, and that is what happened, so the obstruction is the geometry of
-    # the priors meeting, not the number of steps. The two priors are not independent the way two hypotheses on
-    # separate axes are. The wide rare-column prior supplies the fit with effects that can move an isolate's mu by
-    # more than the plate; the inverse-gamma supplies it with a residual that makes such a move cheap; where both
-    # slacken at once, the model has two ways of saying "this isolate is resistant" for the price of one, and the
-    # posterior of each depends on how far the other has gone - which is a funnel in (scale, beta_rare), not a ridge.
-    # So the fix is in the prior that has the adjustable part. The rare-column tail is cut at 16 doublings rather
-    # than 12, which is where the same t(4, 0, 8) prior converged by itself at both residual scales this session
-    # (uncut: 7 divergences at the narrow fit, and the cut at 12 costing a fifth of the gain at the wider one; cut at
-    # 16 at the old champion: zero divergences, +3.37, R-hat 1.003 at 3000 draws), and the scale keeps the
-    # distribution that has measured +6.1 to +6.6 five times with the tightest gates of any change on the table. If
-    # the combination still will not converge at the settings the parts converge at, then the two slacks are one
-    # degree of freedom expressed twice - which the 84% additivity of the last pair had already hinted at - and the
-    # session's conclusion is the single InvGamma, +6.43 +/- 3.56, ratio 1.81, which is as close to the harness's rule
-    # as anything has come and is where this loop should stop.
+    # Seventy-sixth experiment: the one property of the residual prior that every measurement on this axis has held
+    # fixed while everything else moved. The kept fit carries InvGamma(2, 128) on the residual scale, and six runs
+    # have now varied its two parameters: the rate by quarter-steps in both directions (120 costs 0.23 +/- 0.39, 160
+    # costs 0.10 +/- 0.62), the rate fourfold across the session (192 and 256 gained +7.2 and +6.9 against the
+    # previous champion and were stopped by their own SEs and gates), and the shape from 2 to 3 at constant mean
+    # (+0.61 with one divergence). Read together they say the fit is flat in the prior's location and mildly
+    # responsive to its curvature, and neither of those is the property the censored rows are actually arguing
+    # about. An InvGamma(a, b) has a survival that falls as s^-a beyond its mode: a = 2 is an s^-5 tail on the scale
+    # itself, and a = 2.5 at the same mean (b = a(a-1)*128 = 480, mean 128, mode 38.4 of the precision hence a scale
+    # mode of 4.4 doublings) is an s^-6.5 tail - the same prior mass in the region the posterior occupies, markedly
+    # less in the far region past 40 doublings where the current fit puts 5% of it and where the assay's own
+    # repeatability is 4-8 doublings. Two independent reasons to expect a small gain and a smaller SE. The first is
+    # this loop's own finding about where the paired SE lives: the pointwise held-out log-density difference between
+    # a wide-s fit and the champion has sd 0.157 across the 98 isolates whose MIC was measured against 0.138 across
+    # the 204 whose MIC was not, so the measured rows pay most of the bill per row, and they pay it in proportion to
+    # how much density the prior lends to scales no dilution series can have observed - which is the far tail and not
+    # the mode. The second is the disagreement between groups that the same measurement identified: a tail exponent
+    # is the only knob that gives the censored rows their plateau without paying for it in the far region, because it
+    # taxes the region rather than the location. If this comes back flat, the prior's shape has been shown not to
+    # matter at all over an order of magnitude in its two parameters and an exponent, and the conclusion is the
+    # strongest form of what the last six runs have been circling: the residual scale of a censored MIC regression
+    # is not identified by these data, and any statement about assay repeatability that this model appears to make is
+    # the analyst's and not the experiment's.
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
-    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
+    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.5, 480.0))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
