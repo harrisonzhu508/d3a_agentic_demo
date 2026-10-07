@@ -112,10 +112,35 @@ def model(X, lo=None, hi=None):
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
-    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
+    # One hundred and thirteenth experiment: the same ceiling, made harder rather than moved. The rare-column knee has
+    # eleven points on it and every one of them was produced by sliding one number along the axis of a single
+    # functional form: 12 doublings costs 3.66 ELPD of the champion's +9.19, 14 costs 0.42 and a divergence, 15 costs
+    # 0.20 and two divergences, 16 is main, 18 and 20 are main to a hundredth of an ELPD with standard errors of 0.34
+    # and 0.38, 24 gains 0.49, 32 gains 1.05 for -141.24, and no knee reaches -140.30 for +1.99 and is refused by one
+    # divergence and an effective sample size of 555. That is the densest response curve in this loop and it has
+    # measured exactly one property of the term that produces it - where the discount begins - because every one of
+    # those runs changed the knee and left the slope alone. The slope is the other half of the term, it is the half
+    # that decides whether the penalty is a wall or a shoulder, and eleven runs have never touched it: the softplus
+    # past its knee is linear in the coefficient with unit gradient, which means that in log-density a rare effect
+    # pays one doubling of prior for every doubling it claims past 16, and the t(4, 0, 8) underneath it is already
+    # charging it four. Halving that extra charge to a half per doubling - softplus at half weight, the knee fixed at
+    # the champion's own 16 - leaves the penalty's location exactly where the eleven measurements put it and turns the
+    # wall into a shoulder: at 20 doublings the fit pays 0.68 of a doubling instead of 1.31, at 32 it pays 2.5 instead
+    # of 5.2, and below 12 it pays a hundredth either way, so the region the fitted posterior occupies is untouched to
+    # two decimal places and this cannot be read as a change to the fit's centre. The prediction is sharp and the two
+    # readings of this session disagree about its sign. If the champion's knee is a genuine optimum - the point where
+    # the censored rows' appetite for slack meets a prior that refuses it - then softening the refusal gains the same
+    # direction the eleven loosening steps all gained, and by a margin comparable to the run at 32 doublings, which is
+    # to say a unit or so of ELPD and a clean gate, since a shoulder bends trajectories rather than ending them. If
+    # instead the whole +9.19 of this term came from the location of the wall and not its hardness - which is what the
+    # flat 16-to-20 stretch and the R-hat that moves with the step size rather than the score both hint at - then this
+    # comes back within its noise, and the loop learns the more useful thing: that the term earns its keep by existing
+    # at a height rather than by being steep, and the experiment to run afterwards is a knee at 24 with the slope
+    # doubled, which is the same statement read from the other side.
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
+    numpyro.factor("rare_tail", -0.5 * jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
