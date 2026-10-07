@@ -34,20 +34,42 @@ def log_interval_prob(lo, hi, mu, sigma):
     return jnp.where(hi_inf, log_ndtr(-a), jnp.where(lo_inf, log_upper, interval))
 
 
+def logistic_log_interval_prob(lo, hi, mu, scale):
+    """log P(lo < y <= hi) for y ~ Logistic(mu, scale); lo may be -inf and hi may be +inf.
+
+    Heavier tails than the normal (log-survival ~ -|z| instead of -z^2/2), for isolates whose genotype
+    does not explain an extreme MIC. log_sigmoid keeps each tail accurate; the middle bin is written
+    as log_sigmoid(za) - log_sigmoid(zb) (both arguments positive, so no cancellation). Finite
+    placeholders everywhere so jnp.where never lets a gradient multiply an inf by zero.
+    """
+    lo_f = jnp.where(jnp.isneginf(lo), hi - 1.0, lo)
+    hi_f = jnp.where(jnp.isposinf(hi), lo_f + 1.0, hi)
+    a, b = jnp.broadcast_arrays(lo_f, hi_f)
+    za, zb = (mu - a) / scale, (b - mu) / scale
+    log_upper = jax.nn.log_sigmoid(zb)                          # log P(y <= hi)
+    log_surv = jax.nn.log_sigmoid(za)                           # log P(y > lo)
+    interval = jnp.where(za > 0.0,                              # subtract in the more accurate tail
+                         log_surv + jnp.log1p(-jnp.exp(jax.nn.log_sigmoid(-zb) - log_surv)),
+                         log_upper + jnp.log1p(-jnp.exp(jax.nn.log_sigmoid(za) - log_upper)))
+    return jnp.where(jnp.isposinf(hi), log_surv, jnp.where(jnp.isneginf(lo), log_upper, interval))
+
+
 def model(X, lo=None, hi=None):
     p = X.shape[1]
     alpha = numpyro.sample("alpha", dist.Normal(-4.0, 3.0))
-    sigma = numpyro.sample("sigma", dist.HalfNormal(2.0))
+    # Logistic errors with the same variance as the baseline HalfNormal(2) errors: s = sigma sqrt(3/pi)
+    scale = numpyro.sample("scale", dist.HalfNormal(2.0 * jnp.sqrt(3.0 / jnp.pi)))
     beta = numpyro.sample("beta", dist.Normal(jnp.zeros(p), 2.0))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
-        ll = log_interval_prob(lo, hi, mu, sigma)
+        ll = logistic_log_interval_prob(lo, hi, mu, scale)
         numpyro.factor("censored_lik", ll.sum())
         numpyro.deterministic("log_lik", ll)
 
 
 def simulate(samples, X, key):
-    """Latent log2 MIC draws (draws, n) for the rows of X."""
+    """Latent log2 MIC draws (draws, n) for the rows of X (logistic errors, matching the likelihood)."""
     beta = samples["beta"]                                    # (draws, p)
     mu = samples["alpha"][:, None] + beta @ jnp.asarray(X).T   # (draws, n)
-    return mu + samples["sigma"][:, None] * jax.random.normal(key, mu.shape)
+    u = jax.random.uniform(key, mu.shape, minval=jnp.finfo(jnp.float32).tiny)
+    return mu + samples["scale"][:, None] * jnp.log(u / (1.0 - u))
