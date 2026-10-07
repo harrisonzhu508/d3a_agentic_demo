@@ -86,7 +86,25 @@ def model(X, lo=None, hi=None):
     # door open. If the gain survives, what the censored rows wanted was room around the mode and the axis is done;
     # if it collapses, they wanted the upper tail, and a proper heavy-tailed family (a scale-mixture t, or an
     # inverse-gamma) is where the remaining density is.
-    scale = numpyro.sample("scale", dist.Gamma(2.0, 0.5))
+    # Forty-eighth experiment. The residual-scale axis is the only one that pays (+4.0 kept; the half-Cauchys
+    # +4.1 and +4.6; the inverse-gamma at 128 with +6.55, +6.09, +6.09 on three runs) and it has never been kept,
+    # because its gain arrives with its own paired SE: +6.1 comes at SE 3.6 and the keep rule needs gain above two
+    # SE, while the +7.2 that would clear it comes with an R-hat of 1.019 instead. Seven priors on this parameter are
+    # on the record, all with clean gates and agreement 78-78.3% and coverage 81-83% - the tell that nothing in the
+    # mean function changes, only how far the censored rows are allowed to take the residual - and they are ordered
+    # by one property: how cheap the prior makes a large scale. The reason is structural. A right-censored row's term
+    # is 1 - Phi((hi - mu)/s), flat in mu once mu is past the boundary, so a wide s is the only way those 204
+    # isolates can be honest about not knowing where above 4 mg/L their MIC sits, and the held-out density they
+    # contribute is the gain. The same rows set the floor on resolving it: their held-out log density is small and
+    # variable, so its SE grows with how far a model moves them. What they are not arguing about is the prior's mode
+    # - the half-Cauchy has none and gains 4.3, an inverse-gamma with mode 5.7 gains 6.1, one with mode 11.4 gains
+    # 7.2 and loses its R-hat - so as the mode climbs the ELPD climbs and the fit degrades, which is what a prior
+    # doing the likelihood's work looks like. The component those rows actually use, never varied on its own, is the
+    # far tail: at s = 20 doublings the kept Gamma(2, 0.5) sits 4.3 nats below the half-Cauchy and 6.0 below the
+    # inverse-gamma. Half-Cauchy(8) keeps the champion's own family, is flat to within 2% across the assay's whole
+    # 12-doubling range, and is 0.7 nats below the inverse-gamma at s = 20 - tail only, where every earlier
+    # experiment on this axis moved mode and tail together.
+    scale = numpyro.sample("scale", dist.HalfCauchy(8.0))
     # The champion needs very large effects on a few QRDR alleles (gyrA D87N ~ +11, parC S80I ~ +9 log2
     # units) - the MIC really does leave the plate for those isolates - so width 2 is already close to the
     # posterior of the alleles that matter. A Student-t(4, 0, 2) prior has that width in the middle but
