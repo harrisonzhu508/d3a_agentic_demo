@@ -109,7 +109,33 @@ def model(X, lo=None, hi=None):
     # degree of freedom expressed twice - which the 84% additivity of the last pair had already hinted at - and the
     # session's conclusion is the single InvGamma, +6.43 +/- 3.56, ratio 1.81, which is as close to the harness's rule
     # as anything has come and is where this loop should stop.
-    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
+    # One hundred and twenty-fourth experiment: the block boundary taken to the other end of its own range, which is
+    # a different change from the one that made this loop's career. The champion's keep, the only one of fifty-five
+    # campaigns that cleared the harness, was the move that split the 77 columns into two groups and gave the
+    # carrying-fifteen-or-fewer group a prior four times wider and a discount above sixteen doublings. Two runs since
+    # have touched that boundary and both found nothing: widening the cut to sixteen isolates, which reassigned the
+    # single column sitting exactly on it, gained 0.21 +/- 0.49, and spreading the wide prior to all 77 columns gained
+    # 2.68 +/- 3.66 for -139.61, the best absolute score the loop has produced on a gated fit. Neither tested the
+    # design's actual claim. What the keep bought was not width - the same width applied to the resolved block is worth
+    # 1.24, and applied to the intercept-adjacent part of the model the ridge runs are finding three ELPD in a prior
+    # that names no allele at all. What it bought, supposedly, was the pairing of width with a ceiling: room for a rare
+    # determinant to explain a resistant isolate, and a bound on how far a chain can run with a determinant no held-out
+    # fold will contain. If that pairing is the mechanism, the boundary of the block should matter a great deal, since
+    # the columns on either side of it differ twentyfold in how much information they carry about the isolates a fold
+    # keeps, and the previous run's single-column move says nothing about it because a single column cannot move a
+    # five-hundred-isolate fit. Take the boundary to the floor of the design instead: three carriers, which reassigns
+    # 29 columns - every quinolone-resistance determinant the loop cares about except gyrA_S83L, gyrA_D87N, parC_S80I,
+    # parC_E84V and parE_I529L, plus the whole beta-lactamase and aminoglycoside tail - from the discounted wide prior
+    # to the tight undiscounted one, leaving only five alleles in the rare block: ampC_C-42T, parE_S458T, fosA, dfrA7
+    # and qnrA1, none of which has any business explaining a ciprofloxacin MIC. The penalty term then applies to five
+    # columns instead of 34 and can barely be felt. The two readings of this session's champion make opposite
+    # predictions. If the wide-with-ceiling prior on low-prevalence columns is doing the model work the design says it
+    # is, moving 29 of those columns to a prior that binds them two doublings tighter costs more than anything here has
+    # cost since the knee went to twelve, and the loop finally learns the size of the thing it kept. If the answer is
+    # another small positive within its error - the signature of the last twenty-five runs on this branch - then the
+    # block, the ceiling and the wide prior are all decoration on a fit whose five ELPD live in the intercept and the
+    # resolved slopes, which is a finding worth more than another point on the knee.
+    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 3.0
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
