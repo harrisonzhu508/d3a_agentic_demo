@@ -75,7 +75,21 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Same split as the discarded rare-allele-slab-prior line (the determinants carried by at most 15 isolates get
+    # a slab, the 63 common ones keep the champion's t(4,0,2) untouched), which gained 9.75 +/- 5.81 ELPD and
+    # raised coverage from 82.6% to 88.0% but cost 245 divergent transitions; three reparameterisations of the
+    # slab scale got the divergences down to 6 and the gain to 3.4 +/- 2.6 - the funnel shows up wherever the slab
+    # width is a per-column sampler coordinate. This is the fourth: one global scale, no per-column scale at all.
+    # The rare columns get t(4, 0, tau_rare) with a single half-Cauchy tau_rare, which is the slab marginal with
+    # tau_rare as the slab width (a half-Cauchy on a hierarchical scale is the standard weakly informative
+    # hyperprior; Gelman et al., BDA3 ch. 5). A column carried by three isolates then shrinks towards zero unless
+    # the MICs insist otherwise, and the sampler moves one scalar instead of 14 near-zero scales.
+    n_carriers = jnp.asarray(X, dtype=jnp.float32).sum(axis=0)
+    rare = n_carriers <= 15.0                                   # at most ~12 carriers per CV fold
+    tau_rare = numpyro.sample("tau_rare", dist.HalfCauchy(1.0))
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), tau_rare))
+    beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
