@@ -110,7 +110,32 @@ def model(X, lo=None, hi=None):
     # session's conclusion is the single InvGamma, +6.43 +/- 3.56, ratio 1.81, which is as close to the harness's rule
     # as anything has come and is where this loop should stop.
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
-    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # One hundred and thirty-ninth experiment: a gain the harness measured as large, attributed to the sampler that
+    # refused it, and re-taken now that this loop knows which of the two was wrong. The largest single-lever score in
+    # the log is not the champion's: it is a run from the earliest campaign, in which the effect prior on these columns
+    # was taken from two doublings to four and the cross-validated density rose by 18.62 ELPD against a paired error of
+    # 2.72 - a ratio of 6.8, four times what the keep rule asks for, thrown out because one chain leapt once. The
+    # follow-up that campaign ran against its own failure was the textbook one and it failed the same way: the same
+    # model at an acceptance target of 0.99 returned 18.58 +/- 2.73 with the divergence intact, and the loop concluded
+    # that the widening itself was pathological, kept the narrower prior it had, and spent the next hundred campaigns
+    # measuring this axis again at widths 1, 2, 2.5, 3, 4, 6 and 8 with gains that shrank to a fraction of what they
+    # had been, because the parent had changed underneath them. That conclusion was reached with two data points and
+    # one hypothesis about their cause, and the cause it chose - that a wide prior over the resolved slopes drives
+    # trajectories into a wall - has not been tested against the alternative this session has since established, which
+    # is that a single divergence on this fit is a property of the adapter's step size in the region where a level and
+    # seventy-seven binary slopes are correlated, and that an acceptance target of 0.97 removes it without touching the
+    # density. Four runs have now demonstrated that at four different points of the design: the intercept lever scored
+    # 3.48 at 0.97 against 3.56 at 0.95 with zero divergences and better diagnostics; a pair at the same two settings
+    # scored 4.79 against 4.72, again with clean gates; and the one lever that has ever been seen to lose a gate at 0.97
+    # lost it at a width of 6 on these same columns, with two transitions rather than one and a score of 2.27 that
+    # agrees with this run's expected value rather than contradicting it. So: the resolved columns at four doublings -
+    # the champion's own prior family, the width that scored the largest gain the harness has ever refused, the width
+    # whose prior median coefficient of three doublings is nearer the fluoroquinolone step than the champion's one and a
+    # half - and nothing else moved except the acceptance target, which at 0.97 costs nothing measured and has never
+    # itself produced a divergence. If the score lands near the 1.24 this branch measures for the same change today,
+    # then the eighteen ELPD were never density and the loop's oldest refusal was correct. If they land anywhere near 18
+    # with a clean gate, the parent on which a hundred of this log's verdicts rest was chosen by a sampler artefact.
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 4.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
