@@ -114,7 +114,31 @@ def model(X, lo=None, hi=None):
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
-    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
+    # One hundred and ninth experiment: the same rotation of the residual prior at half the size, run because the
+    # previous two runs measured a dose-response on this axis and disagree about where it stops. Shape is the one
+    # property of this parameter that every location measurement has left untouched, and the loop has now sampled it
+    # at four points. At 1.9 - an s^-4.5 tail at a constant prior median - the fit loses 0.36 +/- 0.35 ELPD and is
+    # refused by an R-hat of 1.0101, two ten-thousandths beyond the limit. At the kept 2 everything is main. At 2.1 -
+    # an s^-5.5 tail, again at a constant median, with five times the log-curvature of the step below - the fit loses
+    # 0.09 +/- 0.33 and passes every gate with an R-hat of 1.0062, better than main's own 1.0077. At 2.5, the first
+    # attempt at curvature this session, the posterior lands at 33.0 doublings, the score falls 1.21 and the chains
+    # return an R-hat of 1.036; at 4 they return 82.1 doublings, -6.37 and 1.0122. Three of those four runs failed the
+    # diagnostics and none of the four failed the score by more than the diagnostics were wrong, and the ordering of
+    # the losses with respect to step size is now monotone in |shape - 2|: a tenth costs a tenth of an ELPD, a tenth
+    # the other way costs four tenths, a half costs a little over one, a two costs six. That is a smooth response in
+    # the score and a jagged one in the gates, and the loop has never tested which of the two it is being governed by.
+    # Half a tenth is the resolution: shape 2.05 at the rate that holds the prior's median scale at the champion's own
+    # value, b = 131.5 against the kept 128, a tail exponent of 5.25 in place of 5, three per cent less prior density
+    # past sixty doublings, none of it anywhere the posterior has been observed. The prediction the dose-response
+    # makes is a loss of five hundredths of an ELPD, which no harness on this data can see, so what is actually being
+    # measured is the gate: if an R-hat crosses 1.01 at a rotation this small then the champion's diagnostics are a
+    # property of the step size and not of the model, the last forty comparisons in this log were scored on fits that
+    # each saw their own fraction of their own posterior, and no number in the report can be quoted without saying so.
+    # If it passes cleanly, then the gate has a real margin around this fit, the shape of the residual prior costs
+    # about one ELPD per unit of shape and nothing more, and the loop can finally write the sentence it has been
+    # avoiding for thirty experiments: the residual scale on these data is worth a thousandth of an ELPD per doubling
+    # and is not estimated at all.
+    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.05, 131.5))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
