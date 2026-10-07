@@ -56,7 +56,7 @@ def logistic_log_interval_prob(lo, hi, mu, scale):
 
 def model(X, lo=None, hi=None):
     p = X.shape[1]
-    alpha = numpyro.sample("alpha", dist.Normal(-4.0, 3.0))
+    alpha = numpyro.sample("alpha", dist.Normal(0.0, 10.0))
     # Logistic errors with the same variance as the baseline HalfNormal(2) errors: s = sigma sqrt(3/pi)
     # The error scale of the interval-censored likelihood is the parameter the censored rows identify least
     # well - a right-censored isolate is happy with almost any mu once mu is past the top of the plate, so what
@@ -109,6 +109,31 @@ def model(X, lo=None, hi=None):
     # degree of freedom expressed twice - which the 84% additivity of the last pair had already hinted at - and the
     # session's conclusion is the single InvGamma, +6.43 +/- 3.56, ratio 1.81, which is as close to the harness's rule
     # as anything has come and is where this loop should stop.
+    # One hundred and twenty-third experiment: the attribution run, a single number changed and nothing else. The
+    # ridge the last five runs found has three candidate sources and the harness has measured two of them separately:
+    # the intercept prior taken from Normal(-4, 3) to Normal(0, 10) gains 3.56 +/- 3.13 ELPD with clean gates; the
+    # resolved block's width taken from t(4, 0, 2) to t(4, 0, 4) gains 1.24 +/- 1.95 with clean gates; the residual
+    # scale, loosened three separate ways on top of a fit that already carried both, gains 0.09, 0.19 and 0.26 and
+    # actually shrinks the paired error, so that lever does nothing at all and is now settled. The pair of the first
+    # two, at widths 3 and 4, gains 4.72 and 4.90 with errors pinned near 2.7 and reaches -137.4, and the intercept
+    # pushed half a step further with the slopes left exactly as main has them gains 4.91 - an error of 4.16 on it,
+    # the largest paired disagreement this session has recorded, which is itself informative in the wrong direction.
+    # Read as a system of equations the four numbers are over-determined and inconsistent: 3.56 plus 1.24 is 4.80, the
+    # pair measures 4.72 and 4.90, and the intercept alone at one and a half times its looseness measures 4.91 with
+    # fifty per cent more error rather than double the gain. Either the intercept's effect saturates immediately and
+    # the width contributes the last half-ELPD, or the whole ridge is one mechanism - a fit that will not commit to a
+    # level for the censored rows - and the errors differ only in how far each pair of fits disagrees about which
+    # isolates sit above the top well. The run that tells them apart has not been made: the intercept at the exact
+    # setting that scored 3.56 alone, Normal(0, 10), with the champion's own widths everywhere else. It is the
+    # smallest possible statement of the question and its answer is bounded by runs already in the log: if the ridge is
+    # the intercept's, this reproduces 3.56 to within its error and the width lever is worth the remaining 1.3 of the
+    # pair; if it reproduces 4.9, the same score the wider and the narrower versions both reached, then the gain
+    # appears at the first half-step of looseness on the location prior and does not grow, and this loop has been
+    # measuring the plateau of a saturating function for five campaigns while calling it a ridge. In the second case
+    # the report can say something much stronger than that a five-ELPD improvement was refused by a keep rule: it can
+    # say where that improvement comes from, which is the level of the fit rather than the slopes, that is, from the
+    # 204 isolates whose MIC the plate never read, and that a prior on the intercept of an interval-censored MIC
+    # regression is not a nuisance parameter at all but the parameter the censored likelihood spends itself on.
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
