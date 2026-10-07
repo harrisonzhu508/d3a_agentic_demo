@@ -112,7 +112,29 @@ def model(X, lo=None, hi=None):
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
-    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
+    # Seventy-fifth experiment: the rare-column penalty rewritten as the statement it is, after three measurements
+    # said the soft form was doing sampler work rather than model work. In the kept fit - t(4, 0, 8) on the 14
+    # columns carried by at most 15 isolates, with a factor of -sum(softplus(|beta| - 16)) - 1.2% of the rare
+    # posterior mass sits past the knee, where the penalty is worth up to 7.6 log units and its gradient is what
+    # keeps the chains from walking the near-flat ridge of a coefficient that four fifths of any fold cannot see.
+    # Removing the penalty altogether gave the best absolute fit this loop has produced (ELPD -140.30, +1.99 +/-
+    # 1.66 over main, coverage 87.5%) and was rejected by a single divergence and an ESS of 555; splitting it the
+    # other way, a Normal(0, 8) in place of the t(4) at the same penalty cost 0.14 with one divergence, and a
+    # quarter-step wider t(4, 0, 12) with the penalty cost 0.25 with two. Four runs, four single divergences, one
+    # common cause: everything the model wants from the rare columns lies past the knee, and the penalty is where
+    # the sampler is asked to stop wanting it. A softplus is the wrong object for that job. Its density grows
+    # quadratically just past 16 doublings - so a coefficient at 18 is barely penalised, at 24 moderately, and the
+    # chains spend their trajectory in exactly that band, which is where the divergences were observed - and its
+    # gradient vanishes below the knee, so it neither warns a chain approaching nor slows one that has crossed. A
+    # hinge, |beta| - 16 taken at zero, is the same prior belief expressed once: one log unit of discount per
+    # doubling past the plate's own width, no discount below it, and a bounded, constant gradient that a NUTS
+    # trajectory cannot overshoot because it has no curvature to overshoot. The two forms agree at the knee and
+    # disagree in the band that has been generating every failure on this branch family: at |beta| = 24 the softplus
+    # charges 8.0 against the hinge's 8.0 (they are identical there), but at 20 they charge 2.1 and 4.0, and past 32
+    # the softplus accelerates without limit while the hinge keeps the promise the assay supports - that no
+    # determinant known to this table raises an MIC by more than the plate's width, and each doubling beyond is
+    # worth a fixed discount, not a compounding one.
+    numpyro.factor("rare_tail", -jnp.sum(jnp.maximum(jnp.abs(beta_rare) - 16.0, 0.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
