@@ -18,6 +18,10 @@ from jax.scipy.special import log_ndtr
 
 FEATURE_EFFECTS = "beta"
 
+# Prior width for a column carried by essentially no one (see model(): the width interpolates from this down to
+# the champion's 2 as the number of carriers grows). Set by experiments; 2.0 reproduces the champion exactly.
+W_MAX = 10.0
+
 
 def log_interval_prob(lo, hi, mu, sigma):
     """log P(lo < y <= hi) for y ~ Normal(mu, sigma); lo may be -inf and hi may be +inf.
@@ -87,10 +91,15 @@ def model(X, lo=None, hi=None):
     # funnel. Width 6 rather than the champion's 2, because a rare column's leverage is sd 0.10-0.16 and a prior
     # narrower than four doublings of effect on mu is a prior of no-signal-by-assumption (what cost the 9.75 gain
     # in discarded/slab-halfnormal-scale). The common columns keep the champion's t(4, 0, 2) exactly.
-    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
-    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
-    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 2.0))
-    beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
+    n_carry = jnp.asarray(X, dtype=jnp.float32).sum(axis=0)
+    # Soft version of the same split: a column's prior width interpolates between the champion's 2 and w_max over
+    # a factor of e between 5 and 50 carriers (exp(-x) is the conjugate rate of the Poisson count of carriers, so
+    # a column with 5 carriers retains only e^-1 = 37% of a width-6 allowance and one with 50 gets 67%:
+    # Gelman et al., BDA3 ch. 5 on continuous shrinkage weights, and the same prevalence logic the AMRFinderPlus
+    # guidance uses for pooling rare calls, applied as a weight rather than a hard cut). No mask, no discontinuity
+    # in the log density as a function of the design matrix, and at w_max = 2 it is exactly the champion.
+    w = 2.0 + (W_MAX - 2.0) * jnp.exp(-n_carry / 15.0)
+    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), w))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
