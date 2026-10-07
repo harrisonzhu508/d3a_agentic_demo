@@ -5,7 +5,7 @@ SETTINGS = {
     "num_warmup": 4000,
     "num_samples": 4000,
     "num_chains": 4,
-    "target_accept_prob": 0.95,
+    "target_accept_prob": 0.99,
     "max_tree_depth": 10,
     "dense_mass": False,
 }
