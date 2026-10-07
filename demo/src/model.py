@@ -93,7 +93,31 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Sixtieth experiment: the rare-column prior at the width that pays most, on the fit whose noise is smallest,
+    # with no cut, no spike and no scale mixture - the configuration the keep rule has never been given. The
+    # measurement this loop made of that prior is a plateau with a rising bill: on the previous champion, widths
+    # 2/3/4/5/6/8 on the 14 columns carried by at most 15 isolates gained +1.9 to +2.4, +2.79, +3.09, +3.51, +3.04
+    # and +3.37 ELPD against paired SEs of 2.25, 2.72, 3.48, 4.05, 4.48 and 5.11, so the gain is flat across a
+    # fourfold change in prior width while the SE grows almost in proportion and the keep ratio falls monotonically
+    # from 1.03 - the arithmetic signature of a direction the data do not inform. Three mechanisms were tested for
+    # that plateau and all three are dead: sparsity (a spike at zero, the distinguishing feature of every
+    # horseshoe/spike-and-slab, gives +1.12), mechanism (a Cauchy(0, 0.5) on the 74 columns with no
+    # fluoroquinolone target-gene route gives -1.72 with R-hat 1.13), and column redundancy (dropping the
+    # near-saturated gyrA_D87N sub-indicator gives -17.4). What survived is the boring reading - width 2 is simply
+    # too narrow a prior for a determinant carried by three isolates, and anything wider buys about three ELPD - and
+    # the reason the harness cannot see three ELPD is now identified and fixed: the paired SE is the across-isolate
+    # sd of the held-out log-density change, which is density *movement*, and movement scales inversely with the
+    # residual scale. The prior on that scale has since been kept at a posterior mean of 9.18 doublings against the
+    # old fit's 6.87, and the first re-run on it reproduced the old numbers with the predicted shrinkage (t(4,0,3)
+    # on the rare columns: +2.79 +/- 2.72 then, +2.72 +/- 2.23 now, ratio 1.03 -> 1.22). Width 8 is the point of
+    # maximum gain and maximum old SE (+3.37 +/- 5.11, ratio 0.66) and so the point where a quarter less SE matters
+    # most; the old run needed a soft cut at 16 doublings and 3000 draws to converge, and this one keeps the t(4)
+    # body that made it converge instead - the t's own tail is what needed the cut, and a t(4) at width 8 on 14
+    # columns needs none of the machinery (the spike, the horseshoe, the truncated variants) that failed the gates.
+    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
+    beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
