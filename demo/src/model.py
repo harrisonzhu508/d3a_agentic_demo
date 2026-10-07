@@ -86,7 +86,30 @@ def model(X, lo=None, hi=None):
     # door open. If the gain survives, what the censored rows wanted was room around the mode and the axis is done;
     # if it collapses, they wanted the upper tail, and a proper heavy-tailed family (a scale-mixture t, or an
     # inverse-gamma) is where the remaining density is.
-    scale = numpyro.sample("scale", dist.Gamma(2.0, 0.5))
+    # Fifty-fourth experiment: one notch below the best-measured gain, because the quantity the keep rule turns on is
+    # the variability of the gain across isolates, not its size. InvGamma(2, 128) on the residual scale - mode 5.7
+    # doublings, median 7.7, an s^-5 tail, written as Gamma(2, 128) on the reciprocal since numpyro has no
+    # inverse-gamma - has scored +6.55, +6.09, +6.55, +6.43 across four runs (default settings, target_accept 0.98,
+    # four times the draws, a dense mass matrix), each with clean gates, the same agreement to a tenth of a percent
+    # and the same coverage: the most reproducibly positive change of the session, and discarded four times by a
+    # paired SE pinned between 3.56 and 3.64 when the rule needs 3.27. I measured where that SE lives rather than
+    # assuming it: the pointwise held-out log-density difference between that fit and the champion, split by
+    # censoring state, has sd 0.157 across the 98 on-grid isolates, 0.080 across the 256 at the plate bottom and 0.138
+    # across the 204 above the top, and because the harness multiplies the sd of the difference by sqrt(558), the 98
+    # on-grid rows contribute as much of the SE (3.7) as the 204 censored ones (3.3) despite being half as many. That
+    # is a different diagnosis from the one I have been carrying. The on-grid rows are the only ones whose MIC was
+    # actually measured, and their interval is one dilution wide, so a model that widens s by 2.3 doublings - as this
+    # prior does, 6.9 -> 9.2 - loses density on them in proportion to exactly how much it gains on the boundary-flat
+    # rows, and the variance of that trade-off is the SE. It is not Monte-Carlo error (four times the draws left it at
+    # 3.63 to two decimals) and not a tuning problem (a dense mass matrix left it at 3.56): it is the disagreement
+    # between the two groups of rows about one number, and the only lever on a disagreement between groups is to want
+    # less from each. InvGamma(2, 192) is that. Its mode is 8.6 doublings and its median 11.6 - the same heavy tail,
+    # so the censored rows get most of what they argue for, but the prior's density at the on-grid rows' preferred
+    # scale of 3-5 doublings is 1.9x the winner's rather than 1.0x, so the two groups' compromise sits nearer the
+    # measured rows and the trade-off is smaller on both sides. If the paired SE falls below 3.3 while the gain stays
+    # near 6, this is kept; if the gain falls with the SE, the two are one quantity and the axis is finished.
+    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 192.0))
+    scale = numpyro.deterministic("scale", 1.0 / scale_raw)
     # The champion needs very large effects on a few QRDR alleles (gyrA D87N ~ +11, parC S80I ~ +9 log2
     # units) - the MIC really does leave the plate for those isolates - so width 2 is already close to the
     # posterior of the alleles that matter. A Student-t(4, 0, 2) prior has that width in the middle but
