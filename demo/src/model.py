@@ -75,7 +75,24 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Fourteenth variant. The two clean soft-cut variants differed in one number only - the width of the t(4) -
+    # and the gain tracked it exactly:
+    #   width 2 (the champion's, split site):            0 divergences, +2.40 +/- 2.26
+    #   width 8 (four times the assay range):            0 divergences, +3.52 +/- 5.10   (rare-slab-trunc-wide)
+    #   width 8 with t(3) shrinkage instead of t(4):     0 divergences, +2.63 +/- 2.35   (rare-slab-t3-softcut)
+    # The width is the whole effect: for a column carried by three isolates a coefficient is unidentified up to its
+    # leverage (sd 0.16, so 6 log2 units move mu by one doubling) and the prior alone decides how far it may go, so
+    # widening it is the one lever that both helps ELPD and raises coverage (89.2% at width 8 against 82.6%). What
+    # the harness has not accepted is the *cost per doubling* beyond the cut, and one doubling per doubling there is
+    # what capped the gain: the champion's posterior does put such a coefficient near 40 doublings, so a penalty of
+    # 24 log units is enough to move it. Push both numbers to where the diagnostics say the champion actually sits:
+    # width 16 and the soft cut at 32 doublings, one log unit per doubling beyond - still four times weaker than
+    # any proper prior on a coefficient, still bounded, and no longer binding on the draws the champion makes.
+    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 16.0))
+    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 32.0)))
+    beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
