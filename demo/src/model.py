@@ -75,7 +75,30 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Twenty-eighth experiment, and the first to intervene on the pathology rather than on its symptoms. Everything
+    # this loop has measured about the champion points at one direction of the posterior: gyrA_D87N sits at +38 and
+    # glpT_E448K at -14 log2 units, a 52-doubling spread that cancels for every isolate inside the tested range and
+    # explodes only where a genotype is extrapolated. The prior width that produces it (t(4, 0, 2), worth +28.9 over
+    # Normal(0,2)) cannot be reduced without losing 30-35 ELPD, and every prior that redistributes it - horseshoe,
+    # level-plus-contrast, gene-hierarchical, within-gene ridges, prevalence scaling, spike-and-slab on the rare
+    # columns at nine different widths and shapes - either fails the sampler gates or lands inside the +/-2 ELPD noise
+    # floor this loop measured for itself. So stop constraining the coefficient and remove the columns that carry it.
+    # gyrA_S83L and parC_S80I are present in 187 and 187 isolates and absent in 371 and 371, and gyrA_D87N is
+    # present in 181 of them: the D87N column is carried by a subset of the S83L carriers (it never occurs alone -
+    # an isolate with both is a double mutant at codons 83 and 87 of the same gene, which is exactly the stepwise
+    # path the mechanism describes). A column that is a sub-indicator of another, both of which are near-saturated,
+    # is the design's degenerate direction: the sum of their effects is identified and the difference is not, and a
+    # wide prior spends the difference on whatever the fold happens to want. Drop the single most redundant column
+    # (gyrA_D87N, whose 181 carriers are all S83L carriers) and let S83L carry gyrase codon-83 status: the design
+    # loses one of 77 columns, keeps the identified contrast, and the wild-type, single-mutant and double-mutant
+    # classes remain separately representable because S83L and D87N differ in whether parC is co-carried - no: they
+    # do not, so this is the experiment that tests whether the D87N column carried information at all, since after
+    # removing it the model can only express codon-83 status, not which substitution.
+    keep = jnp.array([j for j, n in enumerate(FEATURE_NAMES) if n != "gyrA_D87N"], dtype=jnp.int32)
+    beta_kept = numpyro.sample("beta_kept", dist.StudentT(4.0, jnp.zeros(p - 1), 2.0))
+    # Scatter the kept effects back into a length-p vector with zero on the dropped column, so the effect site keeps
+    # the shape the contract asks for (n_features,) and the log_lik stays pointwise.
+    beta = numpyro.deterministic("beta", jnp.zeros(p).at[keep].set(beta_kept))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
