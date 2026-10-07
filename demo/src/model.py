@@ -68,7 +68,25 @@ def model(X, lo=None, hi=None):
     # the censored rows cannot speak to. The champion's own error *distribution* change (logistic errors) was
     # worth +340 ELPD, so getting the residual right is where the loss still lives: coverage is 82.6% against a
     # nominal 90%.
-    scale = numpyro.sample("scale", dist.HalfNormal(2.0))
+    # Thirty-fifth experiment, continuing on the one parameter this session has found still worth ELPD. The error
+    # scale has now been measured twice against the champion's HalfNormal(2), both times clean (0 divergences, R-hat
+    # under 1.009, 13 s) and both times positive at the best keep-ratio this session has seen: a half-Cauchy at 4
+    # doublings, half the width of the dilution series, gains +4.55 +/- 2.41; at the champion's own scale of 2 it
+    # gains +4.06 +/- 2.28. That the scale matters is a structural fact about this likelihood, not a coincidence: a
+    # right-censored row contributes 1 - Phi((hi - mu)/s), flat in mu once mu is past hi + 3s, so the 204 isolates
+    # above the top of the plate - 56% of the cross-validated loss - carry information about s and almost none about
+    # mu. That the *family* barely matters (4 vs 2 doublings of half-Cauchy differ by 0.5 ELPD out of a 2.4 SE, and
+    # 4 vs 2 of half-normal differed by +0.60) says the gain is the Cauchy's tail rather than its location: the
+    # posterior mean sits at 6.8 doublings with a 95% interval of 5.2-8.7, and a half-normal's log density is
+    # quadratic in s, which truncates that interval from above. The remaining unknown is the one that decides
+    # whether this axis has anything left: is the gain the heaviness of the tail or merely the absence of the
+    # Gaussian penalty? Gamma(2, 0.5) has mean 4 - the centre of the measured posterior - a mode at 2, and a log
+    # density that is linear-plus-log in s, so it decays like exp(-s/2): much *wider* than the half-normal at the
+    # posterior mode (density ratio 2.7x at s = 6.8) but genuinely light above 12, where the half-Cauchy leaves the
+    # door open. If the gain survives, what the censored rows wanted was room around the mode and the axis is done;
+    # if it collapses, they wanted the upper tail, and a proper heavy-tailed family (a scale-mixture t, or an
+    # inverse-gamma) is where the remaining density is.
+    scale = numpyro.sample("scale", dist.Gamma(2.0, 0.5))
     # The champion needs very large effects on a few QRDR alleles (gyrA D87N ~ +11, parC S80I ~ +9 log2
     # units) - the MIC really does leave the plate for those isolates - so width 2 is already close to the
     # posterior of the alleles that matter. A Student-t(4, 0, 2) prior has that width in the middle but
