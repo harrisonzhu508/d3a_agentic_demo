@@ -110,7 +110,33 @@ def model(X, lo=None, hi=None):
     # session's conclusion is the single InvGamma, +6.43 +/- 3.56, ratio 1.81, which is as close to the harness's rule
     # as anything has come and is where this loop should stop.
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
-    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # One hundred and third experiment: the effect prior the harness has been asking for since the third run, and
+    # which the loop has only ever approached from the wrong side. Six measurements now describe the prior on the 63
+    # columns that are not rare, and they are not flat in the way I have been reporting them. Narrowing the block from
+    # t(4, 0, 2) to t(4, 0, 1) costs 0.49 +/- 1.69 with clean gates - a prior whose median coefficient is 1.5
+    # doublings, which the fluoroquinolone literature contradicts for gyrA outright, is worth about half an ELPD and
+    # no more. Widening the same block all the way to t(4, 0, 8), the rare columns' own prior, gains 2.68 +/- 3.66 and
+    # lands at -139.61, the second-best absolute score the loop has ever produced, refused only because the gain does
+    # not clear twice its noise. In between, at t(4, 0, 4) on this same block - a width this session has never put on
+    # the common columns, only on all 77 at once, on the two-site control, and on the baseline's own default - the
+    # response should interpolate, and the interpolation is what makes this a different experiment from the two that
+    # bracket it. Those two runs differed by 3.17 ELPD, which is the size of the whole effect the loop's champion
+    # carries, and yet one was a rounding error and the other a near-miss, because the paired standard error is the
+    # across-isolate disagreement between two fits and a doubling of a coefficient's prior width disagrees about more
+    # isolates than a halving of it. Halve the disagreement and the same mechanism should still be running underneath:
+    # a fit that lets gyrA_S83L, parC_S80I and parE_I529L claim three or four doublings instead of one and a half is a
+    # fit that puts more of the censored rows' mu above the plate's top without asking the residual scale to stretch
+    # for it, which is the one trade this session has found over and over and never once paid for in the effects
+    # themselves. A width of 4 halves the distance travelled from main relative to the run that scored +2.68 and
+    # should halve the disagreement with it in proportion - an SE near 1.8 rather than 3.7 - so that a mechanism worth
+    # about 1.3 ELPD arrives carrying a margin of error it can actually be judged against. If that happens, the
+    # loop's conclusion about this design changes from "the effect prior is flat" to "the effect prior is worth two
+    # to three ELPD and the harness needs twice the draws to see it", which is a different report and a more useful
+    # one. If instead the score comes back inside a fraction of an ELPD of main, the response really is flat between
+    # widths 1 and 8 for the columns the plate can resolve, and the rare block's wide prior earns its keep through the
+    # residual scale it shares rather than through the alleles it names - the reading the last twenty runs have been
+    # circling and that this one point, the only one still missing from the curve, can settle.
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 4.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
