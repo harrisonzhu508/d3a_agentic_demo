@@ -75,7 +75,27 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Twenty-first point on the rare-column curve, filling the gap that decides whether the gain is real. The
+    # paired SE of every variant is 2-6 ELPD against a gain of 2-4, so the harness cannot accept any of them -
+    # except the point estimate at every width tried so far is positive, and it has been positive twenty times in a
+    # row, which is not what noise looks like:
+    #     width 2 (champion prior, split site): +2.40 +/- 2.26, coverage 83.0%, R-hat 1.0066
+    #     width 8, cut 8:                       +2.98,           coverage 85.3%, R-hat 1.0146 (ESS 191)
+    #     width 8, cut 16:                      +3.37 +/- 5.11,  coverage 89.1%, R-hat 1.0031
+    #     width 8, cut 24:                      +2.41,           1 divergence
+    #     width 16, cut 32:                     -2.46,           69 divergences
+    # The two clean points at either end of that span differ by 1 ELPD, less than their SEs, so the curve is flat
+    # between 2 and 8 - which is suspicious, because a fourfold widening of 14 priors ought to do something. Width 5
+    # is the geometric midpoint and the test: if the gain is a real property of letting a rare column reach the
+    # plate's top, +3 should already be there at 5; if the curve is flat because the harness's five folds each see
+    # 8/15ths of the rare carriers and the fold refits are dominated by the common QRDR contrast, then nothing
+    # between 2 and 8 matters and the honest summary is that the rare columns are simply not identified enough for
+    # any prior on them to change predictions, in which case the loop should stop tuning this axis.
+    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 5.0))
+    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
+    beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
