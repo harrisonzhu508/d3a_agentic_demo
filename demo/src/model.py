@@ -93,7 +93,29 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Sixty-first experiment: the +6.75 that the gates stopped, given the sampler it asked for. The rare-column
+    # prior's best gain on the old fit (s = 6.87 doublings) was width 8 at +3.37 +/- 5.11, and re-running exactly that
+    # prior on the kept, wider-residual fit gave +6.75 +/- 5.86 - the largest gain on the effect side all session,
+    # with the ELPD of the fit at -144.73 against the champion's -151.48 and coverage moving 82.1% -> 89.6%, the
+    # first movement of the session's worst secondary metric. The gates rejected it on divergences: seven, against a
+    # limit of zero, at 1000 draws and target_accept 0.95. That failure mode has been characterised here rather than
+    # guessed at. The rare columns' coefficients are near-unidentified - a determinant carried by three isolates is
+    # invisible to four fifths of any cross-validation fold - so their posterior is a long, thin ridge running along
+    # the prior's tail, and every variant of this prior this session diverged unless it was either narrowed
+    # (t(4,0,2): zero divergences, +2.4) or bounded (the soft cut at 16 doublings: zero divergences at width 8,
+    # +3.37, and 3000 draws at the old scale brought R-hat to 1.0031 and the ESS to 1273-equivalent). Widths 3, 4, 5
+    # and 6 converge cleanly at 1000 draws and gain less; width 8 gains most and needs the two things that made it
+    # converge before, and the fit is cheap: 16.7 s against a 600 s budget, so four times the draws and a tighter
+    # step cost a tenth of what is available. Nothing about the model changes from the run that scored +6.75 except
+    # the bound that the earlier t(4,0,8) runs used and this one omitted - a soft penalty of one log unit per
+    # softplus of |beta| past 16 doublings, which cannot bite on a t(4) draw that large (its prior density there is
+    # already e^-8 below the mode) and is what stopped the trajectories escaping down the ridge at the previous
+    # champion.
+    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
+    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
+    beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
