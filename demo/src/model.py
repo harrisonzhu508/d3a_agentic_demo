@@ -114,8 +114,34 @@ def model(X, lo=None, hi=None):
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
-    scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
-    scale = numpyro.deterministic("scale", 1.0 / scale_raw)
+    # One hundredth experiment: the residual prior with its left half restored, on the parameter that has now been
+    # measured under nine families and refuses to settle under any of them. The history is the argument for this
+    # run. A half-normal at 2 doublings puts the posterior scale at 6.9; a gamma at 9.2; a log-normal centred at 9.2
+    # at 10.8, one centred at 15.6 at 10.8 as well - both costing between 3.5 and 4.0 ELPD - the kept inverse-gamma
+    # at 15.6, a slightly heavier inverse-gamma tail at 33.0, and an inverse-gamma whose tail is cut hardest, shape 4
+    # at constant mean, at 82.1 with an interval of [58.5, 119.6]. Ordered by how hard each prior pushes against large
+    # values, the posterior rises monotonically with the push, which is not estimation but exploitation: for a
+    # right-censored isolate the scored term 1 - Phi((hi - mu)/s) climbs toward its ceiling without limit as s grows
+    # once mu has passed the plate's top, so a wide residual buys held-out density on the 204 rows whose MIC was
+    # never measured, and the only thing standing between that trade and an infinite scale is whatever the prior says
+    # last. Three of the four priors that lost did so while landing where they were centred, which is what makes the
+    # losses informative rather than accidental - the fit obeyed them and the harness charged for it - and it is also
+    # what a close reading of the two log-normal runs exposes. A log-normal at log 15.6 with unit log-width is a 95%
+    # interval from 5.0 to 48.4 doublings, as permissive above as anything the loop has kept, and it lost 3.49 +/-
+    # 2.23 while landing at 10.8: it lost on the left. Its density rises steeply below its centre, and the censored
+    # rows do not want a residual of 10 doublings, they want a right tail - the same asymmetry that made the
+    # loop's own error-distribution change, logistic instead of normal, worth +340 ELPD on the first experiment of
+    # this session. So: the scale's logarithm at Normal(log 16, 0.7), a prior whose 95% range is 9.7 to 26.4
+    # doublings - the champion's own posterior interval, [11.1, 23.0], nearly enclosed - and whose log density is flat
+    # to a quarter of its peak across the whole region the fit occupies, with no penalty at all below 10 doublings and
+    # the first e-fold of discount at 32. Nothing else in the model moves: same prior on the effects, same knee, same
+    # intercept, same likelihood. The prediction from the three measurements is that the fit lands near 15 and the
+    # score matches main to within a couple of ELPD, and that outcome is the one this axis has been circling for nine
+    # runs without being able to reach: a prior that agrees with the champion's posterior in the region the posterior
+    # occupies costs nothing, which would show that the inverse-gamma's entire contribution to -142.29 is a left tail
+    # the data never asked for, and that the loop's whole "heavy-tailed scale helps" finding is a statement about the
+    # lower half of one distribution rather than about the assay.
+    scale = numpyro.sample("scale", dist.LogNormal(jnp.log(16.0), 0.7))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
