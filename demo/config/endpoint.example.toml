@@ -26,4 +26,4 @@ model = "qwen3.8-27b"
 # vLLM on dide2 does not check keys, but pi needs one.
 api_key = "EMPTY"
 context_window = 131072
-max_tokens = 16384
+max_output_tokens = 16384

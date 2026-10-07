@@ -1,9 +1,10 @@
 """Check the model endpoint and the keys in config/secrets.env (keys are never printed).
 
     uv run python scripts/check.py
+    uv run python scripts/check.py --model dide2/qwen3.8-27b    # another model than [agent]
 
 - the agent's model ([agent] in config/endpoint.toml): if it is an OpenAI-compatible endpoint (local vLLM,
-  dide2), one chat request that must return a tool call;
+  dide2), one chat request that must return a tool call (an api_key "$NAME" is read from config/secrets.env);
 - GITHUB_TOKEN: can read the repository's branches and open pull requests (probed without creating anything);
 - OPENAI_API_KEY, DEEPSEEK_API_KEY: list the models; WANDB_API_KEY: who it belongs to.
 """
@@ -35,20 +36,23 @@ def call(url: str, auth: str = "", payload: dict | None = None) -> tuple[int, di
         return 0, {"error": str(err)}
 
 
-def endpoint() -> str:
-    provider, model = load("endpoint")[0].get("agent", {}).get("model", "local/qwen3.8-27b").split("/", 1)
+def endpoint(spec: str, keys: dict) -> str:
+    provider, model = spec.split("/", 1)
     e = endpoints().get(provider)
     if not e:
         return f"{provider}/{model}: built into pi (see its key below)"
     tool = {"type": "function", "function": {"name": "bash", "description": "Run a shell command", "parameters": {
         "type": "object", "properties": {"command": {"type": "string"}}, "required": ["command"]}}}
-    s, r = call(e["base_url"] + "/chat/completions", f"Bearer {e.get('api_key', 'EMPTY')}",
+    key = e.get("api_key", "EMPTY")
+    key = keys.get(key[1:], "").strip() if key.startswith("$") else key
+    s, r = call(e["base_url"] + "/chat/completions", f"Bearer {key}",
                 {"model": e["model"], "max_tokens": 200, "tools": [tool], "chat_template_kwargs": {"enable_thinking": False},
                  "messages": [{"role": "user", "content": "List the files in the current directory."}]})
     calls = (r.get("choices") or [{}])[0].get("message", {}).get("tool_calls") if s == 200 else None
     return (f"ok: {provider}/{model} at {e['base_url']} made a tool call" if calls else
             f"FAIL {s or r.get('error')}: {provider}/{model} at {e['base_url']}"
-            + (" (local server not running? bash scripts/vllm.sh start)" if provider == "local" else ""))
+            + (" (local server not running? bash scripts/vllm.sh start)" if provider == "local" else
+               " (not reachable: is it up? else an SSH tunnel, see config/endpoint.toml)" if not s else ""))
 
 
 def github(token: str) -> str:
@@ -74,8 +78,10 @@ def wandb(token: str) -> str:
 
 def main() -> None:
     f = DEMO / "config" / "secrets.env"
-    keys = dict(re.findall(r"^([A-Z_]+)=(.+)$", f.read_text(), flags=re.M)) if f.exists() else {}
-    print(f"{'model':17s} {endpoint()}")
+    keys = dict(re.findall(r"^([A-Z0-9_]+)=(.+)$", f.read_text(), flags=re.M)) if f.exists() else {}
+    spec = sys.argv[sys.argv.index("--model") + 1] if "--model" in sys.argv else \
+        load("endpoint")[0].get("agent", {}).get("model", "local/qwen3.8-27b")
+    print(f"{'model':17s} {endpoint(spec, keys)}")
     checks = {"GITHUB_TOKEN": github, "OPENAI_API_KEY": lambda k: models("https://api.openai.com/v1/models", k),
               "DEEPSEEK_API_KEY": lambda k: models("https://api.deepseek.com/models", k), "WANDB_API_KEY": wandb}
     for name, check in checks.items():
