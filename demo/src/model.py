@@ -111,7 +111,27 @@ def model(X, lo=None, hi=None):
     # as anything has come and is where this loop should stop.
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
-    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
+    # Seventy-first experiment: the last measurement on the rare-column prior, at the width the harness has never
+    # been given above the kept one. The curve on this axis, all at the kept residual scale and all with the same
+    # soft penalty past 16 doublings, has four points: t(4, 0, 2) (the champion's predecessor, worth -2.61 when
+    # substituted back into this fit), t(4, 0, 4) at -1.37 +/- 0.98, t(4, 0, 8) which is the champion, and
+    # Normal(0, 8) at -0.14 with a single divergence. The first three are a rise - narrower priors cost the fit - and
+    # the fourth says a prior whose tail dies quadratically is as good as one whose tail dies as a power law, which
+    # together with the rise means the fit wants the mass to be *out there* rather than the tail to be heavy in any
+    # particular sense. Width 12 with the same penalty is the only interior left: its prior median of |beta| is 8.1
+    # doublings against the kept 6.5, its mass past the penalty's knee is 15.8% against 11.6%, and its mass beyond 24
+    # doublings - where the penalty is worth 8 log units and the chains get stuck - is 3.0% against 1.8%, so the
+    # whole difference from the kept prior is a further push of the unbounded part outward, with the same machinery
+    # containing it. Because the failure mode of everything wider than the champion in this session has been
+    # sampler-side (one divergence for the Normal, one for the uncut t(4, 0, 8) whose score was the best of the loop,
+    # two and seven for the wider cuts at the previous residual scale), the run gets the sampler settings that
+    # failure is answered with here - target_accept 0.98 and four times the draws, which cost under a third of the
+    # budget and which the mass matrix is left out of, since a dense matrix made this model's R-hat worse rather than
+    # better (1.012 to 1.554 on the branch that is now main's parent). If width 12 is scored above the champion with
+    # clean gates then the plateau's upper end is further out than this loop thought and the same run should simply be
+    # repeated; if it is below, or if it diverges as its neighbours did, t(4, 0, 8) is the optimum and the prior is
+    # finished.
+    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 12.0))
     numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
