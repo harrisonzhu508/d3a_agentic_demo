@@ -112,7 +112,27 @@ def model(X, lo=None, hi=None):
     rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
     beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
     beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
-    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
+    # Seventy-seventh experiment: the kept fit with one number moved, chosen from the only curve here that has never
+    # been sampled at its own turning point. The rare-column prior is t(4, 0, 8) on the 14 columns carried by at most
+    # 15 isolates, penalised by one log unit per softplus of |beta| past 16 doublings, and the runs that vary the
+    # penalty alone bracket a maximum: a knee at 12 costs 3.66 of the +9.19 that a knee at 16 earns, and no penalty
+    # at all reaches the best absolute score this loop has produced (ELPD -140.30 against main's -142.29, worth +1.99
+    # +/- 1.66 in held-out density, coverage 87.5% against 84.4%) while being refused by one divergence and an ESS of
+    # 555. A hinge instead of a softplus at the same knee costs 0.33 with zero divergences. So the response in the
+    # penalty's sharpness is flat - soft, hinged, or absent, the fit is within two ELPD of itself - while the response
+    # in its position is not: twelve is too early by more than three ELPD, infinity is a whisker too late for the
+    # sampler. Between the two, the model's own posterior says where its mass actually ends: 1.2% of the rare-column
+    # draws sit past the knee and the largest is 23.6 doublings, and the whole difference between the unpenalised fit
+    # and this one, decomposed across isolates, is +1.37 in-sample log density on the right-censored rows against
+    # -0.11 on the 98 that were measured - the penalty costs exactly the censored rows' density and leaves the
+    # measured rows untouched. A knee at 24 doublings therefore penalises the far 0.1% instead of the 1.2%, leaves the
+    # prior's body and its median of 6.5 doublings untouched, and remains a sentence the assay can read out loud:
+    # three times the width of the dilution series, so a coefficient past it claims an MIC shift no plate in this
+    # dataset could display. If the score holds at or above main's with clean gates, the penalty has been a sampler's
+    # patch all along and the honest model is the unpenalised one, which the report should say even while keeping
+    # what the gates certify; if it falls below main, the knee at sixteen is doing model work on the censored rows
+    # and belongs in the prior as a stated belief rather than a fix that was found.
+    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 24.0)))
     beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
