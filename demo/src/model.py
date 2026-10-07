@@ -109,11 +109,24 @@ def model(X, lo=None, hi=None):
     # degree of freedom expressed twice - which the 84% additivity of the last pair had already hinted at - and the
     # session's conclusion is the single InvGamma, +6.43 +/- 3.56, ratio 1.81, which is as close to the harness's rule
     # as anything has come and is where this loop should stop.
-    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
-    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
-    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
-    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
-    beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
+    # Sixty-seventh experiment: the ablation of the change that was just kept, so the pull request for it can say
+    # where its +9.19 comes from. The kept fit combines two priors that had each been measured alone - an
+    # InvGamma(2, 128) residual scale (+6.09 to +6.55 on four runs, discarded four times by a paired SE of 3.56-3.64
+    # against a rule needing half the gain) and t(4, 0, 8) on the 14 rare columns with a soft penalty past 16
+    # doublings (+3.37 at the old residual scale) - and their combination gained +9.19 +/- 4.45, which is 90% of the
+    # 9.8 the two parts would give if they simply added. That single number cannot tell the two things a reviewer
+    # needs to know: whether the scale prior is doing the work and the rare-column prior is along for the ride, or
+    # whether the two really are one funnel that only pays when both are slack - which is what the last two failures
+    # on this branch suggested, since a tighter step and a dense mass matrix turned the combination's R-hat of 1.012
+    # into 1.554 (the signature of a pinched density, not a flat ridge). So: the inverse-gamma scale alone, the
+    # champion's t(4, 0, 2) on all 77 columns, the same sampler, the same folds. The InvGamma on its own has been run
+    # four times against the previous champion and gave +6.55, +6.09, +6.55, +6.43 with SEs of 3.63, 3.64, 3.63, 3.56
+    # - the most reproducible measurement of the session; against the new champion it should give roughly the
+    # complement, about +2.7, and if it gives that then the rare-column prior contributes +6.5 and this session's
+    # conclusion is about the effects and not only about the residual. If instead it comes back near +9, then
+    # everything the pair gained is the scale's and the rare prior should be dropped for its two extra sample sites
+    # and its unidentifiable coefficients, however well the pair fits.
+    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
     scale_raw = numpyro.sample("scale_raw", dist.Gamma(2.0, 128.0))
     scale = numpyro.deterministic("scale", 1.0 / scale_raw)
     mu = numpyro.deterministic("mu", alpha + X @ beta)
