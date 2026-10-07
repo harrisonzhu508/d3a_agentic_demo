@@ -75,7 +75,27 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Eighteenth variant. The rare-column curve is now well resolved and has a clean interior maximum:
+    #   champion t(4,0,2) as-is:                        +0.00 (by definition), 0 divergences, coverage 82.6%
+    #   same prior on a split site:                    +2.40 +/- 2.26, 0 divergences
+    #   t(4,0,8) soft-cut at 16:                       +3.52 +/- 5.10, 0 divergences, coverage 89.2%
+    #   t(4,0,8) soft-cut at 24:                       +2.41 +/- 6.24, 1 divergence
+    #   t(4,0,16) soft-cut at 32:                      -2.46 +/- 8.93, 69 divergences
+    # Both directions past width 8 lose, and the soft cut at 16 doublings - twice the width of the dilution series -
+    # is the optimum, which is also the defensible number: the prior is allowed to carry a determinant that three
+    # isolates carry off the plate, and is not allowed to speak past twice the plate's range. Nothing about the
+    # prior is left to tune, and the loss to the harness's rule is not the point estimate (a gain of 2-4 ELPD
+    # across every variant) but the paired SE of 5.1, which is nearly twice the SE of the +28.9 that won the
+    # champion. That SE is a property of the fit, not of the prior: the wide rare prior makes the mu of the 187
+    # isolates that carry the common QRDR alleles depend on draws that differ by tens of doublings between chains,
+    # and a paired comparison inherits that spread. So attack the SE, with the model frozen: three times the draws,
+    # which is the only lever on a Monte-Carlo error and costs nothing against a 600 s budget (13.5 s for this
+    # prior at 1000 draws, and the harness's CV budget is its own).
+    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 8.0))
+    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
+    beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
