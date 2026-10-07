@@ -75,7 +75,22 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Eighth attempt at the rare-column slab, after six parameterisations of beta_j = raw_j x scale_j (a product)
+    # each gained 3-10 ELPD and each left 2-245 divergent transitions, in every case on the rare columns' own
+    # scales - and a dense mass matrix made it worse (R-hat 1.07, ESS 47), which says the problem is a hard
+    # curvature singularity at scale_j = 0 rather than a correlated ridge. Write the same prior with no product at
+    # all: the rare columns get t(nu = 4, 0, 6) *directly*, whose log density is -5/2 log(1 + b_j^2/36) - so the
+    # shrinkage is smooth in b_j and continues to grow logarithmically at infinity (a coefficient of 20 doublings
+    # costs 5 log units, not the 50 a Normal would), while for the coefficients that matter the pull is negligible.
+    # A Student-t *is* a scale mixture with the scale integrated out (Gelman et al., BDA3 ch. 5), which is what the
+    # half-Cauchy slab was approximating by sampling the scale; integrating it analytically is the version with no
+    # funnel. Width 6 rather than the champion's 2, because a rare column's leverage is sd 0.10-0.16 and a prior
+    # narrower than four doublings of effect on mu is a prior of no-signal-by-assumption (what cost the 9.75 gain
+    # in discarded/slab-halfnormal-scale). The common columns keep the champion's t(4, 0, 2) exactly.
+    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 6.0))
+    beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
