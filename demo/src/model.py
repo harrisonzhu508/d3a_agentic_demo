@@ -75,7 +75,30 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # Twenty-fifth experiment: the control that closes the rare-column axis. Six widths and five shapes have now
+    # been measured on the 14 columns carried by at most 15 isolates, always against the same champion and the same
+    # folds, and the gain has lived entirely in a band the harness cannot resolve:
+    #     t(4,0,2) + cut at 16:  +3.03 +/- 2.56 (this prior, run twice on different branches: +2.40 and +2.79 for
+    #     t(4,0,2) with no cut:   the same prior, and the cut is inactive at width 2 - a t(4) draw past 16
+    #                             doublings has prior density e^-8 relative to its mode, so the two are the same
+    #                             model to within a fraction of a log unit)
+    #     width 3:               +2.79 +/- 2.72   coverage 84.1%   keep-ratio 1.03
+    #     width 4:               +3.09 +/- 3.48   coverage 85.7%   keep-ratio 0.89
+    #     width 5:               +3.51 +/- 4.05   coverage 86.9%   keep-ratio 0.87
+    #     width 8:               +3.37 +/- 5.11   coverage 89.1%   keep-ratio 0.66
+    # Every one of them positive, none of them above 1.1 SE, and the SE growing with the prior's width while the
+    # point estimate does not - which is what a direction the data do not inform looks like. This experiment is the
+    # narrowest case of that claim and therefore the sharpest test: a prior identical to the champion's for every
+    # one of the 77 columns, differing only in that the effect vector is assembled from two sampled sites and a
+    # where(), plus a softplus cut that should never bind. If a model whose posterior is the champion's posterior
+    # still scores +3, the +2 to +3 band is the harness's own noise floor for this comparison - a five-fold CV whose
+    # refits differ by more than the model does - and everything reported on this axis, including this loop's own
+    # near-misses, has to be read against that floor. If it scores ~0, the band is real and the axis stays open.
+    rare = jnp.asarray(X, dtype=jnp.float32).sum(axis=0) <= 15.0
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    numpyro.factor("rare_tail", -jnp.sum(jax.nn.softplus(jnp.abs(beta_rare) - 16.0)))
+    beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare, beta_common))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
