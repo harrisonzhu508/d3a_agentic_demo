@@ -1,4 +1,4 @@
-"""Canned events for every hook, in each harness's native payload format (Claude Code, pi).
+"""Canned events for every hook, in each harness's native payload format (Claude Code, Codex, pi).
 
     uv run python hooks/tests/run_tests.py          # fast cases
     uv run python hooks/tests/run_tests.py --slow   # also run the post-edit smoke test on src/model.py (~20 s)
@@ -35,6 +35,15 @@ def claude(tool: str, **ti) -> dict:
 
 def bash(cmd: str) -> dict:
     return claude("Bash", command=cmd)
+
+
+def codex(tool: str, command: str) -> dict:
+    return {"hook_event_name": "PreToolUse", "tool_name": tool, "tool_input": {"command": command},
+            "session_id": "test", "turn_id": "test", "cwd": str(DEMO)}
+
+
+def patch(*lines: str) -> dict:
+    return codex("apply_patch", "*** Begin Patch\n" + "\n".join(lines) + "\n*** End Patch")
 
 
 def pi(tool: str, **inp) -> list[str]:
@@ -139,6 +148,18 @@ PRE = [
     ("git diff (whole repo)", bash("git diff"), 2),
     ("git diff -- src", bash("git diff -- src"), 0),
     ("git diff --stat", bash("git diff --stat HEAD~1"), 0),
+    # Codex payloads: edits arrive as apply_patch patches
+    ("codex patch src/model.py", patch("*** Update File: src/model.py", "@@", "-a", "+b"), 0),
+    ("codex patch the report draft", patch(f"*** Add File: {R}/x/report_draft.md", "+x"), 0),
+    ("codex patch checks/evaluate.py", patch("*** Update File: checks/evaluate.py", "@@", "-a", "+b"), 2),
+    ("codex patch src and TASK.md", patch("*** Update File: src/model.py", "@@", "-a", "+b",
+                                          "*** Delete File: TASK.md"), 2),
+    ("codex patch adds notes.md", patch("*** Add File: notes.md", "+x"), 2),
+    ("codex patch moves src into checks", patch("*** Update File: src/model.py", "*** Move to: checks/m.py"), 2),
+    ("codex patch DATASET.md", patch("*** Update File: ../dataset/DATASET.md", "@@", "-a", "+b"), 2),
+    ("codex patch .codex/hooks.json", patch("*** Update File: .codex/hooks.json", "@@", "-a", "+b"), 2),
+    ("codex bash DATASET.md", codex("Bash", "cat ../dataset/DATASET.md"), 2),
+    ("codex bash status", codex("Bash", "uv run python checks/status.py"), 0),
     # pi payloads
     ("pi read DATASET.md", pi("read", path="../dataset/DATASET.md"), 2),
     ("bash grep the parent dir", bash("grep -rn ELPD .."), 2),

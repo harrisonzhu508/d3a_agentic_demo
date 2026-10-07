@@ -20,6 +20,8 @@
       "Edit(./program.md)",
       "Edit(./AGENTS.md)",
       "Edit(./.claude/**)",
+      "Edit(./.codex/**)",
+      "Edit(./.agents/**)",
       "Edit(./config/**)",
       "Bash(git push --force *)",
       "Bash(git push -f *)",

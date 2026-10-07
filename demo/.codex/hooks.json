@@ -1,0 +1,19 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {"matcher": "startup|resume|clear|compact",
+       "hooks": [{"type": "command", "command": "\"$(git rev-parse --show-toplevel)/demo/.venv/bin/python\" \"$(git rev-parse --show-toplevel)/demo/hooks/session_start.py\" --harness codex", "statusMessage": "Loading the autoresearch state"}]}
+    ],
+    "PreToolUse": [
+      {"matcher": "Bash|apply_patch",
+       "hooks": [{"type": "command", "command": "\"$(git rev-parse --show-toplevel)/demo/.venv/bin/python\" \"$(git rev-parse --show-toplevel)/demo/hooks/pre_tool_use.py\" --harness codex", "statusMessage": "Checking the harness rules"}]}
+    ],
+    "PostToolUse": [
+      {"matcher": "apply_patch",
+       "hooks": [{"type": "command", "command": "\"$(git rev-parse --show-toplevel)/demo/.venv/bin/python\" \"$(git rev-parse --show-toplevel)/demo/hooks/post_tool_use.py\" --harness codex", "timeout": 240, "statusMessage": "Running the contract smoke test"}]}
+    ],
+    "Stop": [
+      {"hooks": [{"type": "command", "command": "\"$(git rev-parse --show-toplevel)/demo/.venv/bin/python\" \"$(git rev-parse --show-toplevel)/demo/hooks/stop.py\" --harness codex", "statusMessage": "Checking the experiment budget"}]}
+    ]
+  }
+}

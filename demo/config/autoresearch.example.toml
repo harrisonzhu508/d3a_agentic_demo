@@ -41,4 +41,5 @@ budget_seconds = 600
 # W&B run (metrics, plots, report) and every agent session as a Weave trace (each model turn and tool call), so
 # the whole trajectory can be audited. Needs WANDB_API_KEY in config/secrets.env.
 enabled = true
-wandb_project = "harrisonzhu/d3a_demo"
+# "<entity>/<project>" (a W&B user or team), or just "<project>" for the default entity of your WANDB_API_KEY.
+wandb_project = "d3a_demo"

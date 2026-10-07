@@ -4,7 +4,8 @@
     uv run --group tracking python scripts/wandb_sync.py --watch 60   # keep syncing (run_pi.sh does this)
     uv run --group tracking python scripts/wandb_sync.py --dry-run    # show what would be sent
 
-Project: [tracking] wandb_project in config/autoresearch.toml; key: WANDB_API_KEY in config/secrets.env.
+Project: [tracking] wandb_project in config/autoresearch.toml ("<entity>/<project>", or "<project>" for the default
+entity of the key); key: WANDB_API_KEY in config/secrets.env.
 - Weave Agents view (Conversation SDK): agent "pi-autoresearch"; each pi session of the experiment is a
   conversation; each model call is a turn with an LLM span (the messages that led to it, the reply, thinking,
   token usage) and one span per tool call (arguments, full result including hook blocks, timing). Original
@@ -258,11 +259,15 @@ def sync(dry: bool) -> str:
     if not dry and not secret("WANDB_API_KEY"):
         return "no WANDB_API_KEY in config/secrets.env"
     os.environ["WANDB_API_KEY"] = secret("WANDB_API_KEY")
+    if "/" not in project:              # no entity given: the default entity of the key (your user name)
+        import wandb
+        project = f"{wandb.Api().default_entity}/{project}"
     entity, name = project.split("/", 1)
     exp_dir = experiment_dir()
     state_file = exp_dir / "wandb_sync.json"
     state = json.loads(state_file.read_text()) if state_file.exists() else {}
     state.setdefault("steps", {}), state.setdefault("runs", {})
+    state["project"] = project          # with its entity, for the link in the experiment PR
     exp = settings()["experiment"]
     sessions = [s for s in map(load_session, session_files()) if s["experiment"] == exp]
 

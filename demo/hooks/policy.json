@@ -13,14 +13,14 @@
   ],
   "write_deny": [
     "checks", "hooks", "data", "skills", "TASK.md", "program.md", "AGENTS.md", "CLAUDE.md", "README.md",
-    "train.py", "pyproject.toml", "uv.lock", "config", "scripts", "reports", ".claude", ".pi", ".pi-agent",
+    "train.py", "pyproject.toml", "uv.lock", "config", "scripts", "reports", ".claude", ".codex", ".pi", ".pi-agent",
     ".agents", "results/*/results.tsv", "results/*/champion.json", "results/*/session*.json", "results/*/hooks.log",
     "results/*/*/metrics.json", "results/*/*/pointwise.csv", "results/*/feedback*", "results/*/wandb*"
   ],
   "bash_deny_tokens": [
     "DATASET.md", "dataset/", "slides/", "plan/", ":(top)", "cip_features",
     "liverpool_ecoli", "build_cip_table", "secrets.env", "API_KEY", "GITHUB_TOKEN", "printenv", "environ",
-    ".pi-agent", ".tools/", "/proc/", "vllm.sh", "vllm serve", "run_pi.sh", "D3A_",
+    ".pi-agent", ".tools/", "/proc/", "vllm.sh", "vllm serve", "run_pi.sh", "run_codex.sh", "D3A_",
     "split.py", "final_test.py", ".d3a-demo-private",
     "--no-verify", "git push --force", "git push -f", "--force-with-lease", "git reset --hard",
     "git clean", "rm -rf", "git rebase", "git filter-branch", "git config", "chmod "

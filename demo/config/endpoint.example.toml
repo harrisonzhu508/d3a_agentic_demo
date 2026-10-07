@@ -18,7 +18,7 @@ thinking = "off"
 # Other OpenAI-compatible servers, one [endpoints.<name>] each; pi calls them "<name>/<model>".
 # The local vLLM server ("local") is added from config/vllm.toml, so it is not listed here.
 [endpoints.dide2]
-# vLLM behind Ray Serve on dide2, route /qwen3.8-27b. Direct from didelx01 or anywhere on the Imperial network:
+# Example of a shared server: vLLM behind Ray Serve on dide2 (Imperial network only), route /qwen3.8-27b:
 base_url = "http://wpia-didelx02.dide.ic.ac.uk:8001/qwen3.8-27b/v1"
 # Through an SSH tunnel (ssh -N -L 8001:localhost:8001 <you>@wpia-didelx02.dide.ic.ac.uk) off the network:
 # base_url = "http://localhost:8001/qwen3.8-27b/v1"

@@ -43,10 +43,13 @@ def body(exp: str) -> tuple[str, int]:
         diff = f"{r['elpd_diff']} ± {r['se_diff']}" if r.get("elpd_diff") else "–"
         lines.append(f"| {r['name']} | **{r['decision']}** | {diff} | {r.get('skill') or '-'} | {r['hypothesis'][:90]} | {link} |")
     project = settings()["wandb_project"]
+    sync = experiment_dir() / "wandb_sync.json"
+    if project and sync.exists():       # wandb_sync.py records it with its entity
+        project = json.loads(sync.read_text()).get("project", project)
     text = (f"Autoresearch experiment `{exp}`: {len(rows)} hypotheses tried, {kept} kept.\n\n"
             f"- ELPD (5-fold CV on the development set): baseline {best} → champion {champ.get('elpd_cv', best)}"
             + (f" (`{champ.get('merged_from') or champ.get('branch')}`)" if champ else "") + "\n"
-            + (f"- Runs and every agent step: https://wandb.ai/{project} (experiment `{exp}`)\n" if project else "")
+            + (f"- Runs and every agent step: https://wandb.ai/{project} (experiment `{exp}`)\n" if "/" in project else "")
             + "- Discarded hypotheses are kept as branches under `.../discarded/`.\n\n"
             "| Hypothesis | Verdict | ΔELPD ± SE | Skill | What | PR |\n|---|---|---|---|---|---|\n"
             + "\n".join(lines)
