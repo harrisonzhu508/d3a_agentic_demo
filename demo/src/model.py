@@ -59,7 +59,10 @@ def model(X, lo=None, hi=None):
     alpha = numpyro.sample("alpha", dist.Normal(-4.0, 3.0))
     # Logistic errors with the same variance as the baseline HalfNormal(2) errors: s = sigma sqrt(3/pi)
     scale = numpyro.sample("scale", dist.HalfNormal(2.0 * jnp.sqrt(3.0 / jnp.pi)))
-    beta = numpyro.sample("beta", dist.Normal(jnp.zeros(p), 2.0))
+    # Half of the 77 determinants are carried by fewer than 20 isolates; with Normal(0, 2) a rare column can
+    # still promise a 4-fold shift per copy to a handful of isolates and no data to check it on. Normal(0, 1)
+    # keeps the same shape but caps the prior effect of any single determinant at about one doubling.
+    beta = numpyro.sample("beta", dist.Normal(jnp.zeros(p), 1.0))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
