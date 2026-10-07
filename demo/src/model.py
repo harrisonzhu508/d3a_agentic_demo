@@ -75,7 +75,23 @@ def model(X, lo=None, hi=None):
     # leaves the tail open, so the alleles that matter are barely regularised while the ~70 with no
     # fluoroquinolone mechanism stay shrunk. (A half-normal scale mixture was tried first and diverged;
     # see discarded/prior-width-4: the same gain came only when the width itself was raised.)
-    beta = numpyro.sample("beta", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    # The champion's +28.9 over Normal(0,2) came from the prior's *tail*: the QRDR alleles have to be allowed to
+    # take an isolate several doublings past the top of the plate. The cost is that the tail is open on all 77
+    # columns at once, and the fit spends it on a contrast that cannot be identified from MICs (gyrA_D87N +38
+    # against glpT_E448K -14). Split the prior by how much information each column carries, which is a property
+    # of the design matrix rather than of the model: the 63 determinants carried by more than 15 isolates keep
+    # t(4, 0, 2) exactly as the champion has them, and the 14 carried by 15 or fewer - among them every rare QRDR
+    # allele (gyrA_D87Y on five isolates sits at +2.9 +/- 4.5) - get a spike-and-slab with the inclusion
+    # probability integrated out (Polson & Scott 2012; the continuous form of the spike-and-slab in
+    # censored-mic-regression's sparse-prior reference): beta = w * lambda, w ~ t(4,0,2), lambda ~ HalfCauchy(0.5),
+    # non-centred, no discrete site and no hierarchical funnel. A column with three carriers then shrinks to
+    # roughly zero unless the MICs insist otherwise, while no common column's tail is touched.
+    n_carriers = jnp.asarray(X, dtype=jnp.float32).sum(axis=0)
+    rare = n_carriers <= 15.0                       # at most ~12 isolates per cross-validation fold
+    beta_common = numpyro.sample("beta_common", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    beta_rare = numpyro.sample("beta_rare", dist.StudentT(4.0, jnp.zeros(p), 2.0))
+    lam = numpyro.sample("lambda", dist.HalfCauchy(0.5 * jnp.ones(p)))
+    beta = numpyro.deterministic("beta", jnp.where(rare, beta_rare * lam, beta_common))
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, scale)
