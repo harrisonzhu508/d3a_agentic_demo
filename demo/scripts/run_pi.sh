@@ -4,7 +4,7 @@
 #   bash scripts/run_pi.sh [options]
 #     --experiment NAME    results/NAME/ and branches <prefix>/NAME/...   (else config/autoresearch.toml)
 #     --experiments N      hypotheses in this session
-#     --model P/ID         e.g. local/qwen3.8-27b, myserver/qwen3.8-27b, openai/gpt-6-sol (else config/endpoint.toml)
+#     --model P/ID         e.g. local/qwen3.8-27b, anthropic/claude-sonnet-5-5, openai/gpt-6-luna (else config/endpoint.toml)
 #     --budget-seconds N   time limit per evaluation, 0 = none
 #     --config FILE        another settings file instead of config/autoresearch.toml
 #     --no-push            keep branches and pull requests local
@@ -36,8 +36,8 @@ done
 
 PI=.tools/node_modules/.bin/pi
 export PI_CODING_AGENT_DIR="${PI_CODING_AGENT_DIR:-$PWD/.pi-agent}" D3A_HARNESS=pi
-# only the model keys reach pi (and so the agent); the GitHub and W&B tokens stay in the file
-eval "$(grep -E '^(OPENAI|DEEPSEEK|MYSERVER)_API_KEY=.' config/secrets.env | sed 's/^/export /' || true)"
+# only the model keys (*_API_KEY) reach pi (and so the agent); the GitHub and W&B tokens stay in the file
+eval "$(grep -E '^[A-Z0-9_]+_API_KEY=.' config/secrets.env | grep -v '^WANDB_API_KEY=' | sed 's/^/export /' || true)"
 [ "$LIST" = 1 ] && exec "$PI" --list-models
 MODEL=${MODEL:-$(python3 -c 'import json, os; s = json.load(open(os.environ["PI_CODING_AGENT_DIR"] + "/settings.json")); print(s["defaultProvider"] + "/" + s["defaultModel"])')}
 

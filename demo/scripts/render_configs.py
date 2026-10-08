@@ -5,8 +5,8 @@
 
 pi reads models.json only from its agent directory; scripts/run_pi.sh points PI_CODING_AGENT_DIR at .pi-agent/.
 models.json holds the OpenAI-compatible endpoints: "local" (the vLLM server of scripts/vllm.sh, from
-config/vllm.toml) and each [endpoints.<name>] of config/endpoint.toml. OpenAI and DeepSeek are built into pi
-(keys come from config/secrets.env via scripts/run_pi.sh). settings.json sets the default model from [agent].
+config/vllm.toml) and each [endpoints.<name>] of config/endpoint.toml. Anthropic, OpenAI and DeepSeek are built
+into pi (keys come from config/secrets.env via scripts/run_pi.sh). settings.json sets the default model from [agent].
 """
 
 import json
@@ -72,7 +72,8 @@ def main() -> None:
     if provider in eps:
         where = f"at {eps[provider]['base_url']}"
     else:
-        key = {"openai": "OPENAI_API_KEY", "deepseek": "DEEPSEEK_API_KEY"}.get(provider, "its API key")
+        key = {"anthropic": "ANTHROPIC_API_KEY", "openai": "OPENAI_API_KEY",
+               "deepseek": "DEEPSEEK_API_KEY"}.get(provider, "its API key")
         where = f"(built into pi; needs {key} in config/secrets.env)"
     print(f"wrote .pi-agent/models.json ({', '.join(eps)}) and settings.json: agent model {provider}/{model} "
           f"{where}, thinking {thinking} (from {cfg_file.relative_to(DEMO)})")

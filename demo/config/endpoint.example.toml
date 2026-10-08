@@ -3,25 +3,24 @@
 # which renders .pi-agent/models.json and .pi-agent/settings.json from this file and config/vllm.toml.
 
 [agent]
-# "<provider>/<model id>":
-#   local/qwen3.8-27b          vLLM on this machine: bash scripts/vllm.sh start (settings in config/vllm.toml)
-#   myserver/qwen3.8-27b          the shared Qwen endpoint on myserver, [endpoints.myserver] below (your network)
-#   openai/<model>             built into pi; needs OPENAI_API_KEY in config/secrets.env, e.g. openai/gpt-6-sol
-#   deepseek/<model>           built into pi; needs DEEPSEEK_API_KEY in config/secrets.env, e.g. deepseek/deepseek-v4-pro
+# "<provider>/<model id>": keep one line uncommented. For Anthropic or OpenAI, uncomment its line here and its
+# key in config/secrets.env (ANTHROPIC_API_KEY / OPENAI_API_KEY), and comment out the local model.
+model = "local/qwen3.8-27b"               # vLLM on this machine: bash scripts/vllm.sh start (config/vllm.toml)
+# model = "anthropic/claude-sonnet-5-5"   # Claude Sonnet 5.5, needs ANTHROPIC_API_KEY
+# model = "openai/gpt-6-luna"             # GPT-6 Luna, needs OPENAI_API_KEY
+# model = "deepseek/deepseek-v4-pro"      # needs DEEPSEEK_API_KEY
+# model = "myserver/<model id>"           # your own OpenAI-compatible server, [endpoints.myserver] below
 # List the models pi can use:  bash scripts/run_pi.sh --list-models
-# Another model for one run:   bash scripts/run_pi.sh --model myserver/qwen3.8-27b
-model = "local/qwen3.8-27b"
+# Another model for one run:   bash scripts/run_pi.sh --model openai/gpt-6-luna
 
 # Thinking: "off" (fastest), "low", "medium" or "high" (for Qwen this turns on enable_thinking).
 thinking = "off"
 
-# Other OpenAI-compatible servers, one [endpoints.<name>] each; pi calls them "<name>/<model>".
-# The local vLLM server ("local") is added from config/vllm.toml, so it is not listed here.
-[endpoints.myserver]
-# Example of a shared server: vLLM behind Ray Serve on myserver (your network), route /qwen3.8-27b:
-base_url = "http://your-server.example.org:8001/qwen3.8-27b/v1"
-model = "qwen3.8-27b"
-# vLLM on myserver does not check keys, but pi needs one.
-api_key = "EMPTY"
-context_window = 131072
-max_output_tokens = 16384
+# Your own OpenAI-compatible servers (vLLM, SGLang, Ollama, ...), one [endpoints.<name>] each; pi calls them
+# "<name>/<model>". The local vLLM server ("local") is added from config/vllm.toml, so it is not listed here.
+# [endpoints.myserver]
+# base_url = "http://<host>:<port>/v1"
+# model = "<model id the server serves>"
+# api_key = "$MYSERVER_API_KEY"           # read from config/secrets.env; "EMPTY" if the server checks no key
+# context_window = 131072
+# max_output_tokens = 16384

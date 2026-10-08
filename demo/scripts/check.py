@@ -1,13 +1,15 @@
 """Check the model endpoint and the keys in config/secrets.env (keys are never printed).
 
     uv run python scripts/check.py
-    uv run python scripts/check.py --model myserver/qwen3.8-27b    # another model than [agent]
+    uv run python scripts/check.py --model openai/gpt-6-luna    # another model than [agent]
 
-- the agent's model ([agent] in config/endpoint.toml): if it is an OpenAI-compatible endpoint (local vLLM,
-  myserver), one chat request that must return a tool call (an api_key "$NAME" is read from config/secrets.env);
+- the agent's model ([agent] in config/endpoint.toml): if it is an OpenAI-compatible endpoint (local vLLM or an
+  [endpoints.<name>]), one chat request that must return a tool call (an api_key "$NAME" is read from
+  config/secrets.env);
 - GITHUB_TOKEN: can read the GitHub repository of [git] repository in config/autoresearch.toml (default: the one
   you cloned) and open pull requests there (probed without creating anything);
-- OPENAI_API_KEY, DEEPSEEK_API_KEY: list the models; WANDB_API_KEY: who it belongs to and where runs go.
+- ANTHROPIC_API_KEY, OPENAI_API_KEY, DEEPSEEK_API_KEY: list the models; WANDB_API_KEY: who it belongs to and where
+  runs go.
 """
 
 import base64
@@ -28,10 +30,11 @@ from gitlib import github_repo  # noqa: E402
 from render_configs import endpoints, load  # noqa: E402
 
 
-def call(url: str, auth: str = "", payload: dict | None = None) -> tuple[int, dict]:
+def call(url: str, auth: str = "", payload: dict | None = None, headers: dict | None = None) -> tuple[int, dict]:
     req = urllib.request.Request(url, data=json.dumps(payload).encode() if payload else None,
                                  headers={"Authorization": auth, "Content-Type": "application/json",
-                                          "Accept": "application/json", "User-Agent": "d3a-agentic-demo"})
+                                          "Accept": "application/json", "User-Agent": "d3a-agentic-demo",
+                                          **(headers or {})})
     try:
         with urllib.request.urlopen(req, timeout=120) as r:
             return r.status, json.loads(r.read() or b"{}")
@@ -72,8 +75,8 @@ def github(token: str) -> str:
             f"FAIL {s}: cannot open pull requests in {name} (Pull requests: Read and write)")
 
 
-def models(url: str, token: str) -> str:
-    s, r = call(url, f"Bearer {token}")
+def models(url: str, token: str, headers: dict | None = None) -> str:
+    s, r = call(url, "" if headers else f"Bearer {token}", headers=headers)
     return f"ok: {len(r.get('data', []))} models" if s == 200 else f"FAIL {s}"
 
 
@@ -94,7 +97,10 @@ def main() -> None:
     spec = sys.argv[sys.argv.index("--model") + 1] if "--model" in sys.argv else \
         load("endpoint")[0].get("agent", {}).get("model", "local/qwen3.8-27b")
     print(f"{'model':17s} {endpoint(spec, keys)}")
-    checks = {"GITHUB_TOKEN": github, "OPENAI_API_KEY": lambda k: models("https://api.openai.com/v1/models", k),
+    checks = {"GITHUB_TOKEN": github,
+              "ANTHROPIC_API_KEY": lambda k: models("https://api.anthropic.com/v1/models", k,
+                                                    {"x-api-key": k, "anthropic-version": "2023-06-01"}),
+              "OPENAI_API_KEY": lambda k: models("https://api.openai.com/v1/models", k),
               "DEEPSEEK_API_KEY": lambda k: models("https://api.deepseek.com/models", k), "WANDB_API_KEY": wandb}
     for name, check in checks.items():
         print(f"{name:17s} {check(keys[name].strip()) if keys.get(name, '').strip() else 'not set'}")

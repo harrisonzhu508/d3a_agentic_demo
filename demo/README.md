@@ -1,6 +1,6 @@
 # Autoresearch demo: an agent improves a censored Bayesian MIC model
 
-An agent (pi, with Qwen3.8-27B or an OpenAI / DeepSeek model; Codex; or Claude Code) improves a NumPyro regression of
+An agent (pi, with Qwen3.8-27B or an Anthropic / OpenAI / DeepSeek model; Codex; or Claude Code) improves a NumPyro regression of
 ciprofloxacin MIC on AMR genotype in *E. coli*, one hypothesis at a time. A fixed harness scores every change
 (5-fold CV ELPD + sampler gates) and keeps it only if it beats the current best by more than 2 SE. Every
 hypothesis becomes a git branch; kept ones become pull requests with a written report, and each experiment ends in
@@ -26,11 +26,16 @@ bash scripts/run_pi.sh --experiment demo1 --experiments 5
 | File | What |
 |---|---|
 | `config/autoresearch.toml` | experiment name and budget; `repository` (the GitHub repository for branches and PRs, `owner/name`; empty = the one you cloned), `branch_prefix` (the only branches agents may push), `base_branch`, `push`, `auto_merge` (agent merges its own kept PRs into the experiment branch); `[evaluation] budget_seconds` (time limit per evaluation, 0 = none); `[tracking] wandb_project` (`d3a_demo` = your own W&B account, or `<entity>/<project>`) |
-| `config/endpoint.toml` | the agent's model, e.g. `local/qwen3.8-27b`, `myserver/qwen3.8-27b`, `openai/gpt-6-sol`, `deepseek/deepseek-v4-pro`; other OpenAI-compatible endpoints as `[endpoints.<name>]` |
+| `config/endpoint.toml` | the agent's model: `local/qwen3.8-27b`, or uncomment `anthropic/claude-sonnet-5-5`, `openai/gpt-6-luna` or `deepseek/deepseek-v4-pro`; your own OpenAI-compatible servers as `[endpoints.<name>]` |
 | `config/vllm.toml` | the local vLLM server: model, GPU, port, context length |
-| `config/secrets.env` | `GITHUB_TOKEN` (fine-grained, for that repository only: Contents read, Pull requests + Issues read/write), `OPENAI_API_KEY`, `DEEPSEEK_API_KEY`, `WANDB_API_KEY` |
+| `config/secrets.env` | `GITHUB_TOKEN` (fine-grained, for that repository only: Contents read, Pull requests + Issues read/write), `WANDB_API_KEY`; for a hosted model uncomment `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` or `DEEPSEEK_API_KEY` |
 
 After editing `endpoint.toml` or `vllm.toml`: `bash scripts/setup.sh --configs`.
+
+To use Claude or GPT instead of the local model: in `config/endpoint.toml` uncomment
+`model = "anthropic/claude-sonnet-5-5"` (or `"openai/gpt-6-luna"`) and comment out the local one; in
+`config/secrets.env` uncomment `ANTHROPIC_API_KEY=` (or `OPENAI_API_KEY=`) and paste your key; then
+`bash scripts/setup.sh --configs` and `uv run python scripts/check.py`.
 
 ## Your own fork
 
@@ -50,15 +55,13 @@ the one in `[git] repository`) and runs to your W&B account, so a fork works as 
    once, then `git pull upstream main`.
 
 `setup.sh` creates the data split and the locked test set on your machine; `checks/best.json`, the baseline every
-experiment has to beat, comes with the repository. The `myserver` endpoint in `endpoint.example.toml` is only
-reachable on your network: use the local vLLM server, another OpenAI-compatible server
-(`[endpoints.<name>]`), or OpenAI / DeepSeek.
+experiment has to beat, comes with the repository.
 
 ## Running
 
 ```bash
 bash scripts/run_pi.sh --experiment demo1 --experiments 5   # interactive TUI; --print for headless
-bash scripts/run_pi.sh --model openai/gpt-6-sol --budget-seconds 1800 --no-push
+bash scripts/run_pi.sh --model anthropic/claude-sonnet-5-5 --budget-seconds 1800 --no-push
 bash scripts/run_codex.sh --experiment demo1 --experiments 5   # Codex instead of pi (same options, --model <codex model>)
 bash scripts/parallel.sh 3 --experiment demo-par --experiments 3   # 3 agents at once, each in a git worktree
 bash scripts/feedback.sh "Try an interaction between gyrA and parC next."   # talk to running agents
