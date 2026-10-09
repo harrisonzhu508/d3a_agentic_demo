@@ -6,9 +6,11 @@ Contract (checks/contract.md):
 - simulate(samples, X, key) -> array (draws, n): latent log2 MICs for the rows of X, from posterior samples.
 - FEATURE_EFFECTS: name of the per-feature effect site (for the parsimony count), or None.
 
-Hypothesis: logistic latent errors instead of Normal, so the ~80 % of isolates censored at a plate limit are not
-fitted by inflating the residual scale (skill: censored-mic-regression).
-log2 MIC ~ Logistic(alpha + X beta, s), interval-censored, independent Normal(0, 2) priors on the effects.
+Hypothesis: independent Normal(0, 2) effects are the wrong prior for 77 heavily co-inherited determinants - it
+lets ~30 background columns absorb ~1 doubling each and keeps shrinking the true ones; a regularised horseshoe
+(regularised horseshoe, Piironen & Vehtari 2017) shrinks the many weak effects hard while leaving the few real
+ones free (skill: censored-mic-regression -> references/sparse-priors.md).
+log2 MIC ~ Logistic(alpha + X beta, s), interval-censored; beta_j = z_j * tau * lambda_tilde_j, non-centred.
 """
 
 import jax
@@ -60,7 +62,17 @@ def model(X, lo=None, hi=None):
     p = X.shape[1]
     alpha = numpyro.sample("alpha", dist.Normal(-4.0, 3.0))
     s = numpyro.sample("s", dist.HalfNormal(2.0))                   # logistic scale; sd = s*pi/sqrt(3)
-    beta = numpyro.sample("beta", dist.Normal(jnp.zeros(p), 2.0))
+
+    # Regularised horseshoe, non-centred. p0 = 10 relevant determinants out of p -> tau0 = p0/(p-p0)*sd_y/sqrt(n)
+    # with sd_y ~ 3 doublings and n = 558 (sparse-priors.md); a HalfCauchy rather than the suggested InvGamma for
+    # the slab, because an InvGamma(nu/2, ...) with a fixed nu puts a hard prior on the slab and nu is not given.
+    tau = numpyro.sample("tau", dist.HalfCauchy(10.0 / (p - 10.0) * 3.0 / jnp.sqrt(558.0)))
+    lam = numpyro.sample("lam", dist.HalfCauchy(1.0), sample_shape=(p,))
+    z = numpyro.sample("z", dist.Normal(jnp.zeros(p)))
+    c2 = numpyro.sample("c2", dist.InverseGamma(2.0, 2.0 * 3.0 ** 2))   # slab: one determinant up to ~3 doublings
+    lam_tilde = c2 * lam / (c2 + tau ** 2 * lam)                    # = c^2 lambda^2 / (c^2 + tau^2 lambda^2)
+    beta = numpyro.deterministic("beta", z * tau * jnp.sqrt(lam_tilde))
+
     mu = numpyro.deterministic("mu", alpha + X @ beta)
     if lo is not None:
         ll = logistic_log_interval_prob(lo, hi, mu, s)
